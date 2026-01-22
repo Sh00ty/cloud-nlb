@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: hc-worker
+  namespace: loadbalancer
+spec:
+  serviceName: hc-worker-headless
+  replicas: 4
+  selector:
+    matchLabels:
+      app: hc-worker
+  template:
+    metadata:
+      labels:
+        app: hc-worker
+    spec:
+      hostAliases:
+        - ip: "192.168.5.2"
+          hostnames:
+            - "host.docker.internal"
+      dnsPolicy: ClusterFirstWithHostNet
+
+      containers:
+        - name: hc-worker
+          image: hc-wrk:dev
+          imagePullPolicy: IfNotPresent
+
+          envFrom:
+            - configMapRef:
+                name: hc-worker-config
+          env:
+            - name: HC_WORKER_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+
+          ports:
+            - containerPort: 8080
+              name: metrics
+
+          resources:
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}

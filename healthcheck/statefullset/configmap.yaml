@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hc-worker-config
+  namespace: loadbalancer
+data:
+  LOGGER_LEVEL: "INFO"
+
+  EXECUTOR_CONCURRENCY: "128"
+  EXECUTOR_BUFFER: "1024"
+  RESEND_STATUS_INTERVAL: "7s"
+
+  DATABASE_HOST: "192.168.5.2"
+  DATABASE_USER: "postgres"
+  DATABASE_PASSWORD: "postgres"
+  DATABASE_PORT: "5432"
+
+  QUEUE_ADDR: "192.168.5.2:19092"
+  QUEUE_TARGET_UPDATES_TOPIC: "dbserver1.public.targets"
+  
+  HC_WORKER_ID: ""
+  HC_TOTAL_NODES: "4"
+  HC_VIRTUAL_SHARDS: "300"
+  HC_REPLICATION_FACTOR: "2"
+
+  INITIAL_NODE_SYNC_TIMEOUT: "1s"
+  GOSSIP_PORT: "7946"
+  GOSSIP_PROBE_INTERVAL: "100ms"
+  GOSSIP_PROBE_TIMEOUT: "100ms"
+  NODE_ADDR_MASK: "hc-worker-%d.hc-worker-headless.loadbalancer.svc.cluster.local"
