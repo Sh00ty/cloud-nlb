@@ -3,6 +3,7 @@ module github.com/Sh00ty/network-lb/control-plane
 go 1.24.2
 
 require (
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/coreos/go-semver v0.3.1 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect

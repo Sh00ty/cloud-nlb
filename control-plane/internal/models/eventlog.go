@@ -7,7 +7,6 @@ type EventType string
 
 const (
 	EventTypeUnknown           EventType = "UNKNOWN"
-	EventTypeCreateTargetGroup EventType = "CREATE_TARGETGROUP"
 	EventTypeUpdateTargetGroup EventType = "UPDATE_TARGETGROUP"
 	EventTypeAddEndpoint       EventType = "ADD_ENDPOINT"
 	EventTypeRemoveEndpoint    EventType = "REMOVE_ENDPOINT"

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/rs/zerolog/log"
 
@@ -19,12 +18,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	events, err := recontileRepo.GetAllPendingOperations(ctx)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(events)
-
 	recon := reconciller.NewReconciller(recontileRepo, evChan)
 
 	isLeader, lostLeadership, err := recontileRepo.BecomeLeaderReconciller(ctx)
@@ -45,7 +38,10 @@ func main() {
 			}
 		}()
 	}
-	go recon.RunEventWatcher(ctx)
+	err = recon.RunEventWatcher(ctx)
+	if err != nil {
+		panic(err)
+	}
 
 	err = recontileRepo.WatchEventlog(ctx, "/nlb-registry/eventlog/pending-status", recontileRepo.EventlogWatchHandler, 0)
 	if err != nil {
