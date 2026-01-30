@@ -25,13 +25,14 @@ func NewApiClient(ctx context.Context, host string) (*ApiClient, error) {
 	return &ApiClient{etcd: clnt}, nil
 }
 
-func (c *ApiClient) AddEventIntoEventlog(
+func (c *ApiClient) AddEndpointIntoEventlog(
 	ctx context.Context,
 	tgID models.TargetGroupID,
 	eventType models.EventType,
-	eventPayload any,
+	eventPayload endpointSpec,
 ) error {
-	resp, err := c.etcd.Get(ctx, tgTimestamp(tgID))
+	timestampKey := tgEndpointsTimestamp(tgID)
+	resp, err := c.etcd.Get(ctx, timestampKey)
 	if err != nil {
 		return fmt.Errorf("failed to get tg %s timestamp: %w", tgID, err)
 	}
@@ -48,18 +49,20 @@ func (c *ApiClient) AddEventIntoEventlog(
 
 		tx := c.etcd.Txn(ctx).If(
 			clientv3.Compare(
-				clientv3.Value(tgTimestamp(tgID)),
+				clientv3.Value(timestampKey),
 				"=",
 				strconv.FormatUint(tgOldTimestamp, 10),
 			),
 		).Then(
-			clientv3.OpPut(tgTimestamp(tgID), strconv.FormatUint(targetNewTimestamp, 10)),
-
-			clientv3.OpPut(tgPendingEventStatus(tgID, targetNewTimestamp), string(models.EventStatusPending)),
+			clientv3.OpPut(timestampKey, strconv.FormatUint(targetNewTimestamp, 10)),
 
 			clientv3.OpPut(
+				tgPendingEventStatus(tgID, targetNewTimestamp),
+				string(models.EventStatusPending),
+			),
+			clientv3.OpPut(
 				tgEventKey(tgID, targetNewTimestamp),
-				mustJsonMarshal(Event{
+				mustJsonMarshal(eventDto{
 					Type:           eventType,
 					DesiredVersion: uint(targetNewTimestamp),
 					Time:           time.Now(),
@@ -68,7 +71,7 @@ func (c *ApiClient) AddEventIntoEventlog(
 				}),
 			),
 		).Else(
-			clientv3.OpGet(tgTimestamp(tgID)),
+			clientv3.OpGet(timestampKey),
 		)
 		resp, err := tx.Commit()
 		if err != nil {
@@ -95,42 +98,32 @@ func (c *ApiClient) SetTargetGroupSpec(ctx context.Context, tg models.TargetGrou
 
 	tx := c.etcd.Txn(ctx).If(
 		clientv3.Compare(
-			clientv3.CreateRevision(tgTimestamp(tg.ID)), "=", 0,
+			clientv3.CreateRevision(tgSpecTimestamp(tg.ID)), "=", 0,
 		),
 	).Then(
-		clientv3.OpPut(tgTimestamp(tg.ID), firstEventTimestamp),
+		clientv3.OpPut(tgSpecTimestamp(tg.ID), firstEventTimestamp),
+		clientv3.OpPut(tgEndpointsTimestamp(tg.ID), firstEventTimestamp),
 
 		clientv3.OpPut(tgDesiredVersion(tg.ID), firstEventTimestamp),
 		clientv3.OpPut(tgDesiredSpecPath(tg.ID), "{}"),
-		clientv3.OpPut(tgDesiredEndpointsPath(tg.ID), "[]"),
-		clientv3.OpPut(tgDesiredEndpointsChecksum(tg.ID), "0"),
+		// clientv3.OpPut(tgDesiredEndpointsPath(tg.ID), "[]"),
+		// clientv3.OpPut(tgDesiredEndpointsChecksum(tg.ID), "0"),
 
-		clientv3.OpPut(tgAppliedVersionKey(tg.ID), firstEventTimestamp),
-		clientv3.OpPut(tgAppliedSpecPath(tg.ID), "{}"),
-		clientv3.OpPut(tgAppliedEndpointsPath(tg.ID), "[]"),
-		clientv3.OpPut(tgAppliedEndpointsChecksum(tg.ID), "0"),
+		// clientv3.OpPut(tgAppliedVersionKey(tg.ID), firstEventTimestamp),
+		// clientv3.OpPut(tgAppliedSpecPath(tg.ID), "{}"),
+		// clientv3.OpPut(tgAppliedEndpointsPath(tg.ID), "[]"),
+		// clientv3.OpPut(tgAppliedEndpointsChecksum(tg.ID), "0"),
 	)
-	resp, err := tx.Commit()
+	_, err := tx.Commit()
 	if err != nil {
 		return fmt.Errorf("failed to create target group: %w", err)
 	}
-	if resp.Succeeded {
-		return c.AddEventIntoEventlog(
-			ctx,
-			tg.ID,
-			models.EventTypeCreateTargetGroup,
-			TargetGroupSpec{
-				Proto: tg.Proto,
-				Port:  tg.Port,
-				VIP:   tg.VirtualIP.String(),
-			},
-		)
-	}
 	return c.AddEventIntoEventlog(
 		ctx,
+		specEventType,
 		tg.ID,
 		models.EventTypeUpdateTargetGroup,
-		TargetGroupSpec{
+		targetGroupSpec{
 			Proto: tg.Proto,
 			Port:  tg.Port,
 			VIP:   tg.VirtualIP.String(),
@@ -141,9 +134,10 @@ func (c *ApiClient) SetTargetGroupSpec(ctx context.Context, tg models.TargetGrou
 func (c *ApiClient) AddEndpoint(ctx context.Context, tgID models.TargetGroupID, ep models.EndpointSpec) error {
 	return c.AddEventIntoEventlog(
 		ctx,
+		endpointEventType,
 		tgID,
 		models.EventTypeAddEndpoint,
-		EndpointSpec{
+		endpointSpec{
 			TargetGroupID: tgID,
 			IP:            ep.IP.String(),
 			Port:          ep.Port,
@@ -155,9 +149,10 @@ func (c *ApiClient) AddEndpoint(ctx context.Context, tgID models.TargetGroupID, 
 func (c *ApiClient) RemoveEndpoint(ctx context.Context, tgID models.TargetGroupID, ep models.EndpointSpec) error {
 	return c.AddEventIntoEventlog(
 		ctx,
+		endpointEventType,
 		tgID,
 		models.EventTypeAddEndpoint,
-		EndpointSpec{
+		endpointSpec{
 			TargetGroupID: tgID,
 			IP:            ep.IP.String(),
 			Port:          ep.Port,

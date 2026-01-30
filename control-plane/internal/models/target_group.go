@@ -23,8 +23,10 @@ type TargetGroupSpec struct {
 }
 
 type TargetGroup struct {
-	TargetGroupHeader TargetGroupSpec
-	Endpoints         []EndpointSpec
+	Version       uint64
+	Spec          *TargetGroupSpec
+	Endpoints     []EndpointSpec
+	EndpointsHash []byte
 }
 
 type EndpointSpec struct {

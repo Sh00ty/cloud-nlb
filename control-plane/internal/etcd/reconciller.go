@@ -142,7 +142,7 @@ type parsedEventKey struct {
 }
 
 func ParseEventlogKey(key string) (parsedEventKey, error) {
-	tgWithEventID, found := strings.CutPrefix(key, pendingEvents()+"/")
+	tgWithEventID, found := strings.CutPrefix(key, eventLogPath()+"/")
 	if !found {
 		return parsedEventKey{}, fmt.Errorf("not found pending nlb prefix")
 	}
@@ -162,7 +162,7 @@ func ParseEventlogKey(key string) (parsedEventKey, error) {
 }
 
 func parseEvent(tgID models.TargetGroupID, eventPayload []byte) (models.Event, error) {
-	eventDto := Event{}
+	eventDto := eventDto{}
 	err := json.Unmarshal(eventPayload, &eventDto)
 	if err != nil {
 		return models.Event{}, fmt.Errorf("failed to unmarshal event: %w", err)
@@ -174,8 +174,8 @@ func parseEvent(tgID models.TargetGroupID, eventPayload []byte) (models.Event, e
 		DesiredVersion: eventDto.DesiredVersion,
 	}
 	switch event.Type {
-	case models.EventTypeCreateTargetGroup, models.EventTypeUpdateTargetGroup:
-		tgSpecDto := TargetGroupSpec{}
+	case models.EventTypeUpdateTargetGroup:
+		tgSpecDto := targetGroupSpec{}
 		err = json.Unmarshal([]byte(eventDto.Payload), &tgSpecDto)
 		if err != nil {
 			return models.Event{}, fmt.Errorf("failed to unmarshal event payload: %w", err)
@@ -189,7 +189,7 @@ func parseEvent(tgID models.TargetGroupID, eventPayload []byte) (models.Event, e
 		event.TargetGroupSpec = &tgSpec
 		return event, nil
 	case models.EventTypeAddEndpoint, models.EventTypeRemoveEndpoint:
-		epSpecDto := EndpointSpec{}
+		epSpecDto := endpointSpec{}
 		err = json.Unmarshal([]byte(eventDto.Payload), &epSpecDto)
 		if err != nil {
 			return event, fmt.Errorf("failed to unmarshal event payload: %w", err)
@@ -261,7 +261,7 @@ func (c *ReconcillerClient) SetTargetGroupSpec(
 ) (bool, error) {
 	tx := c.etcd.KV.Txn(ctx)
 
-	tgSpecDto := TargetGroupSpec{
+	tgSpecDto := targetGroupSpec{
 		Proto: tgSpec.Proto,
 		Port:  tgSpec.Port,
 		VIP:   tgSpec.VirtualIP.String(),
@@ -272,12 +272,14 @@ func (c *ReconcillerClient) SetTargetGroupSpec(
 
 	// TODO: we need to delete pending status for event
 	tx = tx.If(
-		clientv3.Compare(clientv3.Value(tgAppliedVersionKey(tgSpec.ID)), "<", desiredVersionStr),
+		clientv3.Compare(clientv3.Value(c.election.Key()), "=", c.nodeID),
+
+		// clientv3.Compare(clientv3.Value(tgAppliedVersionKey(tgSpec.ID)), "<", desiredVersionStr),
 		clientv3.Compare(clientv3.Value(tgDesiredVersion(tgSpec.ID)), "=", prevDesiredVersionStr),
 	).Then(
 		clientv3.OpPut(tgDesiredVersion(tgSpec.ID), desiredVersionStr),
 		clientv3.OpPut(tgDesiredSpecPath(tgSpec.ID), mustJsonMarshal(tgSpecDto)),
-		clientv3.OpDelete(tgPendingEventStatus(tgSpec.ID, uint64(desiredVersion))),
+		clientv3.OpDelete(specPendingEventStatus(tgSpec.ID, uint64(desiredVersion))),
 	)
 	resp, err := tx.Commit()
 	if err != nil {
@@ -292,7 +294,7 @@ func (c *ReconcillerClient) SetTargetGroupSpec(
 func (c *ReconcillerClient) GetAllPendingOperations(ctx context.Context) ([]*models.Event, error) {
 	var (
 		result   = make([]*models.Event, 0, 128)
-		startKey = pendingEvents()
+		startKey = specPendingEvents()
 	)
 	for {
 		resp, err := c.etcd.KV.Get(
@@ -325,6 +327,118 @@ func (c *ReconcillerClient) GetAllPendingOperations(ctx context.Context) ([]*mod
 	}
 }
 
-func (c *ReconcillerClient) GetAllDesiredSpecs(ctx context.Context) ([]*models.TargetGroupSpec, error) {
-	return nil, nil
+// version or spec or endpoint e.t.c.
+func parseTgKey(key string, prefix string) (string, models.TargetGroupID, bool) {
+	meaningAndTg, found := strings.CutPrefix(key, prefix+"/")
+	if !found {
+		return "", "", false
+	}
+	meaning, tgID, found := strings.Cut(meaningAndTg, "/")
+	if !found {
+		return "", "", false
+	}
+	return meaning, models.TargetGroupID(tgID), true
+}
+
+func (c *ReconcillerClient) GetAllTargetGroupsDesired(ctx context.Context) (map[models.TargetGroupID]*models.TargetGroup, error) {
+	return c.getAllTargetGroups(ctx, true)
+}
+
+func (c *ReconcillerClient) getAllTargetGroups(ctx context.Context, desired bool) (map[models.TargetGroupID]*models.TargetGroup, error) {
+	// TODO: make it for applyied too
+	var (
+		result   = make(map[models.TargetGroupID]*models.TargetGroup, 128)
+		skip     = make(map[models.TargetGroupID]struct{})
+		startKey = desiredFolder()
+	)
+	skipTg := func(tgID models.TargetGroupID) {
+		delete(result, tgID)
+		skip[tgID] = struct{}{}
+	}
+
+	for {
+		resp, err := c.etcd.KV.Get(
+			ctx,
+			startKey,
+			clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend),
+			clientv3.WithFromKey(),
+			clientv3.WithLimit(256),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get pending events: %w", err)
+		}
+		if resp.Count == 0 {
+			return result, nil
+		}
+		for _, kv := range resp.Kvs {
+			part, tgID, ok := parseTgKey(string(kv.Key), desiredFolder())
+			if !ok {
+				return result, nil
+			}
+			if _, needSkip := skip[tgID]; needSkip {
+				continue
+			}
+			current, exists := result[tgID]
+			if !exists {
+				current = &models.TargetGroup{}
+				result[tgID] = current
+			}
+			switch part {
+			case "spec":
+				specDto := targetGroupSpec{}
+				err := json.Unmarshal(kv.Value, &specDto)
+				if err != nil {
+					skipTg(tgID)
+					log.Error().Err(err).Msgf("failed to parse target group %s spec, skip")
+					continue
+				}
+				current.Spec = &models.TargetGroupSpec{
+					ID:        tgID,
+					Proto:     specDto.Proto,
+					Port:      specDto.Port,
+					VirtualIP: net.ParseIP(specDto.VIP),
+				}
+			case "endpoints":
+				// TODO:
+			case "endpoints-checksum":
+				current.EndpointsHash = kv.Value
+			case "version":
+				parsedVersion, err := strconv.ParseUint(string(kv.Value), 10, 64)
+				if err != nil {
+					skipTg(tgID)
+					log.Error().Err(err).Msgf("failed to parse target group %s version, skip")
+					continue
+				}
+				current.Version = parsedVersion
+			}
+			startKey = string(append(kv.Key, 0))
+		}
+		if !resp.More {
+			return result, nil
+		}
+	}
+}
+
+func (c *ReconcillerClient) SkipEvent(ctx context.Context, tgID models.TargetGroupID, desiredVersion uint64) (bool, error) {
+	desiredVersionStr := strconv.FormatUint(uint64(desiredVersion), 10)
+	prevDesiredVersionStr := strconv.FormatUint(uint64(desiredVersion-1), 10)
+
+	tx := c.etcd.Txn(ctx)
+	tx = tx.If(
+		clientv3.Compare(clientv3.Value(c.election.Key()), "=", c.nodeID),
+
+		// clientv3.Compare(clientv3.Value(tgAppliedVersionKey(tgID)), "<", desiredVersionStr),
+		clientv3.Compare(clientv3.Value(tgDesiredVersion(tgID)), "=", prevDesiredVersionStr),
+	).Then(
+		clientv3.OpPut(tgDesiredVersion(tgID), desiredVersionStr),
+		clientv3.OpDelete(specPendingEventStatus(tgID, uint64(desiredVersion))),
+	)
+	resp, err := tx.Commit()
+	if err != nil {
+		return false, fmt.Errorf("failed to commit etcd transaction: %w", err)
+	}
+	if !resp.Succeeded {
+		return false, nil
+	}
+	return true, nil
 }

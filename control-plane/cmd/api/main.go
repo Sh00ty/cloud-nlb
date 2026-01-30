@@ -23,11 +23,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	clnt.AddEndpoint(ctx, "mws-k8s-kubeproxy", models.EndpointSpec{
+	err = clnt.AddEndpoint(ctx, "mws-k8s-kubeproxy", models.EndpointSpec{
 		IP:     net.IPv4(10, 10, 10, 10),
 		Port:   9090,
 		Weight: 100,
 	})
-
+	if err != nil {
+		panic(err)
+	}
 }
