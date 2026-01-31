@@ -1,4 +1,4 @@
-package scheduller
+package scheduler
 
 import (
 	"container/heap"

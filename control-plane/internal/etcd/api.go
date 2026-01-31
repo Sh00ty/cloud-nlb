@@ -59,7 +59,7 @@ func (c *ApiClient) AddEventIntoEventlog(
 
 			clientv3.OpPut(
 				tgEventKey(tgID, targetNewTimestamp),
-				mustJsonMarshal(Event{
+				mustJsonMarshal(event{
 					Type:           eventType,
 					DesiredVersion: uint(targetNewTimestamp),
 					Time:           time.Now(),
@@ -88,6 +88,64 @@ func (c *ApiClient) AddEventIntoEventlog(
 		tgOldTimestamp = lastTgTimestamp
 	}
 	return fmt.Errorf("failed add event into eventlog for tg %s: max attempts count exceeded", tgID)
+}
+
+func (c *ApiClient) ExecuteIncrementally(
+	ctx context.Context,
+	timeStampKey string,
+	opFunc func(timeStampValue uint64) []clientv3.Op,
+) error {
+	resp, err := c.etcd.Get(ctx, timeStampKey)
+	if err != nil {
+		return fmt.Errorf("failed to get %s timestamp: %w", timeStampKey, err)
+	}
+	if len(resp.Kvs) < 1 {
+		return fmt.Errorf("%s timestamp not found", timeStampKey)
+	}
+	tgOldTimestamp, err := strconv.ParseUint(string(resp.Kvs[0].Value), 10, 64)
+	if err != nil {
+		return fmt.Errorf("failed to parse %s timestamp: %w", timeStampKey, err)
+	}
+
+	for range maxTxRetryAttempts {
+		targetNewTimestamp := tgOldTimestamp + 1
+		opsOnIter := append(
+			opFunc(targetNewTimestamp),
+			clientv3.OpPut(
+				timeStampKey,
+				strconv.FormatUint(targetNewTimestamp, 10),
+			),
+		)
+
+		tx := c.etcd.Txn(ctx).If(
+			clientv3.Compare(
+				clientv3.Value(timeStampKey),
+				"=",
+				strconv.FormatUint(tgOldTimestamp, 10),
+			),
+		).Then(
+			opsOnIter...,
+		).Else(
+			clientv3.OpGet(timeStampKey),
+		)
+		resp, err := tx.Commit()
+		if err != nil {
+			return fmt.Errorf("failed to add event into eventlog: %w", err)
+		}
+		if resp.Succeeded {
+			return nil
+		}
+		tgTimestampStr, err := extractStringFromTxnResponse(resp)
+		if err != nil {
+			return fmt.Errorf("failed to extract current timestamp %s: %w", timeStampKey, err)
+		}
+		lastTgTimestamp, err := strconv.ParseUint(tgTimestampStr, 10, 64)
+		if err != nil {
+			return fmt.Errorf("failed to parse current timestamp %s: %w", timeStampKey, err)
+		}
+		tgOldTimestamp = lastTgTimestamp
+	}
+	return fmt.Errorf("failed to execute ops with key increment for ts %s: max attempts count exceeded", timeStampKey)
 }
 
 func (c *ApiClient) SetTargetGroupSpec(ctx context.Context, tg models.TargetGroupSpec) error {
@@ -119,7 +177,7 @@ func (c *ApiClient) SetTargetGroupSpec(ctx context.Context, tg models.TargetGrou
 			ctx,
 			tg.ID,
 			models.EventTypeCreateTargetGroup,
-			TargetGroupSpec{
+			targetGroupSpec{
 				Proto: tg.Proto,
 				Port:  tg.Port,
 				VIP:   tg.VirtualIP.String(),
@@ -130,7 +188,7 @@ func (c *ApiClient) SetTargetGroupSpec(ctx context.Context, tg models.TargetGrou
 		ctx,
 		tg.ID,
 		models.EventTypeUpdateTargetGroup,
-		TargetGroupSpec{
+		targetGroupSpec{
 			Proto: tg.Proto,
 			Port:  tg.Port,
 			VIP:   tg.VirtualIP.String(),
@@ -143,7 +201,7 @@ func (c *ApiClient) AddEndpoint(ctx context.Context, tgID models.TargetGroupID, 
 		ctx,
 		tgID,
 		models.EventTypeAddEndpoint,
-		EndpointSpec{
+		endpointSpec{
 			TargetGroupID: tgID,
 			IP:            ep.IP.String(),
 			Port:          ep.Port,
@@ -157,7 +215,7 @@ func (c *ApiClient) RemoveEndpoint(ctx context.Context, tgID models.TargetGroupI
 		ctx,
 		tgID,
 		models.EventTypeAddEndpoint,
-		EndpointSpec{
+		endpointSpec{
 			TargetGroupID: tgID,
 			IP:            ep.IP.String(),
 			Port:          ep.Port,

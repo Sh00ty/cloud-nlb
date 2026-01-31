@@ -1,4 +1,4 @@
-package reconciller
+package reconciler
 
 import (
 	"context"
@@ -23,7 +23,7 @@ type CoordinatorService interface {
 	GetAllPendingOperations(ctx context.Context) ([]*models.Event, error)
 }
 
-type Reconciller struct {
+type Reconciler struct {
 	targetGroupsDesired      map[models.TargetGroupID]TargetGroupSnapshot
 	targetGroupPendingEvents map[models.TargetGroupID][]*models.Event
 	eventChan                chan *models.Event
@@ -33,8 +33,8 @@ type Reconciller struct {
 	coordinator CoordinatorService
 }
 
-func NewReconciller(coordinator CoordinatorService, eventChan chan *models.Event) *Reconciller {
-	return &Reconciller{
+func NewReconciler(coordinator CoordinatorService, eventChan chan *models.Event) *Reconciler {
+	return &Reconciler{
 		targetGroupsDesired:      make(map[models.TargetGroupID]TargetGroupSnapshot, 128),
 		targetGroupPendingEvents: make(map[models.TargetGroupID][]*models.Event, 128),
 		eventChan:                eventChan,
@@ -42,7 +42,7 @@ func NewReconciller(coordinator CoordinatorService, eventChan chan *models.Event
 	}
 }
 
-func (r *Reconciller) RunEventWatcher(ctx context.Context) {
+func (r *Reconciler) RunEventWatcher(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -57,13 +57,13 @@ func (r *Reconciller) RunEventWatcher(ctx context.Context) {
 	}
 }
 
-func (r *Reconciller) handleEventlogEvent(ctx context.Context, event *models.Event) error {
+func (r *Reconciler) handleEventlogEvent(ctx context.Context, event *models.Event) error {
 	if event.Deadline.Before(time.Now()) {
 		r.handleOutdatedEvent(ctx, event)
 		return nil
 	}
 	if event.Status == models.EventStatusApplied {
-		log.Warn().Msg("reconciller: got applied event: skip")
+		log.Warn().Msg("reconciler: got applied event: skip")
 		return nil
 	}
 	switch event.Type {
@@ -85,11 +85,11 @@ func (r *Reconciller) handleEventlogEvent(ctx context.Context, event *models.Eve
 	return nil
 }
 
-func (r *Reconciller) handleOutdatedEvent(ctx context.Context, event *models.Event) {
+func (r *Reconciler) handleOutdatedEvent(ctx context.Context, event *models.Event) {
 	// TODO:
 }
 
-func (r *Reconciller) addTargetGroup(
+func (r *Reconciler) addTargetGroup(
 	ctx context.Context,
 	tgSpec *models.TargetGroupSpec,
 	desiredVersion uint,
@@ -118,7 +118,7 @@ func (r *Reconciller) addTargetGroup(
 	return nil
 }
 
-func (r *Reconciller) updateTargetGroup(
+func (r *Reconciler) updateTargetGroup(
 	ctx context.Context,
 	tgSpec *models.TargetGroupSpec,
 	desiredVersion uint,
@@ -146,13 +146,13 @@ func (r *Reconciller) updateTargetGroup(
 	if !set {
 		// TODO:
 		// видимо это что-то уже старое
-		log.Error().Msg("failed to set target group spec version: outated or concurrent access")
+		log.Error().Msg("failed to set target group spec version: outdated or concurrent access")
 		return nil
 	}
 	r.targetGroupsDesired[tgSpec.ID] = TargetGroupSnapshot{
 		TargetGroupSpec: tgSpec,
 		Version:         uint64(desiredVersion),
 	}
-	log.Info().Msg("sucessfully updated tg spec")
+	log.Info().Msg("successfully updated tg spec")
 	return nil
 }

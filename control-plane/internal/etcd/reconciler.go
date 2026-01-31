@@ -17,7 +17,7 @@ import (
 	"github.com/Sh00ty/network-lb/control-plane/internal/models"
 )
 
-type ReconcillerClient struct {
+type ReconcilerClient struct {
 	nodeID   string
 	etcd     *clientv3.Client
 	session  *concurrency.Session
@@ -26,21 +26,21 @@ type ReconcillerClient struct {
 	eventChan chan *models.Event
 }
 
-func NewReconcillerClient(ctx context.Context, etcdhost string, nodeID string, eventChan chan *models.Event) (*ReconcillerClient, error) {
+func NewReconcilerClient(ctx context.Context, etcdhost string, nodeID string, eventChan chan *models.Event) (*ReconcilerClient, error) {
 	clnt, err := clientv3.New(clientv3.Config{
 		Endpoints: []string{etcdhost},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create etcd client: %w", err)
 	}
-	return &ReconcillerClient{
+	return &ReconcilerClient{
 		nodeID:    nodeID,
 		etcd:      clnt,
 		eventChan: eventChan,
 	}, nil
 }
 
-func (c *ReconcillerClient) Close(ctx context.Context) {
+func (c *ReconcilerClient) Close(ctx context.Context) {
 	err := c.election.Resign(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to gracefully resign leader")
@@ -55,7 +55,7 @@ func (c *ReconcillerClient) Close(ctx context.Context) {
 	}
 }
 
-func (c *ReconcillerClient) BecomeLeaderReconciller(ctx context.Context) (bool, <-chan struct{}, error) {
+func (c *ReconcilerClient) BecomeLeaderReconciller(ctx context.Context) (bool, <-chan struct{}, error) {
 	session, err := concurrency.NewSession(c.etcd, concurrency.WithContext(ctx), concurrency.WithTTL(15))
 	if err != nil {
 		return false, nil, fmt.Errorf("failed to create session: %w", err)
@@ -81,7 +81,7 @@ func (c *ReconcillerClient) BecomeLeaderReconciller(ctx context.Context) (bool, 
 
 type WatchHandler func(ctx context.Context, events []*clientv3.Event)
 
-func (c *ReconcillerClient) WatchEventlog(
+func (c *ReconcilerClient) WatchEventlog(
 	ctx context.Context,
 	prefix string,
 	handler WatchHandler,
@@ -162,7 +162,7 @@ func ParseEventlogKey(key string) (parsedEventKey, error) {
 }
 
 func parseEvent(tgID models.TargetGroupID, eventPayload []byte) (models.Event, error) {
-	eventDto := Event{}
+	eventDto := event{}
 	err := json.Unmarshal(eventPayload, &eventDto)
 	if err != nil {
 		return models.Event{}, fmt.Errorf("failed to unmarshal event: %w", err)
@@ -175,7 +175,7 @@ func parseEvent(tgID models.TargetGroupID, eventPayload []byte) (models.Event, e
 	}
 	switch event.Type {
 	case models.EventTypeCreateTargetGroup, models.EventTypeUpdateTargetGroup:
-		tgSpecDto := TargetGroupSpec{}
+		tgSpecDto := targetGroupSpec{}
 		err = json.Unmarshal([]byte(eventDto.Payload), &tgSpecDto)
 		if err != nil {
 			return models.Event{}, fmt.Errorf("failed to unmarshal event payload: %w", err)
@@ -189,7 +189,7 @@ func parseEvent(tgID models.TargetGroupID, eventPayload []byte) (models.Event, e
 		event.TargetGroupSpec = &tgSpec
 		return event, nil
 	case models.EventTypeAddEndpoint, models.EventTypeRemoveEndpoint:
-		epSpecDto := EndpointSpec{}
+		epSpecDto := endpointSpec{}
 		err = json.Unmarshal([]byte(eventDto.Payload), &epSpecDto)
 		if err != nil {
 			return event, fmt.Errorf("failed to unmarshal event payload: %w", err)
@@ -207,7 +207,7 @@ func parseEvent(tgID models.TargetGroupID, eventPayload []byte) (models.Event, e
 
 var ErrParseKey = errors.New("key parse error")
 
-func (c *ReconcillerClient) parseEventFromKV(ctx context.Context, kv *mvccpb.KeyValue) (*models.Event, error) {
+func (c *ReconcilerClient) parseEventFromKV(ctx context.Context, kv *mvccpb.KeyValue) (*models.Event, error) {
 	key := string(kv.Key)
 	parsedKey, err := ParseEventlogKey(key)
 	if err != nil {
@@ -232,7 +232,7 @@ func (c *ReconcillerClient) parseEventFromKV(ctx context.Context, kv *mvccpb.Key
 	return &parsedEvent, nil
 }
 
-func (c *ReconcillerClient) EventlogWatchHandler(ctx context.Context, events []*clientv3.Event) {
+func (c *ReconcilerClient) EventlogWatchHandler(ctx context.Context, events []*clientv3.Event) {
 	for _, event := range events {
 		parsedEvent, err := c.parseEventFromKV(ctx, event.Kv)
 		if err != nil {
@@ -245,7 +245,7 @@ func (c *ReconcillerClient) EventlogWatchHandler(ctx context.Context, events []*
 	}
 }
 
-func (c *ReconcillerClient) handleParsedEvent(ctx context.Context, event *models.Event) error {
+func (c *ReconcilerClient) handleParsedEvent(ctx context.Context, event *models.Event) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -254,14 +254,14 @@ func (c *ReconcillerClient) handleParsedEvent(ctx context.Context, event *models
 	}
 }
 
-func (c *ReconcillerClient) SetTargetGroupSpec(
+func (c *ReconcilerClient) SetTargetGroupSpec(
 	ctx context.Context,
 	tgSpec *models.TargetGroupSpec,
 	desiredVersion uint,
 ) (bool, error) {
 	tx := c.etcd.KV.Txn(ctx)
 
-	tgSpecDto := TargetGroupSpec{
+	tgSpecDto := targetGroupSpec{
 		Proto: tgSpec.Proto,
 		Port:  tgSpec.Port,
 		VIP:   tgSpec.VirtualIP.String(),
@@ -289,7 +289,7 @@ func (c *ReconcillerClient) SetTargetGroupSpec(
 	return true, nil
 }
 
-func (c *ReconcillerClient) GetAllPendingOperations(ctx context.Context) ([]*models.Event, error) {
+func (c *ReconcilerClient) GetAllPendingOperations(ctx context.Context) ([]*models.Event, error) {
 	var (
 		result   = make([]*models.Event, 0, 128)
 		startKey = pendingEvents()
@@ -325,6 +325,6 @@ func (c *ReconcillerClient) GetAllPendingOperations(ctx context.Context) ([]*mod
 	}
 }
 
-func (c *ReconcillerClient) GetAllDesiredSpecs(ctx context.Context) ([]*models.TargetGroupSpec, error) {
+func (c *ReconcilerClient) GetAllDesiredSpecs(ctx context.Context) ([]*models.TargetGroupSpec, error) {
 	return nil, nil
 }
