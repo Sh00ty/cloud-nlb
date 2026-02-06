@@ -2,15 +2,18 @@ package models
 
 type DataPlaneID string
 
-type DataPlane struct {
-	NodeID        DataPlaneID
-	Host          string
-	TargetGroups  []TargetGroupID
-	TargetVersion uint
-	Status        DataPlaneStatus
+type TargetGroupPlacement struct {
+	TgID            TargetGroupID
+	SpecVersion     uint64
+	EndpointVersion uint64
 }
 
-type DataPlaneStatus struct {
-	Healthy       bool
-	ActualVersion uint
+type Placement struct {
+	Version      uint64
+	TargetGroups map[TargetGroupID]struct{}
+}
+
+type DataPlanePlacementInfo struct {
+	NodeID  DataPlaneID
+	Desired *Placement
 }

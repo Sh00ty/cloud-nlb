@@ -19,12 +19,17 @@ type TargetGroupSpec struct {
 	Proto     Protocol
 	Port      uint16
 	VirtualIP net.IP
-	UpdatedAt time.Time
+	Time      time.Time
 }
 
 type TargetGroup struct {
-	TargetGroupHeader TargetGroupSpec
-	Endpoints         []EndpointSpec
+	Spec        TargetGroupSpec
+	SpecVersion uint64
+
+	EndpointVersion       uint64
+	EndpointsSnapshot     []EndpointSpec
+	ChangelogStartVersion uint64
+	EndpointsChangelog    []EndpointEvent
 }
 
 type EndpointSpec struct {
@@ -33,11 +38,20 @@ type EndpointSpec struct {
 	Weight uint16
 }
 
-type Operation string
+type EventType string
 
 const (
-	Add          Operation = "ADD"
-	Remove       Operation = "REMOVE"
-	AddTarget    Operation = "ADD_TARGET"
-	RemoveTarget Operation = "REMOVE_TARGET"
+	EventTypeUnknown        EventType = "UNKNOWN"
+	EventTypeAddEndpoint    EventType = "ADD_ENDPOINT"
+	EventTypeRemoveEndpoint EventType = "REMOVE_ENDPOINT"
 )
+
+type EventStatus string
+
+type EndpointEvent struct {
+	Type           EventType
+	TargetGroupID  TargetGroupID
+	DesiredVersion uint64
+	Time           time.Time
+	Spec           EndpointSpec
+}

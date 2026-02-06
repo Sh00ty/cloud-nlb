@@ -9,6 +9,7 @@ import (
 	clientv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/Sh00ty/network-lb/control-plane/internal/models"
+	"github.com/rs/zerolog/log"
 )
 
 type ApiClient struct {
@@ -23,71 +24,6 @@ func NewApiClient(ctx context.Context, host string) (*ApiClient, error) {
 		return nil, fmt.Errorf("failed to create etcd client: %w", err)
 	}
 	return &ApiClient{etcd: clnt}, nil
-}
-
-func (c *ApiClient) AddEventIntoEventlog(
-	ctx context.Context,
-	tgID models.TargetGroupID,
-	eventType models.EventType,
-	eventPayload any,
-) error {
-	resp, err := c.etcd.Get(ctx, tgTimestamp(tgID))
-	if err != nil {
-		return fmt.Errorf("failed to get tg %s timestamp: %w", tgID, err)
-	}
-	if len(resp.Kvs) < 1 {
-		return fmt.Errorf("tg %s timestamp not found", tgID)
-	}
-	tgOldTimestamp, err := strconv.ParseUint(string(resp.Kvs[0].Value), 10, 64)
-	if err != nil {
-		return fmt.Errorf("failed to parse tg %s timestamp: %w", tgID, err)
-	}
-
-	for range maxTxRetryAttempts {
-		targetNewTimestamp := tgOldTimestamp + 1
-
-		tx := c.etcd.Txn(ctx).If(
-			clientv3.Compare(
-				clientv3.Value(tgTimestamp(tgID)),
-				"=",
-				strconv.FormatUint(tgOldTimestamp, 10),
-			),
-		).Then(
-			clientv3.OpPut(tgTimestamp(tgID), strconv.FormatUint(targetNewTimestamp, 10)),
-
-			clientv3.OpPut(tgPendingEventStatus(tgID, targetNewTimestamp), string(models.EventStatusPending)),
-
-			clientv3.OpPut(
-				tgEventKey(tgID, targetNewTimestamp),
-				mustJsonMarshal(event{
-					Type:           eventType,
-					DesiredVersion: uint(targetNewTimestamp),
-					Time:           time.Now(),
-					Deadline:       time.Now().Add(maxEventPendingDuration),
-					Payload:        mustJsonMarshal(eventPayload),
-				}),
-			),
-		).Else(
-			clientv3.OpGet(tgTimestamp(tgID)),
-		)
-		resp, err := tx.Commit()
-		if err != nil {
-			return fmt.Errorf("failed to add event into eventlog: %w", err)
-		}
-		if resp.Succeeded {
-			return nil
-		}
-		tgTimestampStr, err := extractStringFromTxnResponse(resp)
-		if err != nil {
-			return fmt.Errorf("failed to extract current timestamp for tg %s: %w", tgID, err)
-		}
-		lastTgTimestamp, err := strconv.ParseUint(tgTimestampStr, 10, 64)
-		if err != nil {
-			return fmt.Errorf("failed to parse current timestamp for tg %s: %w", tgID, err)
-		}
-		tgOldTimestamp = lastTgTimestamp
-	}
-	return fmt.Errorf("failed add event into eventlog for tg %s: max attempts count exceeded", tgID)
 }
 
 func (c *ApiClient) ExecuteIncrementally(
@@ -145,7 +81,10 @@ func (c *ApiClient) ExecuteIncrementally(
 		}
 		tgOldTimestamp = lastTgTimestamp
 	}
-	return fmt.Errorf("failed to execute ops with key increment for ts %s: max attempts count exceeded", timeStampKey)
+	return fmt.Errorf(
+		"failed to execute ops with key increment for ts %s: max attempts count exceeded",
+		timeStampKey,
+	)
 }
 
 func (c *ApiClient) SetTargetGroupSpec(ctx context.Context, tg models.TargetGroupSpec) error {
@@ -153,74 +92,100 @@ func (c *ApiClient) SetTargetGroupSpec(ctx context.Context, tg models.TargetGrou
 
 	tx := c.etcd.Txn(ctx).If(
 		clientv3.Compare(
-			clientv3.CreateRevision(tgTimestamp(tg.ID)), "=", 0,
+			clientv3.CreateRevision(tgSpecTimestamp(tg.ID)), "=", 0,
 		),
 	).Then(
-		clientv3.OpPut(tgTimestamp(tg.ID), firstEventTimestamp),
+		clientv3.OpPut(tgSpecTimestamp(tg.ID), firstEventTimestamp),
+		clientv3.OpPut(tgSpecDesiredVersion(tg.ID, 0), "{}"),
+		clientv3.OpPut(tgSpecDesiredLatest(tg.ID), "{}"),
+		clientv3.OpPut(
+			tgSpecCurrent(tg.ID),
+			mustJsonMarshal(targetGroupSpec{Time: time.Now()}),
+		),
 
-		clientv3.OpPut(tgDesiredVersion(tg.ID), firstEventTimestamp),
-		clientv3.OpPut(tgDesiredSpecPath(tg.ID), "{}"),
-		clientv3.OpPut(tgDesiredEndpointsPath(tg.ID), "[]"),
-		clientv3.OpPut(tgDesiredEndpointsChecksum(tg.ID), "0"),
+		clientv3.OpPut(tgEndpointsTimestamp(tg.ID), firstEventTimestamp),
+		clientv3.OpPut(tgEndpointsCompacted(tg.ID), "[]"),
+		clientv3.OpPut(tgEndpointsEvent(tg.ID, 0), nopEvent),
 
-		clientv3.OpPut(tgAppliedVersionKey(tg.ID), firstEventTimestamp),
-		clientv3.OpPut(tgAppliedSpecPath(tg.ID), "{}"),
-		clientv3.OpPut(tgAppliedEndpointsPath(tg.ID), "[]"),
-		clientv3.OpPut(tgAppliedEndpointsChecksum(tg.ID), "0"),
+		clientv3.OpPut(tgAssignedDataPlanes(tg.ID), "[]"),
 	)
 	resp, err := tx.Commit()
 	if err != nil {
 		return fmt.Errorf("failed to create target group: %w", err)
 	}
 	if resp.Succeeded {
-		return c.AddEventIntoEventlog(
-			ctx,
-			tg.ID,
-			models.EventTypeCreateTargetGroup,
-			targetGroupSpec{
-				Proto: tg.Proto,
-				Port:  tg.Port,
-				VIP:   tg.VirtualIP.String(),
-			},
-		)
+		log.Info().Msgf("created brand new target group %s", tg.ID)
 	}
-	return c.AddEventIntoEventlog(
-		ctx,
-		tg.ID,
-		models.EventTypeUpdateTargetGroup,
-		targetGroupSpec{
-			Proto: tg.Proto,
-			Port:  tg.Port,
-			VIP:   tg.VirtualIP.String(),
-		},
-	)
+	setSpecDesired := func(timestamp uint64) []clientv3.Op {
+		spec := targetGroupSpec{
+			Version: timestamp,
+			VIP:     tg.VirtualIP.String(),
+			Port:    tg.Port,
+			Proto:   tg.Proto,
+			Time:    time.Now(),
+		}
+		specBytes := mustJsonMarshal(spec)
+		return []clientv3.Op{
+			clientv3.OpPut(tgSpecDesiredVersion(tg.ID, timestamp), specBytes),
+			clientv3.OpPut(tgSpecDesiredLatest(tg.ID), specBytes),
+		}
+	}
+
+	err = c.ExecuteIncrementally(ctx, tgSpecTimestamp(tg.ID), setSpecDesired)
+	if err != nil {
+		return fmt.Errorf("failed to set target group desired spec: %w", err)
+	}
+	return nil
 }
 
-func (c *ApiClient) AddEndpoint(ctx context.Context, tgID models.TargetGroupID, ep models.EndpointSpec) error {
-	return c.AddEventIntoEventlog(
-		ctx,
-		tgID,
-		models.EventTypeAddEndpoint,
-		endpointSpec{
+func (c *ApiClient) getEndpointEventOpFunc(
+	eventType models.EventType,
+	tgID models.TargetGroupID,
+	ep models.EndpointSpec,
+) func(timestamp uint64) []clientv3.Op {
+	return func(timestamp uint64) []clientv3.Op {
+		epEventSpec := endpointLogEntry{
+			Type:          eventType,
 			TargetGroupID: tgID,
-			IP:            ep.IP.String(),
-			Port:          ep.Port,
-			Weight:        ep.Weight,
-		},
-	)
+			Timestamp:     timestamp,
+			Time:          time.Now(),
+			Endpoint: endpointSpec{
+				IP:     ep.IP.String(),
+				Port:   ep.Port,
+				Weight: ep.Weight,
+			},
+		}
+		epEventSpecBytes := mustJsonMarshal(epEventSpec)
+		return []clientv3.Op{
+			clientv3.OpPut(tgEndpointsEvent(tgID, timestamp), epEventSpecBytes),
+		}
+	}
 }
 
-func (c *ApiClient) RemoveEndpoint(ctx context.Context, tgID models.TargetGroupID, ep models.EndpointSpec) error {
-	return c.AddEventIntoEventlog(
-		ctx,
-		tgID,
-		models.EventTypeAddEndpoint,
-		endpointSpec{
-			TargetGroupID: tgID,
-			IP:            ep.IP.String(),
-			Port:          ep.Port,
-		},
-	)
+func (c *ApiClient) AddEndpoint(
+	ctx context.Context,
+	tgID models.TargetGroupID,
+	ep models.EndpointSpec,
+) error {
+	addEpFunc := c.getEndpointEventOpFunc(models.EventTypeAddEndpoint, tgID, ep)
+	err := c.ExecuteIncrementally(ctx, tgEndpointsTimestamp(tgID), addEpFunc)
+	if err != nil {
+		return fmt.Errorf("failed to add endpoint addition event into changelog: %w", err)
+	}
+	return nil
+}
+
+func (c *ApiClient) RemoveEndpoint(
+	ctx context.Context,
+	tgID models.TargetGroupID,
+	ep models.EndpointSpec,
+) error {
+	addEpFunc := c.getEndpointEventOpFunc(models.EventTypeRemoveEndpoint, tgID, ep)
+	err := c.ExecuteIncrementally(ctx, tgEndpointsTimestamp(tgID), addEpFunc)
+	if err != nil {
+		return fmt.Errorf("failed to add endpoint removing event into changelog: %w", err)
+	}
+	return nil
 }
 
 func (c *ApiClient) RunEventlogWatcher(ctx context.Context) error {

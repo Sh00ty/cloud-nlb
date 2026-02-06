@@ -1,34 +1,39 @@
 package etcd
 
 import (
+	"context"
 	"time"
 
 	"github.com/Sh00ty/network-lb/control-plane/internal/models"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
-type event struct {
-	Type           models.EventType `json:"event_type"`
-	DesiredVersion uint             `json:"desired_version"`
-	Time           time.Time        `json:"time"`
-	Deadline       time.Time        `json:"deadline"`
-	Payload        string           `json:"payload"`
-}
-
 type targetGroupSpec struct {
-	Proto              models.Protocol `json:"protocol"`
-	Port               uint16          `json:"port"`
-	VIP                string          `json:"vip"`
-	AssignedDataPlanes []string        `json:"assigned_data_planes"`
+	Version uint64          `json:"version"`
+	VIP     string          `json:"vip"`
+	Port    uint16          `json:"port"`
+	Proto   models.Protocol `json:"protocol"`
+	Time    time.Time       `json:"time"`
 }
 
 type endpointSpec struct {
-	TargetGroupID models.TargetGroupID `json:"target_group_id"`
-	IP            string               `json:"real_ip"`
-	Port          uint16               `json:"port"`
-	Weight        uint16               `json:"weight"`
+	IP     string `json:"real_ip"`
+	Port   uint16 `json:"port"`
+	Weight uint16 `json:"weight"`
 }
+
+type endpointLogEntry struct {
+	Type          models.EventType     `json:"type"`
+	TargetGroupID models.TargetGroupID `json:"target_group_id"`
+	Timestamp     uint64               `json:"timestamp"`
+	Endpoint      endpointSpec         `json:"endpoint_spec"`
+	Time          time.Time            `json:"time"`
+}
+
+type WatchHandler func(ctx context.Context, events []*clientv3.Event) error
 
 const (
 	maxTxRetryAttempts      = 5
+	leaderLeaseTTLInSeconds = 15
 	maxEventPendingDuration = time.Minute
 )

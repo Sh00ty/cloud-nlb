@@ -2,32 +2,28 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"errors"
+	"time"
 
 	"github.com/rs/zerolog/log"
 
+	"github.com/Sh00ty/network-lb/control-plane/internal/api/apiruntime"
 	"github.com/Sh00ty/network-lb/control-plane/internal/etcd"
-	"github.com/Sh00ty/network-lb/control-plane/internal/models"
 	"github.com/Sh00ty/network-lb/control-plane/internal/reconciler"
 )
 
 func main() {
 	ctx := context.Background()
 
-	evChan := make(chan *models.Event)
-	reconcileRepo, err := etcd.NewReconcilerClient(ctx, "localhost:2379", "node-1", evChan)
+	reconcileRepo, err := etcd.NewReconcilerClient(ctx, []string{"localhost:2379"}, "node-1")
 	if err != nil {
 		panic(err)
 	}
-	events, err := reconcileRepo.GetAllPendingOperations(ctx)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(events)
 
-	recon := reconciler.NewReconciler(reconcileRepo, evChan)
+	recon := reconciler.NewReconciler(reconcileRepo)
+	_ = recon
 
-	isLeader, lostLeadership, err := reconcileRepo.BecomeLeaderReconciller(ctx)
+	isLeader, lostLeadership, err := reconcileRepo.BecomeLeader(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -45,12 +41,36 @@ func main() {
 			}
 		}()
 	}
-	go recon.RunEventWatcher(ctx)
 
-	err = reconcileRepo.WatchEventlog(ctx, "/nlb-registry/eventlog/pending-status", reconcileRepo.EventlogWatchHandler, 0)
-	if err != nil {
-		panic(err)
-	}
+	apiRuntime := apiruntime.NewApiRuntime(time.Second, reconcileRepo)
+
+	epwatcher := etcd.NewWatcher(
+		"/nlb-registry/target-groups/endpoints/changelog",
+		etcd.NewEtcdEndpointChangelogHandler(apiRuntime).Handle,
+		reconcileRepo,
+		0,
+	)
+	go func() {
+
+		err = epwatcher.WatchEventlog(ctx)
+		if err != nil && !errors.Is(err, context.Canceled) {
+			panic(err)
+		}
+	}()
+
+	tgwatcher := etcd.NewWatcher(
+		"/nlb-registry/target-groups/spec/desired/latest",
+		etcd.NewEtcdSpecChangelogHandler(apiRuntime).Handle,
+		reconcileRepo,
+		0,
+	)
+	go func() {
+
+		err = tgwatcher.WatchEventlog(ctx)
+		if err != nil && !errors.Is(err, context.Canceled) {
+			panic(err)
+		}
+	}()
 
 	log.Info().Msg("done all operations")
 	<-ctx.Done()

@@ -3,9 +3,14 @@ package main
 import (
 	"context"
 	"net"
+	"time"
 
+	"github.com/Sh00ty/network-lb/control-plane/internal/api/apirpc"
+	"github.com/Sh00ty/network-lb/control-plane/internal/api/apiruntime"
 	"github.com/Sh00ty/network-lb/control-plane/internal/etcd"
-	"github.com/Sh00ty/network-lb/control-plane/internal/models"
+	"github.com/Sh00ty/network-lb/control-plane/pkg/protobuf/api/proto/cplpbv1"
+	"github.com/rs/zerolog/log"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -14,20 +19,22 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	err = clnt.SetTargetGroupSpec(ctx, models.TargetGroupSpec{
-		ID:        "mws-k8s-kubeproxy",
-		Proto:     models.TCP,
-		Port:      8080,
-		VirtualIP: net.IPv4(175, 10, 22, 2),
-	})
-	if err != nil {
-		panic(err)
-	}
 
-	clnt.AddEndpoint(ctx, "mws-k8s-kubeproxy", models.EndpointSpec{
-		IP:     net.IPv4(10, 10, 10, 10),
-		Port:   9090,
-		Weight: 100,
-	})
+	rt := apiruntime.NewApiRuntime(time.Second, clnt)
+	apiSrv := apirpc.NewServer(rt)
+	srv := grpc.NewServer()
+	cplpbv1.RegisterControlPlaneServiceServer(srv, apiSrv)
 
+	go func() {
+		ls, err := net.Listen("tcp4", "127.0.0.1:9090")
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to bind server addr")
+		}
+		err = srv.Serve(ls)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to start serving grpc requests")
+		}
+	}()
+	<-ctx.Done()
+	srv.GracefulStop()
 }

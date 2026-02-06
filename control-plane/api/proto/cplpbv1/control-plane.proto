@@ -1,0 +1,192 @@
+syntax = "proto3";
+package cplpbv1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/Sh00ty/network-lb/control-plane/pkg/protobuf/cplpbv1;cplpbv1";
+
+
+//
+enum Protocol {
+    PROTOCOL_UNSPECIFIED = 0;
+    PROTOCOL_TCP = 1;
+    PROTOCOL_UDP = 2;
+}
+
+// Статус dpl
+enum DataPlaneHealth {
+    HEALTH_UNKNOWN = 0;
+    HEALTH_HEALTHY = 1;
+    HEALTH_UNHEALTHY = 2;
+    HEALTH_DRAINING = 3;
+}
+
+// 
+message TargetGroupID {
+    string value = 1;
+}
+
+// 
+message DataPlaneID {
+    string value = 1;
+}
+
+// Long-polling запрос от агента data-plane ноды
+message DataPlaneAssignmentRequest {
+    DataPlaneID node_id = 1;
+    uint64 placement_version = 2;
+    map<string, TargetGroupStatus> target_groups_status = 3;
+    uint32 wait_timeout_seconds = 4;
+    string request_id = 5;
+}
+
+// Status of target group in dpl
+message TargetGroupStatus {
+    uint64 spec_version = 1;
+    uint64 endpoints_version = 2;
+    int64 last_applied_timestamp = 3;
+}
+
+// Long polling changes
+message DataPlaneAssignmentResponse {
+    uint64 placement_version = 1;
+    repeated TargetGroupAssignment added = 2;
+    repeated TargetGroupAssignment updated = 3;
+    repeated TargetGroupID removed = 4;
+    bool has_more = 5;
+    int64 server_timestamp = 6;
+    ResponseCode response_code = 7;
+}
+
+// Use case response code for transparency
+enum ResponseCode {
+    RESPONSE_CODE_UNSPECIFIED     = 0;
+    RESPONSE_CODE_HAS_CHANGES     = 1;
+    RESPONSE_CODE_NO_CHANGES      = 2;
+    RESPONSE_CODE_CLIENT_AHEAD    = 3;
+    RESPONSE_CODE_INTERNAL_ERROR  = 4;
+}
+
+// 
+message TargetGroupAssignment {
+    TargetGroupID id = 1;
+  
+    // nullable
+    TargetGroupSpec spec = 2;
+    uint64 spec_version = 3;
+
+    EndpointsSnapshot snapshot = 4;
+    EndpointsDelta delta = 5;
+    uint64 endpoints_version = 6;
+}
+
+// Endpoints snapshot
+message EndpointsSnapshot {
+    repeated Endpoint endpoints = 1;
+  
+    // format: "sha256:<hex>"
+    string checksum = 2;
+    uint32 total_count = 3;
+}
+
+// 
+message EndpointsDelta {
+    repeated Endpoint added = 1;
+    repeated Endpoint removed = 2;
+}
+
+// 
+message Endpoint {
+    string ip = 1;
+    uint32 port = 2;
+    uint32 weight = 3;
+    uint64 timestamp = 4;
+    map<string, string> labels = 5;
+}
+
+// 
+message UpsertTargetGroupSpecRequest {
+    TargetGroupID id = 1;
+    TargetGroupSpec spec = 2;
+    string idempotency_key = 3;
+}
+
+// 
+message TargetGroupSpec {
+    Protocol protocol = 1;
+    uint32 port = 2;
+    string virtual_ip = 3;
+    map<string, string> labels = 4;
+    HealthCheckConfig health_check = 5;
+}
+
+// Healthcheck config
+message HealthCheckConfig {
+    // TODO:
+    uint32 interval_seconds = 1;
+    uint32 timeout_seconds = 2;
+    uint32 unhealthy_threshold = 3;
+    uint32 healthy_threshold = 4;
+    string type = 5;
+    string path = 6;
+}
+
+//
+message UpsertTargetGroupSpecResponse {
+    TargetGroupID id = 1;
+    uint64 version = 2;
+    bool created = 3;
+    int64 timestamp = 4;
+}
+
+// 
+enum EndpointOperationType {
+    ENDPOINT_OPERATION_TYPE_UNSPECIFIED = 0;
+    ENDPOINT_OPERATION_TYPE_ADD = 1;
+    ENDPOINT_OPERATION_TYPE_REMOVE = 2;
+    ENDPOINT_OPERATION_TYPE_UPDATE = 3;
+}
+
+// 
+message UpsertEndpointRequest {
+    TargetGroupID target_group_id = 1;
+    Endpoint endpoint = 2;
+    EndpointOperationType operation = 3;
+    string idempotency_key = 4;
+}
+
+message UpsertEndpointResponse {
+    TargetGroupID target_group_id = 1;
+    Endpoint endpoint = 2;
+    uint64 endpoints_version = 3;
+    bool affected = 4;
+    int64 timestamp = 5;
+}
+
+// 
+service ControlPlaneService {
+    // Long-polling запрос для получения изменений размещения
+    // Потоковый ответ для поддержки серверных событий:
+    // - Первое сообщение: ответ с изменениями или таймаутом
+    // - Последующие сообщения: только при наличии изменений (если wait_timeout > 0)
+    rpc StreamDataPlaneAssignments(DataPlaneAssignmentRequest) 
+        returns (stream DataPlaneAssignmentResponse) {
+            option idempotency_level = NO_SIDE_EFFECTS;
+    }
+  
+    // Создание или обновление таргет-группы
+    // Идемпотентная операция: повторный вызов с тем же idempotency_key
+    // вернёт тот же результат без побочных эффектов.
+    rpc UpsertTargetGroupSpec(UpsertTargetGroupSpecRequest) 
+        returns (UpsertTargetGroupSpecResponse) {
+            option idempotency_level = IDEMPOTENT;
+    }
+  
+    // Добавление или удаление эндпоинта из таргет-группы
+    // Может вызываться вашим health-check сервисом через Redpanda или напрямую.
+    // Для массовых обновлений рекомендуется использовать пакетные операции.
+    rpc UpsertEndpoint(UpsertEndpointRequest) 
+        returns (UpsertEndpointResponse) {
+            option idempotency_level = IDEMPOTENT;
+    }
+}
