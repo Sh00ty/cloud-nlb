@@ -7,8 +7,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/Sh00ty/network-lb/control-plane/internal/models"
-	"github.com/rs/zerolog/log"
+	"github.com/Sh00ty/cloud-nlb/control-plane/internal/models"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -29,28 +28,28 @@ func NewEtcdSpecChangelogHandler(handler SpecChangeHandler) etcdSpecChangeHandle
 	return etcdSpecChangeHandler{handler: handler}
 }
 
-func (h etcdSpecChangeHandler) Handle(ctx context.Context, events []*clientv3.Event) error {
-	for _, event := range events {
-		tgID, specEvent, err := parseSpecChange(event.Kv)
-		if err != nil {
-			log.Error().Err(err).Msg("failed to parse spec change from kv entry")
-			continue
-		}
-		modelEvent := models.TargetGroupSpec{
-			ID:        tgID,
-			Proto:     specEvent.Proto,
-			Port:      specEvent.Port,
-			VirtualIP: net.ParseIP(specEvent.VIP),
-			Time:      specEvent.Time,
-		}
-		h.handler.HandleTgSpecChange(ctx, modelEvent, specEvent.Version, uint64(event.Kv.ModRevision))
+func (h etcdSpecChangeHandler) Handle(ctx context.Context, event *clientv3.Event) error {
+	if event.Kv == nil {
+		return nil
 	}
+	tgID, specEvent, err := parseSpecChange(event.Kv)
+	if err != nil {
+		return fmt.Errorf("parsing spec change from kv entry: %w", err)
+	}
+	modelEvent := models.TargetGroupSpec{
+		ID:        tgID,
+		Proto:     specEvent.Proto,
+		Port:      specEvent.Port,
+		VirtualIP: net.ParseIP(specEvent.VIP),
+		Time:      specEvent.Time,
+	}
+	h.handler.HandleTgSpecChange(ctx, modelEvent, specEvent.Version, uint64(event.Kv.ModRevision))
 	return nil
 }
 
 func parseSpecChange(kv *mvccpb.KeyValue) (models.TargetGroupID, *targetGroupSpec, error) {
 	key := string(kv.Key)
-	tgID, ok := strings.CutPrefix(key, tgSpecDesiredLatestFolder()+"/")
+	tgID, ok := strings.CutPrefix(key, TgSpecDesiredLatestFolder()+"/")
 	if !ok {
 		return "", nil, fmt.Errorf("not found desired spec prefix in key: %s", key)
 	}

@@ -4,30 +4,30 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/Sh00ty/network-lb/control-plane/internal/models"
+	"github.com/Sh00ty/cloud-nlb/control-plane/internal/models"
 )
 
 /*
-nlb-registry/target-groups/specs/timestamp/tg-1(%s)
-nlb-registry/target-groups/specs/desired/tg-1(%s)/v5(%d)
-nlb-registry/target-groups/specs/current/tg-1(%s)/
+cloud-nlb-registry/target-groups/specs/timestamp/tg-1(%s)
+cloud-nlb-registry/target-groups/specs/desired/tg-1(%s)/v5(%d)
+cloud-nlb-registry/target-groups/specs/current/tg-1(%s)/
 
-nlb-registry/target-groups/endpoints/timestamp/tg-1(%s)
-nlb-registry/target-groups/endpoints/compacted/tg-1(%s)
-nlb-registry/target-groups/endpoints/changelog/tg-1(%s)
+cloud-nlb-registry/target-groups/endpoints/timestamp/tg-1(%s)
+cloud-nlb-registry/target-groups/endpoints/compacted/tg-1(%s)
+cloud-nlb-registry/target-groups/endpoints/changelog/tg-1(%s)
 
 TODO:
-nlb-registry/target-groups/tg-1(%s)/assigned/dpl-1(%s) // to make atomic write here and into dpl
+cloud-nlb-registry/target-groups/tg-1(%s)/assigned/dpl-1(%s) // to make atomic write here and into dpl
 
-nlb-registry/data-planes/dpl-1(%s)/status
-nlb-registry/data-planes/dpl-1(%s)/timestamp
-nlb-registry/data-planes/dpl-1(%s)/assigned/tg1
-nlb-registry/data-planes/dpl-1(%s)/assigned/tg2
+cloud-nlb-registry/data-planes/dpl-1(%s)/status
+cloud-nlb-registry/data-planes/dpl-1(%s)/timestamp
+cloud-nlb-registry/data-planes/dpl-1(%s)/assigned/tg1
+cloud-nlb-registry/data-planes/dpl-1(%s)/assigned/tg2
 
 
 data plane makes request to control-plane:
 
-https://control-plane.nlb.svc/?node_id="dc-node-xxx"&placement-version=6
+https://control-plane.cloud-nlb.svc/?node_id="dc-node-xxx"&placement-version=6
 {
 	"target-groups" : [
 		{
@@ -76,22 +76,26 @@ and control-plane answer is:
 */
 
 const (
-	networkLoadBalancerFolder = "/nlb-registry"
-	targetGroupsFolder        = networkLoadBalancerFolder + "/target-groups"
-	dataPlanesFolder          = networkLoadBalancerFolder + "/data-planes"
-	reconcilerLeadershipKey   = "/nlb/reconciler/all-targets"
+	NetworkLoadBalancerFolder = "/cloud-nlb-registry"
+	TargetGroupsFolder        = NetworkLoadBalancerFolder + "/target-groups"
+
+	DataPlanesFolder    = NetworkLoadBalancerFolder + "/data-planes"
+	DataPlanePlacements = DataPlanesFolder + "/placements"
+	DataPlaneStatuses   = DataPlanesFolder + "/statuses"
+
+	ReconcilerLeadershipKey = "/cloud-nlb/reconciler/all-targets"
 
 	nopEvent = "{}"
 
 	eventKeyTemplate = "%05d"
 )
 
-// nlb-registry/target-groups/spec/
+// cloud-nlb-registry/target-groups/spec/
 func specFolder() string {
-	return path.Join(targetGroupsFolder, "spec")
+	return path.Join(TargetGroupsFolder, "spec")
 }
 
-// nlb-registry/target-groups/spec/timestamp/tg-1(%s)
+// cloud-nlb-registry/target-groups/spec/timestamp/tg-1(%s)
 func tgSpecTimestamp(tgID models.TargetGroupID) string {
 	return path.Join(
 		specFolder(),
@@ -100,7 +104,7 @@ func tgSpecTimestamp(tgID models.TargetGroupID) string {
 	)
 }
 
-// nlb-registry/target-groups/spec/desired
+// cloud-nlb-registry/target-groups/spec/desired
 func specsDesiredFolder() string {
 	return path.Join(
 		specFolder(),
@@ -108,7 +112,7 @@ func specsDesiredFolder() string {
 	)
 }
 
-// nlb-registry/target-groups/spec/desired/tg-1(%s)
+// cloud-nlb-registry/target-groups/spec/desired/tg-1(%s)
 func tgSpecDesiredFolder(tgID models.TargetGroupID) string {
 	return path.Join(
 		specsDesiredFolder(),
@@ -116,7 +120,7 @@ func tgSpecDesiredFolder(tgID models.TargetGroupID) string {
 	)
 }
 
-// nlb-registry/target-groups/spec/desired/tg-1(%s)/00001(%d)
+// cloud-nlb-registry/target-groups/spec/desired/tg-1(%s)/00001(%d)
 func tgSpecDesiredVersion(tgID models.TargetGroupID, time uint64) string {
 	return path.Join(
 		tgSpecDesiredFolder(tgID),
@@ -124,23 +128,23 @@ func tgSpecDesiredVersion(tgID models.TargetGroupID, time uint64) string {
 	)
 }
 
-// nlb-registry/target-groups/spec/desired/latest/tg-1(%s)
-func tgSpecDesiredLatestFolder() string {
+// cloud-nlb-registry/target-groups/spec/desired/latest
+func TgSpecDesiredLatestFolder() string {
 	return path.Join(
 		specsDesiredFolder(),
 		"latest",
 	)
 }
 
-// nlb-registry/target-groups/spec/desired/latest/tg-1(%s)
+// cloud-nlb-registry/target-groups/spec/desired/latest/tg-1(%s)
 func tgSpecDesiredLatest(tgID models.TargetGroupID) string {
 	return path.Join(
-		tgSpecDesiredLatestFolder(),
+		TgSpecDesiredLatestFolder(),
 		string(tgID),
 	)
 }
 
-// nlb-registry/target-groups/spec/current
+// cloud-nlb-registry/target-groups/spec/current
 func currentSpecsFolder() string {
 	return path.Join(
 		specFolder(),
@@ -148,7 +152,7 @@ func currentSpecsFolder() string {
 	)
 }
 
-// nlb-registry/target-groups/spec/current/
+// cloud-nlb-registry/target-groups/spec/current/
 func tgSpecCurrent(tgID models.TargetGroupID) string {
 	return path.Join(
 		currentSpecsFolder(),
@@ -156,15 +160,15 @@ func tgSpecCurrent(tgID models.TargetGroupID) string {
 	)
 }
 
-// nlb-registry/target-groups/endpoints
+// cloud-nlb-registry/target-groups/endpoints
 func endpointsFolder() string {
 	return path.Join(
-		targetGroupsFolder,
+		TargetGroupsFolder,
 		"endpoints",
 	)
 }
 
-// nlb-registry/target-groups/endpoints/timestamp/tg-1(%s)
+// cloud-nlb-registry/target-groups/endpoints/timestamp/tg-1(%s)
 func tgEndpointsTimestamp(tgID models.TargetGroupID) string {
 	return path.Join(
 		endpointsFolder(),
@@ -173,7 +177,7 @@ func tgEndpointsTimestamp(tgID models.TargetGroupID) string {
 	)
 }
 
-// nlb-registry/target-groups/endpoints/compacted/tg-1(%s)
+// cloud-nlb-registry/target-groups/endpoints/compacted/tg-1(%s)
 func tgEndpointsCompacted(tgID models.TargetGroupID) string {
 	return path.Join(
 		endpointsFolder(),
@@ -182,33 +186,39 @@ func tgEndpointsCompacted(tgID models.TargetGroupID) string {
 	)
 }
 
-// nlb-registry/target-groups/endpoints/changelog
-func tgEndpointsLogFolder() string {
+// cloud-nlb-registry/target-groups/endpoints/changelog
+func EndpointsLogFolder() string {
 	return path.Join(
 		endpointsFolder(),
 		"changelog",
 	)
 }
 
-// nlb-registry/target-groups/endpoints/changelog/tg-1(%s)/00001(%d)
+// cloud-nlb-registry/target-groups/endpoints/changelog/tg-1(%s)
+func tgEndpointsLogFolder(tgID models.TargetGroupID) string {
+	return path.Join(
+		EndpointsLogFolder(),
+		string(tgID),
+	)
+}
+
+// cloud-nlb-registry/target-groups/endpoints/changelog/tg-1(%s)/00001(%d)
 func tgEndpointsEvent(tgID models.TargetGroupID, time uint64) string {
 	return path.Join(
-		endpointsFolder(),
-		"changelog",
-		string(tgID),
+		tgEndpointsLogFolder(tgID),
 		fmt.Sprintf(eventKeyTemplate, time),
 	)
 }
 
-// nlb-registry/target-groups/assigned
+// cloud-nlb-registry/target-groups/assigned
 func assignedDataPlanesFolder() string {
 	return path.Join(
-		targetGroupsFolder,
+		TargetGroupsFolder,
 		"assigned",
 	)
 }
 
-// nlb-registry/target-groups/assigned/tg-1(%s)
+// cloud-nlb-registry/target-groups/assigned/tg-1(%s)
 func tgAssignedDataPlanes(tgID models.TargetGroupID) string {
 	return path.Join(
 		assignedDataPlanesFolder(),
@@ -216,10 +226,10 @@ func tgAssignedDataPlanes(tgID models.TargetGroupID) string {
 	)
 }
 
-// nlb-registry/target-groups/assigned/tg-1(%s)/dpl-1(%s)
-func tgAssignedDataPlaneNode(tgID models.TargetGroupID, nodeID string) string {
+// cloud-nlb-registry/target-groups/assigned/tg-1(%s)/dpl-1(%s)
+func tgAssignedDataPlaneNode(tgID models.TargetGroupID, nodeID models.DataPlaneID) string {
 	return path.Join(
 		tgAssignedDataPlanes(tgID),
-		nodeID,
+		string(nodeID),
 	)
 }

@@ -8,7 +8,7 @@ import (
 	retry "github.com/avast/retry-go/v4"
 	"github.com/rs/zerolog/log"
 
-	"github.com/Sh00ty/network-lb/health-check-node/internal/models"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
 )
 
 type StatusRepository interface {

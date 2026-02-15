@@ -41,7 +41,6 @@ func (w *Watcher) WatchEventlog(
 			clientv3.WithRev(rev),
 			clientv3.WithPrefix(),
 			clientv3.WithCreatedNotify(),
-			clientv3.WithFilterDelete(),
 		)
 	}
 	var (
@@ -78,9 +77,11 @@ func (w *Watcher) WatchEventlog(
 				)
 				continue
 			}
-			err := w.handler(ctx, event.Events)
-			if err != nil {
-				logger.Error().Err(err).Msg("handler error, skip")
+			for i, event := range event.Events {
+				err := w.handler(ctx, event)
+				if err != nil {
+					logger.Error().Err(err).Msgf("watcher handler error, skip [%d] event in batch", i)
+				}
 			}
 		case <-ctx.Done():
 			return ctx.Err()

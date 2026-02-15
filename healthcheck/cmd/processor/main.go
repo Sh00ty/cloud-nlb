@@ -15,25 +15,18 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/vrischmann/envconfig"
 
-	"github.com/Sh00ty/network-lb/health-check-node/internal/consistent"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/coordinator"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/coordinator/repository/yugabyte"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/coordinator/targetwatcher"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/executor"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/memberlist"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/models"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/notifyer"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/scheduler"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/sender"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/sharder"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/consistent"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/coordinator"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/coordinator/repository/postgres"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/coordinator/targetwatcher"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/executor"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/memberlist"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/notifyer"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/scheduler"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/sender"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/sharder"
 )
-
-type mockNotifyer struct {
-}
-
-func (mockNotifyer) NotifyHcStatusChanged(e models.HcEvent) {
-	log.Printf("hc status changed: %v (%t)", e.Target, e.NewStatus)
-}
 
 func loggerLevelFromString(level string) zerolog.Level {
 	level = strings.ToLower(level)
@@ -86,7 +79,7 @@ func main() {
 
 	log.Warn().Msgf("running node %s", appCfg.NodeID)
 
-	checksRepo, err := yugabyte.NewRepo(
+	checksRepo, err := postgres.NewRepo(
 		ctx,
 		appCfg.DatabaseUser,
 		appCfg.DatabasePassword,

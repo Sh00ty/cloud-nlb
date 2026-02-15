@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Sh00ty/network-lb/health-check-node/internal/models"
-	"github.com/Sh00ty/network-lb/health-check-node/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
 )
 
 var ErrNoHealthCheckDefined = errors.New("no health check is defined")

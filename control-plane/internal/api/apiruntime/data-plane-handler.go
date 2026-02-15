@@ -4,30 +4,20 @@ import (
 	"context"
 	"slices"
 	"sync"
+	"time"
 
-	"github.com/Sh00ty/network-lb/control-plane/internal/models"
+	"github.com/Sh00ty/cloud-nlb/control-plane/internal/models"
 	"github.com/rs/zerolog/log"
 )
 
-type DataPlaneRequest struct {
+type DataPlaneCurrentState struct {
 	NodeID             models.DataPlaneID
 	Notifier           Notifier
 	Placement          models.Placement
 	TargetGroupsStatus map[models.TargetGroupID]models.TargetGroupPlacement
 }
 
-type TargetGroupChange struct {
-	ID          models.TargetGroupID
-	SpecVersion uint64
-	Spec        *models.TargetGroupSpec
-
-	EndpointVersion  uint64
-	Snapshot         []models.EndpointSpec
-	AddedEndpoints   []models.EndpointSpec
-	RemovedEndpoints []models.EndpointSpec
-}
-
-type DataPlaneResponse struct {
+type DataPlaneChanges struct {
 	PlacementVersion uint64
 	New              []TargetGroupChange
 	Removed          []models.TargetGroupID
@@ -35,19 +25,19 @@ type DataPlaneResponse struct {
 	NeedWait         bool
 }
 
-func (ar *ApiRuntime) HandleDataPlaneRequest(
+func (ar *ApiRuntime) GetChangesForDataPlane(
 	ctx context.Context,
-	req DataPlaneRequest,
-) (DataPlaneResponse, error) {
-	placementDiff, needWait := ar.getDataplanePlacement(ctx, req)
+	state DataPlaneCurrentState,
+) (DataPlaneChanges, error) {
+	placementDiff, needWait := ar.getDataplanePlacement(ctx, state)
 	if needWait {
-		return DataPlaneResponse{
+		return DataPlaneChanges{
 			NeedWait: true,
 		}, nil
 	}
-	changes, needWait := ar.getTargetGroupChanges(ctx, req, placementDiff)
+	changes, needWait := ar.getTargetGroupChanges(ctx, state, placementDiff)
 	if needWait {
-		return DataPlaneResponse{
+		return DataPlaneChanges{
 			NeedWait: true,
 		}, nil
 	}
@@ -63,16 +53,16 @@ type placementDiff struct {
 
 func (ar *ApiRuntime) getDataplanePlacement(
 	ctx context.Context,
-	req DataPlaneRequest,
+	dplCurState DataPlaneCurrentState,
 ) (placementDiff, bool) {
 	ar.dplGuard.RLock()
-	dpl, exists := ar.dataPlaneCache[req.NodeID]
+	dpl, exists := ar.dataPlaneCache[dplCurState.NodeID]
 	ar.dplGuard.RUnlock()
 
 	if !exists {
-		addedDpl := ar.processNewNode(ctx, req)
+		addedDpl := ar.processNewNode(ctx, dplCurState)
 		if addedDpl == nil {
-			return placementDiff{placement: req.Placement.Version}, true
+			return placementDiff{placement: dplCurState.Placement.Version}, true
 		}
 		dpl = addedDpl
 	}
@@ -81,12 +71,12 @@ func (ar *ApiRuntime) getDataplanePlacement(
 	defer dpl.mu.Unlock()
 
 	if dpl.dplInfo.Desired == nil ||
-		dpl.dplInfo.Desired.Version < req.Placement.Version {
+		dpl.dplInfo.Desired.Version < dplCurState.Placement.Version {
 
-		dpl.subscriptions[req.Notifier.ID()] = req.Notifier
-		return placementDiff{placement: req.Placement.Version}, true
+		dpl.subscriptions[dplCurState.Notifier.ID()] = dplCurState.Notifier
+		return placementDiff{placement: dplCurState.Placement.Version}, true
 	}
-	return ar.getPlacementDiff(dpl.dplInfo.Desired, &req.Placement), false
+	return ar.getPlacementDiff(dpl.dplInfo.Desired, &dplCurState.Placement), false
 }
 
 func (ar *ApiRuntime) getPlacementDiff(desired, income *models.Placement) placementDiff {
@@ -116,39 +106,36 @@ func (ar *ApiRuntime) getPlacementDiff(desired, income *models.Placement) placem
 
 func (ar *ApiRuntime) processNewNode(
 	ctx context.Context,
-	req DataPlaneRequest,
+	curDplState DataPlaneCurrentState,
 ) *dataPlaneCacheEntry {
 	ar.dplGuard.Lock()
 	defer ar.dplGuard.Unlock()
 
-	dpl, exists := ar.dataPlaneCache[req.NodeID]
+	dpl, exists := ar.dataPlaneCache[curDplState.NodeID]
 	if exists {
 		return dpl
 	}
 	dpl = &dataPlaneCacheEntry{
-		subscriptions: map[uint64]Notifier{req.Notifier.ID(): req.Notifier},
+		subscriptions: map[uint64]Notifier{curDplState.Notifier.ID(): curDplState.Notifier},
 		mu:            sync.Mutex{},
 		dplInfo: models.DataPlanePlacementInfo{
-			NodeID:  req.NodeID,
+			NodeID:  curDplState.NodeID,
 			Desired: nil,
 		},
 	}
-	ar.dataPlaneCache[req.NodeID] = dpl
-
-	go func() {
-		ar.fetchDataplaneInfo(ctx, req.NodeID)
-	}()
+	ar.dataPlaneCache[curDplState.NodeID] = dpl
+	go ar.fetchDataplaneInfo(ctx, curDplState.NodeID)
 	return nil
 }
 
 func (ar *ApiRuntime) getTargetGroupChanges(
 	ctx context.Context,
-	req DataPlaneRequest,
+	curDplState DataPlaneCurrentState,
 	placementDiff placementDiff,
-) (DataPlaneResponse, bool) {
+) (DataPlaneChanges, bool) {
 	var (
 		needWait  = len(placementDiff.added) == 0 && len(placementDiff.deleted) == 0
-		response  = DataPlaneResponse{}
+		changes   = DataPlaneChanges{}
 		needFetch = []models.TargetGroupID{}
 	)
 
@@ -162,7 +149,7 @@ func (ar *ApiRuntime) getTargetGroupChanges(
 		ar.tgGuard.Lock()
 		for _, tgID := range needFetch {
 			ar.targetGroupCache[tgID] = &targetGroupCacheEntry{
-				subscriptions: map[uint64]Notifier{req.Notifier.ID(): req.Notifier},
+				subscriptions: map[uint64]Notifier{curDplState.Notifier.ID(): curDplState.Notifier},
 				tg:            models.TargetGroup{},
 			}
 		}
@@ -172,12 +159,28 @@ func (ar *ApiRuntime) getTargetGroupChanges(
 	}()
 
 	for tgID := range placementDiff.deleted {
-		response.Removed = append(response.Removed, tgID)
+		changes.Removed = append(changes.Removed, tgID)
 	}
+	// TODO: check correct
 	for _, tgID := range placementDiff.added {
-		req.TargetGroupsStatus[tgID] = models.TargetGroupPlacement{TgID: tgID}
+		tgCacheEntry, exists := ar.targetGroupCache[tgID]
+		if !exists {
+			needFetch = append(needFetch, tgID)
+			changes.New = append(changes.New, TargetGroupChange{
+				ID: tgID,
+			})
+			continue
+		}
+		tgCacheEntry.mu.Lock()
+		change, _ := ar.getDiffForTg(
+			models.TargetGroupPlacement{
+				TgID: tgID,
+			}, tgCacheEntry,
+		)
+		tgCacheEntry.mu.Unlock()
+		changes.New = append(changes.New, change)
 	}
-	for tgID, tgStatus := range req.TargetGroupsStatus {
+	for tgID, tgStatus := range curDplState.TargetGroupsStatus {
 		if _, skip := placementDiff.deleted[tgID]; skip {
 			continue
 		}
@@ -189,14 +192,16 @@ func (ar *ApiRuntime) getTargetGroupChanges(
 		tgCacheEntry.mu.Lock()
 		change, ok := ar.getDiffForTg(tgStatus, tgCacheEntry)
 		if !ok && needWait {
-			tgCacheEntry.subscriptions[req.Notifier.ID()] = req.Notifier
-		} else if ok {
+			tgCacheEntry.subscriptions[curDplState.Notifier.ID()] = curDplState.Notifier
+		}
+		if ok {
 			needWait = false
-			response.Update = append(response.Update, change)
+			changes.Update = append(changes.Update, change)
 		}
 		tgCacheEntry.mu.Unlock()
 	}
-	return response, needWait
+	changes.NeedWait = needWait
+	return changes, needWait
 }
 
 func (ar *ApiRuntime) getDiffForTg(
@@ -221,27 +226,25 @@ func (ar *ApiRuntime) getDiffForTg(
 		updated = true
 		change.EndpointVersion = tgCacheEntry.tg.EndpointVersion
 
-		if tgCacheEntry.tg.ChangelogStartVersion < tgStatus.EndpointVersion {
+		if tgCacheEntry.tg.SnapshotLastVersion > tgStatus.EndpointVersion {
 			for _, ep := range tgCacheEntry.tg.EndpointsSnapshot {
 				change.Snapshot = append(change.Snapshot, ep)
 			}
 		}
-		changelogStart := max(tgStatus.EndpointVersion, tgCacheEntry.tg.ChangelogStartVersion)
-		start, _ := slices.BinarySearchFunc(
-			tgCacheEntry.tg.EndpointsChangelog,
-			changelogStart,
-			func(a models.EndpointEvent, t uint64) int {
-				return int(a.DesiredVersion - t)
-			},
-		)
+		start := 0
+		if tgStatus.EndpointVersion > 0 {
+			start, _ = slices.BinarySearchFunc(
+				tgCacheEntry.tg.EndpointsChangelog,
+				tgStatus.EndpointVersion,
+				func(a models.EndpointEvent, t uint64) int {
+					return int(a.DesiredVersion - t)
+				},
+			)
+			start++
+		}
 		for i := start; i < len(tgCacheEntry.tg.EndpointsChangelog); i++ {
 			entry := tgCacheEntry.tg.EndpointsChangelog[i]
-			switch entry.Type {
-			case models.EventTypeAddEndpoint:
-				change.AddedEndpoints = append(change.AddedEndpoints, entry.Spec)
-			case models.EventTypeRemoveEndpoint:
-				change.RemovedEndpoints = append(change.RemovedEndpoints, entry.Spec)
-			}
+			change.Changelog = append(change.Changelog, entry)
 		}
 	}
 	return change, updated
@@ -251,6 +254,23 @@ func (ar *ApiRuntime) fetchTargetGroupInfo(ctx context.Context, tgIDs []models.T
 	ctx = context.WithoutCancel(ctx)
 
 	log.Warn().Msgf("need refetch target group cache: %+v", tgIDs)
+
+	for _, tgID := range tgIDs {
+		_ = ar.coordinatorSema.Acquire(ctx, 1)
+		go func() {
+			defer ar.coordinatorSema.Release(1)
+
+			ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+			defer cancel()
+
+			err := ar.updateTargetGroup(ctx, tgID)
+			if err != nil {
+				log.Error().Err(err).Msgf("failed to fetch tg %s", tgID)
+				return
+			}
+			log.Info().Msgf("fetched tg %s data", tgID)
+		}()
+	}
 }
 
 func (ar *ApiRuntime) fetchDataplaneInfo(ctx context.Context, nodeID models.DataPlaneID) {

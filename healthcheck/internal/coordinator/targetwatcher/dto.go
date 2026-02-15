@@ -1,52 +1,10 @@
 package targetwatcher
 
-// func decodeTargetAddrFromCDC(cdcVal map[string]Value) (healthcheck.Target, error) {
-// 	if cdcVal == nil {
-// 		return healthcheck.Target{}, nil
-// 	}
-// 	settingsID, err := Decode[float64]("check_id", cdcVal)
-// 	if err != nil {
-// 		return healthcheck.Target{}, err
-// 	}
-// 	realIP, err := Decode[string]("real_ip", cdcVal)
-// 	if err != nil {
-// 		return healthcheck.Target{}, err
-// 	}
-// 	port, err := Decode[float64]("port", cdcVal)
-// 	if err != nil {
-// 		return healthcheck.Target{}, err
-// 	}
-// 	_, err = Decode[string]("status", cdcVal)
-// 	if err != nil {
-// 		return healthcheck.Target{}, err
-// 	}
-// 	return healthcheck.Target{
-// 		SettingID: int64(settingsID),
-// 		RealIP:    net.ParseIP(realIP),
-// 		Port:      uint16(port),
-// 	}, nil
-// }
-
-// func Decode[T any](name string, cdcVal map[string]Value) (T, error) {
-// 	var nullVal T
-// 	rawVal, found := cdcVal[name]
-// 	if !found {
-// 		return nullVal, fmt.Errorf("failed to find %s field", name)
-// 	}
-// 	if !rawVal.Set {
-// 		return nullVal, fmt.Errorf("field %s wasn't set", name)
-// 	}
-// 	val, ok := rawVal.Value.(T)
-// 	if !ok {
-// 		return nullVal, fmt.Errorf("invalid data type for %s field: got %v", name, reflect.TypeOf(rawVal.Value))
-// 	}
-// 	return val, nil
-// }
-
 type TargetDto struct {
-	SettingID int    `json:"setting_id"`
-	RealIP    string `json:"real_ip"`
-	Port      int    `json:"port"`
+	TargetGroup string `json:"target_group"`
+	RealIP      string `json:"real_ip"`
+	Port        int    `json:"port"`
+	Vshard      int    `json:"vshard"`
 }
 
 type Message[T any] struct {

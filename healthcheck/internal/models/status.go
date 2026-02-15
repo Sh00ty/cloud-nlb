@@ -3,13 +3,20 @@ package models
 import (
 	"time"
 
-	"github.com/Sh00ty/network-lb/health-check-node/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
 )
 
 type HcEvent struct {
-	SettingID  int64
-	Target     healthcheck.TargetAddr
-	HcInverval time.Duration
-	Error      error
-	NewStatus  bool
+	TargetGroup healthcheck.TargetGroupID
+	Target      healthcheck.TargetAddr
+	HcInterval  time.Duration
+	Error       error
+	NewStatus   bool
+}
+
+type TargetStatus struct {
+	TargetGroup healthcheck.TargetGroupID
+	Target      healthcheck.TargetAddr
+	Error       string
+	Status      bool
 }

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: hc-worker
-  namespace: loadbalancer
+  namespace: cloud-nlb
 spec:
   serviceName: hc-worker-headless
   replicas: 4
@@ -45,10 +45,10 @@ spec:
           resources:
             limits:
               cpu: "1"
-              memory: "512Mi"
+              memory: "128Mi"
             requests:
               cpu: "100m"
-              memory: "128Mi"
+              memory: "64Mi"
 
           livenessProbe:
             httpGet:
@@ -62,7 +62,7 @@ spec:
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5
-          
+
           volumeMounts:
             - name: tmp-volume
               mountPath: /tmp

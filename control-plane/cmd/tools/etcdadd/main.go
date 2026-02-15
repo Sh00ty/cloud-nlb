@@ -4,8 +4,8 @@ import (
 	"context"
 	"net"
 
-	"github.com/Sh00ty/network-lb/control-plane/internal/etcd"
-	"github.com/Sh00ty/network-lb/control-plane/internal/models"
+	"github.com/Sh00ty/cloud-nlb/control-plane/internal/etcd"
+	"github.com/Sh00ty/cloud-nlb/control-plane/internal/models"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 	err = clnt.SetTargetGroupSpec(ctx, models.TargetGroupSpec{
 		ID:        "mws-k8s-kubeproxy",
 		Proto:     models.TCP,
-		Port:      8080,
+		Port:      8081,
 		VirtualIP: net.IPv4(175, 10, 22, 2),
 	})
 	if err != nil {
@@ -30,4 +30,9 @@ func main() {
 		Weight: 100,
 	})
 
+	clnt.RemoveEndpoint(ctx, "mws-k8s-kubeproxy", models.EndpointSpec{
+		IP:     net.IPv4(10, 10, 10, 10),
+		Port:   9090,
+		Weight: 100,
+	})
 }

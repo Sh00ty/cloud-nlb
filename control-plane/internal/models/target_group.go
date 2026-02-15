@@ -26,10 +26,10 @@ type TargetGroup struct {
 	Spec        TargetGroupSpec
 	SpecVersion uint64
 
-	EndpointVersion       uint64
-	EndpointsSnapshot     []EndpointSpec
-	ChangelogStartVersion uint64
-	EndpointsChangelog    []EndpointEvent
+	EndpointVersion     uint64
+	SnapshotLastVersion uint64
+	EndpointsSnapshot   []EndpointSpec
+	EndpointsChangelog  []EndpointEvent
 }
 
 type EndpointSpec struct {

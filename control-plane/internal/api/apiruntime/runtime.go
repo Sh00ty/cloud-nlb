@@ -2,24 +2,15 @@ package apiruntime
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"github.com/Sh00ty/network-lb/control-plane/internal/models"
+	"github.com/Sh00ty/cloud-nlb/control-plane/internal/models"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/sync/semaphore"
 )
-
-type Coordinator interface {
-}
-
-type Notifier interface {
-	ID() uint64
-	Notify(ctx context.Context)
-	Wait(ctx context.Context) bool
-	Expire()
-	IsExpired() bool
-}
 
 type dataPlaneCacheEntry struct {
 	dplInfo       models.DataPlanePlacementInfo
@@ -40,11 +31,40 @@ type targetGroupCacheEntry struct {
 	mu            sync.Mutex
 }
 
+func (e *targetGroupCacheEntry) appendIntoChangelog(ctx context.Context, ev models.EndpointEvent) {
+	e.tg.EndpointsChangelog = append(e.tg.EndpointsChangelog, ev)
+	e.tg.EndpointVersion = ev.DesiredVersion
+	e.notifyAll(ctx)
+}
+
 func (e *targetGroupCacheEntry) notifyAll(ctx context.Context) {
 	for _, sub := range e.subscriptions {
 		sub.Notify(ctx)
 		delete(e.subscriptions, sub.ID())
 	}
+}
+
+func (e *targetGroupCacheEntry) updateTargetGroup(ctx context.Context, newTg models.TargetGroup) {
+	e.mu.Lock()
+	updated := false
+	if e.tg.SpecVersion < newTg.SpecVersion {
+		e.tg.Spec = newTg.Spec
+		e.tg.SpecVersion = newTg.SpecVersion
+		updated = true
+	}
+	updateChangelog := e.tg.EndpointVersion < newTg.EndpointVersion
+	if e.tg.SnapshotLastVersion < newTg.SnapshotLastVersion {
+		e.tg.EndpointsSnapshot = newTg.EndpointsSnapshot
+		updateChangelog = true
+	}
+	if updateChangelog {
+		e.tg.EndpointVersion = newTg.EndpointVersion
+		e.tg.EndpointsChangelog = newTg.EndpointsChangelog
+	}
+	if updated || updateChangelog {
+		e.notifyAll(ctx)
+	}
+	e.mu.Unlock()
 }
 
 type ApiRuntime struct {
@@ -57,11 +77,16 @@ type ApiRuntime struct {
 	notifierIdSaltGen atomic.Uint64
 	gcTicker          *time.Ticker
 	crd               Coordinator
+	coordinatorSema   *semaphore.Weighted
 }
 
-func NewApiRuntime(gcInterval time.Duration, crd Coordinator) *ApiRuntime {
+func NewApiRuntime(
+	crd Coordinator,
+	gcInterval time.Duration,
+	crdSemaCapacity int64,
+) *ApiRuntime {
 	ticker := time.NewTicker(gcInterval)
-	return &ApiRuntime{
+	ar := &ApiRuntime{
 		targetGroupCache: make(map[models.TargetGroupID]*targetGroupCacheEntry, 128),
 		tgGuard:          &sync.RWMutex{},
 
@@ -71,7 +96,28 @@ func NewApiRuntime(gcInterval time.Duration, crd Coordinator) *ApiRuntime {
 		notifierIdSaltGen: atomic.Uint64{},
 		gcTicker:          ticker,
 		crd:               crd,
+		coordinatorSema:   semaphore.NewWeighted(crdSemaCapacity),
 	}
+	return ar
+}
+
+func (ar *ApiRuntime) Init(placements map[models.DataPlaneID]models.Placement) {
+	for dplID, placement := range placements {
+		pl := placement
+		ar.dataPlaneCache[dplID] = &dataPlaneCacheEntry{
+			subscriptions: make(map[uint64]Notifier),
+			dplInfo: models.DataPlanePlacementInfo{
+				NodeID:  dplID,
+				Desired: &pl,
+			},
+		}
+	}
+}
+
+func (ar *ApiRuntime) Close() error {
+	ar.gcTicker.Stop()
+	ar.collectGarbage()
+	return nil
 }
 
 func (ar *ApiRuntime) RunGarbageCollection(ctx context.Context) {
@@ -87,7 +133,7 @@ func (ar *ApiRuntime) RunGarbageCollection(ctx context.Context) {
 				return
 			}
 			deleted := ar.collectGarbage()
-			log.Debug().Msgf("end garbage collection cycle, deleted %d subs", deleted)
+			log.Info().Msgf("end notifiers garbage collection cycle, deleted %d subs", deleted)
 		}
 	}
 }
@@ -110,6 +156,35 @@ func (ar *ApiRuntime) collectGarbage() int {
 	return deleted
 }
 
+func (ar *ApiRuntime) getAllTargetGroupIDs(ctx context.Context) []models.TargetGroupID {
+	// TODO:
+	return nil
+}
+
+// assumes that target group cache entry already exists
+func (ar *ApiRuntime) updateTargetGroup(ctx context.Context, tgID models.TargetGroupID) error {
+	ar.tgGuard.RLock()
+	cacheEntry, _ := ar.targetGroupCache[tgID]
+	ar.tgGuard.RUnlock()
+
+	state := TargetGroupState{
+		TgID: tgID,
+	}
+
+	cacheEntry.mu.Lock()
+	state.SpecVersion = cacheEntry.tg.SpecVersion
+	state.EndpointVersion = cacheEntry.tg.EndpointVersion
+	state.SnapshotLastVersion = cacheEntry.tg.SnapshotLastVersion
+	cacheEntry.mu.Unlock()
+
+	newTgInfo, err := ar.crd.GetTargetGroupDiff(ctx, state)
+	if err != nil {
+		return fmt.Errorf("failed to get target group from coordinator: %w", err)
+	}
+	cacheEntry.updateTargetGroup(ctx, newTgInfo)
+	return nil
+}
+
 func (ar *ApiRuntime) HandleEndpointChange(
 	ctx context.Context,
 	ev models.EndpointEvent,
@@ -126,26 +201,15 @@ func (ar *ApiRuntime) HandleEndpointChange(
 	tgCacheEntry.mu.Lock()
 	defer tgCacheEntry.mu.Unlock()
 
-	if tgCacheEntry.tg.ChangelogStartVersion > ev.DesiredVersion {
+	if tgCacheEntry.tg.SnapshotLastVersion >= ev.DesiredVersion {
 		log.Info().Msgf("endpoint event with timestamp %d already in snapshot", ev.DesiredVersion)
 		return
 	}
-	if tgCacheEntry.tg.ChangelogStartVersion == 0 {
-		// TODO: fetch snapshot from coordinator, if we add
-		// here too old version we can break all change line because
-		// all previous messages will automaticly become outdated
-		tgCacheEntry.tg.ChangelogStartVersion = ev.DesiredVersion
-		log.Info().Msgf(
-			"updated changelog start version for tg %s on %d",
-			ev.TargetGroupID, ev.DesiredVersion,
-		)
-	}
+
 	if len(tgCacheEntry.tg.EndpointsChangelog) == 0 {
-		tgCacheEntry.tg.EndpointsChangelog = append(tgCacheEntry.tg.EndpointsChangelog, ev)
-		tgCacheEntry.notifyAll(ctx)
+		tgCacheEntry.appendIntoChangelog(ctx, ev)
 		return
 	}
-
 	last := tgCacheEntry.tg.EndpointsChangelog[len(tgCacheEntry.tg.EndpointsChangelog)-1]
 	if last.DesiredVersion >= ev.DesiredVersion {
 		log.Info().Msgf("endpoint event with timestamp %d already in changelog", ev.DesiredVersion)
@@ -156,8 +220,7 @@ func (ar *ApiRuntime) HandleEndpointChange(
 		// TODO:
 		return
 	}
-	tgCacheEntry.tg.EndpointsChangelog = append(tgCacheEntry.tg.EndpointsChangelog, ev)
-	tgCacheEntry.notifyAll(ctx)
+	tgCacheEntry.appendIntoChangelog(ctx, ev)
 }
 
 func (ar *ApiRuntime) HandleTgSpecChange(
@@ -189,7 +252,7 @@ func (ar *ApiRuntime) HandleTgSpecChange(
 	defer tgCacheEntry.mu.Unlock()
 
 	if tgCacheEntry.tg.SpecVersion >= desiredVersion {
-		log.Warn().Msgf("got outdated tg %s version %d", spec.ID, desiredVersion)
+		log.Info().Msgf("not updated tg %s spec: has local version more then %d", spec.ID, desiredVersion)
 		return
 	}
 	tgCacheEntry.tg.Spec = spec
@@ -197,4 +260,40 @@ func (ar *ApiRuntime) HandleTgSpecChange(
 	tgCacheEntry.notifyAll(ctx)
 
 	log.Info().Msgf("updated tg %s spec, set desired version %d", spec.ID, desiredVersion)
+}
+
+func (ar *ApiRuntime) HandlePlacementChange(
+	ctx context.Context,
+	dplID models.DataPlaneID,
+	pl models.Placement,
+	rev uint64,
+) {
+	ar.dplGuard.Lock()
+	defer ar.dplGuard.Unlock()
+
+	dplEntry, exists := ar.dataPlaneCache[dplID]
+	if !exists {
+		ar.dataPlaneCache[dplID] = &dataPlaneCacheEntry{
+			dplInfo: models.DataPlanePlacementInfo{
+				NodeID:  dplID,
+				Desired: &pl,
+			},
+			subscriptions: make(map[uint64]Notifier),
+		}
+		log.Info().Msgf("added placement for node %s: %+v", dplID, pl)
+		return
+	}
+	dplEntry.mu.Lock()
+	defer dplEntry.mu.Unlock()
+
+	if dplEntry.dplInfo.Desired != nil && dplEntry.dplInfo.Desired.Version >= pl.Version {
+		log.Warn().Msgf(
+			"not updated node %s placement: cache version is more then incoming (%d) >= (%d)",
+			dplID, dplEntry.dplInfo.Desired.Version, pl.Version,
+		)
+	}
+	dplEntry.dplInfo.Desired = &pl
+	dplEntry.notifyAll(ctx)
+
+	log.Info().Msgf("updated placement for node %s: %+v", dplID, pl)
 }

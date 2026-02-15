@@ -7,8 +7,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/Sh00ty/network-lb/health-check-node/pkg/healthcheck"
-	"github.com/Sh00ty/network-lb/health-check-node/pkg/strategies"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/strategies"
 )
 
 func NewHealthCheck(targetAddr healthcheck.TargetAddr, settings *healthcheck.Settings) (HealthCheck, error) {

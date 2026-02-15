@@ -10,8 +10,8 @@ import (
 	"github.com/rs/zerolog/log"
 	kafka "github.com/segmentio/kafka-go"
 
-	"github.com/Sh00ty/network-lb/health-check-node/internal/coordinator"
-	"github.com/Sh00ty/network-lb/health-check-node/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/coordinator"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
 )
 
 type Coordinator interface {
@@ -47,8 +47,8 @@ func (w *CheckUpdateWatcher) RunTargetWatcher(ctx context.Context) error {
 			_ = w.msgReader.CommitMessages(ctx, msg)
 			continue
 		}
-		gomsg := Value[TargetDto]{}
-		err = json.Unmarshal(msg.Value, &gomsg)
+		goMsg := Value[TargetDto]{}
+		err = json.Unmarshal(msg.Value, &goMsg)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to decode message from json")
 			_ = w.msgReader.CommitMessages(ctx, msg)
@@ -58,19 +58,19 @@ func (w *CheckUpdateWatcher) RunTargetWatcher(ctx context.Context) error {
 		var (
 			eventOp = coordinator.Unknown
 			target  = healthcheck.Target{}
-			ts      = int64(gomsg.TsMs)
+			ts      = int64(goMsg.TsMs)
 		)
-		switch gomsg.Op {
+		switch goMsg.Op {
 		case "c", "r":
 			eventOp = coordinator.Create
-			target.SettingID = int64(gomsg.After.SettingID)
-			target.Port = uint16(gomsg.After.Port)
-			target.RealIP = net.ParseIP(gomsg.After.RealIP)
+			target.TargetGroup = healthcheck.TargetGroupID(goMsg.After.TargetGroup)
+			target.Port = uint16(goMsg.After.Port)
+			target.RealIP = net.ParseIP(goMsg.After.RealIP)
 		case "d":
 			eventOp = coordinator.Delete
-			target.SettingID = int64(gomsg.Before.SettingID)
-			target.Port = uint16(gomsg.Before.Port)
-			target.RealIP = net.ParseIP(gomsg.Before.RealIP)
+			target.TargetGroup = healthcheck.TargetGroupID(goMsg.Before.TargetGroup)
+			target.Port = uint16(goMsg.Before.Port)
+			target.RealIP = net.ParseIP(goMsg.Before.RealIP)
 		case "u":
 			eventOp = coordinator.Update
 		default:

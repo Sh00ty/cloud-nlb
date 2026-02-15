@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: hc-worker-headless
-  namespace: loadbalancer
+  namespace: cloud-nlb
   labels:
     app: hc-worker
 spec:

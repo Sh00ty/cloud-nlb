@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/Sh00ty/network-lb/control-plane/internal/models"
+	"github.com/Sh00ty/cloud-nlb/control-plane/internal/models"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -30,7 +30,7 @@ type endpointLogEntry struct {
 	Time          time.Time            `json:"time"`
 }
 
-type WatchHandler func(ctx context.Context, events []*clientv3.Event) error
+type WatchHandler func(ctx context.Context, events *clientv3.Event) error
 
 const (
 	maxTxRetryAttempts      = 5

@@ -2,13 +2,17 @@ package etcd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net"
 	"strconv"
+	"strings"
 	"time"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
 
-	"github.com/Sh00ty/network-lb/control-plane/internal/models"
+	"github.com/Sh00ty/cloud-nlb/control-plane/internal/api/apiruntime"
+	"github.com/Sh00ty/cloud-nlb/control-plane/internal/models"
 	"github.com/rs/zerolog/log"
 )
 
@@ -24,6 +28,35 @@ func NewApiClient(ctx context.Context, host string) (*ApiClient, error) {
 		return nil, fmt.Errorf("failed to create etcd client: %w", err)
 	}
 	return &ApiClient{etcd: clnt}, nil
+}
+
+func (c *ApiClient) GracefulClose(ctx context.Context) error {
+	return c.Close()
+}
+
+func (c *ApiClient) Close() error {
+	err := c.etcd.Close()
+	if err != nil {
+		log.Error().Err(err).Msg("failed to close etcd client")
+		return err
+	}
+	return nil
+}
+
+func (c *ApiClient) Client() *clientv3.Client {
+	return c.etcd
+}
+
+func (c *ApiClient) Watch(
+	ctx context.Context,
+	key string,
+	opts ...clientv3.OpOption,
+) clientv3.WatchChan {
+	return c.etcd.Watch(ctx, key, opts...)
+}
+
+func (c *ApiClient) RequestProgress(ctx context.Context) error {
+	return c.etcd.RequestProgress(ctx)
 }
 
 func (c *ApiClient) ExecuteIncrementally(
@@ -188,6 +221,104 @@ func (c *ApiClient) RemoveEndpoint(
 	return nil
 }
 
-func (c *ApiClient) RunEventlogWatcher(ctx context.Context) error {
-	return nil
+func (c *ApiClient) GetTargetGroupDiff(
+	ctx context.Context,
+	current apiruntime.TargetGroupState,
+) (models.TargetGroup, error) {
+	// here we don't need consistency cause all event version and states can go only further (better for us)
+	// TODO: changelog support
+	result := models.TargetGroup{
+		Spec: models.TargetGroupSpec{
+			ID: current.TgID,
+		},
+		SpecVersion:         current.SpecVersion,
+		EndpointVersion:     current.EndpointVersion,
+		SnapshotLastVersion: current.SnapshotLastVersion,
+	}
+
+	specResp, err := c.etcd.KV.Get(ctx, tgSpecDesiredLatest(current.TgID))
+	if err != nil {
+		return models.TargetGroup{}, fmt.Errorf("failed to get target group spec from etcd: %w", err)
+	}
+	if len(specResp.Kvs) == 0 {
+		return models.TargetGroup{}, fmt.Errorf("not found target group %s", current.TgID)
+	}
+	specDto := targetGroupSpec{}
+	err = json.Unmarshal(specResp.Kvs[0].Value, &specDto)
+	if err != nil {
+		return models.TargetGroup{}, fmt.Errorf("failed to unmarshal target group spec: %w", err)
+	}
+	if specDto.Version > current.SpecVersion {
+		result.Spec = models.TargetGroupSpec{
+			ID:        current.TgID,
+			Proto:     specDto.Proto,
+			Port:      specDto.Port,
+			VirtualIP: net.ParseIP(specDto.VIP),
+			Time:      specDto.Time,
+		}
+		result.SpecVersion = specDto.Version
+	}
+
+	events, err := c.getEndpointChangelogSinceVersion(ctx, current.TgID, current.EndpointVersion)
+	if err != nil {
+		return models.TargetGroup{}, fmt.Errorf("failed to fetch changelog for tg: %w", err)
+	}
+	if len(events) == 0 {
+		return result, nil
+	}
+	for _, ev := range events {
+		modelEv := models.EndpointEvent{
+			Type:           ev.Type,
+			TargetGroupID:  ev.TargetGroupID,
+			DesiredVersion: ev.Timestamp,
+			Time:           ev.Time,
+			Spec: models.EndpointSpec{
+				IP:     net.ParseIP(ev.Endpoint.IP),
+				Port:   ev.Endpoint.Port,
+				Weight: ev.Endpoint.Weight,
+			},
+		}
+		result.EndpointVersion = ev.Timestamp
+		result.EndpointsChangelog = append(result.EndpointsChangelog, modelEv)
+	}
+	return result, nil
+}
+
+func (c *ApiClient) getEndpointChangelogSinceVersion(ctx context.Context, tgID models.TargetGroupID, ver uint64) ([]endpointLogEntry, error) {
+	var (
+		result   = make([]endpointLogEntry, 0, 128)
+		prefix   = tgEndpointsLogFolder(tgID)
+		startKey = tgEndpointsEvent(tgID, ver) + "0"
+	)
+	for {
+		resp, err := c.etcd.KV.Get(
+			ctx,
+			startKey,
+			clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend),
+			clientv3.WithFromKey(),
+			clientv3.WithLimit(256),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get pending events: %w", err)
+		}
+		if resp.Count == 0 {
+			return result, nil
+		}
+		for _, kv := range resp.Kvs {
+			if !strings.HasPrefix(string(kv.Key), prefix) {
+				return result, nil
+			}
+			ev := endpointLogEntry{}
+			err = json.Unmarshal(kv.Value, &ev)
+			if err != nil {
+				return nil, fmt.Errorf("failed to unmarshal endpoint event: %w", err)
+			}
+			startKey = string(append(kv.Key, 0))
+			result = append(result, ev)
+		}
+		if !resp.More {
+			return result, nil
+		}
+	}
+
 }

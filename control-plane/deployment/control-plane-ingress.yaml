@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: control-plane
+  namespace: cloud-nlb
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/grpc-backend: "true"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: control-plane-grpc.cloud-nlb.com
+    http:
+      paths:
+      - path: /control-plane
+        pathType: Prefix
+        backend:
+          service:
+            name: control-plane
+            port:
+              number: 9090
+      - path: /hc-apiserver
+        pathType: Prefix
+        backend:
+          service:
+            name: hc-api-server
+            port:
+              number: 9090

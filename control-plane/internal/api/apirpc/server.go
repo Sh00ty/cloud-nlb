@@ -4,17 +4,20 @@ import (
 	"context"
 	"time"
 
-	"github.com/Sh00ty/network-lb/control-plane/internal/api/apiruntime"
-	"github.com/Sh00ty/network-lb/control-plane/internal/models"
-	"github.com/Sh00ty/network-lb/control-plane/pkg/protobuf/api/proto/cplpbv1"
+	"github.com/Sh00ty/cloud-nlb/control-plane/internal/api/apiruntime"
+	"github.com/Sh00ty/cloud-nlb/control-plane/internal/models"
+	"github.com/Sh00ty/cloud-nlb/control-plane/pkg/protobuf/api/proto/cplpbv1"
 )
 
 type Runtime interface {
-	HandleDataPlaneRequest(
+	GetChangesForDataPlane(
 		ctx context.Context,
-		req apiruntime.DataPlaneRequest,
-	) (apiruntime.DataPlaneResponse, error)
+		curDplState apiruntime.DataPlaneCurrentState,
+	) (apiruntime.DataPlaneChanges, error)
 	GetNotifier(nodeID models.DataPlaneID, deadline time.Time) apiruntime.Notifier
+
+	UpsertEndpoint(ctx context.Context, epEvent models.EndpointEvent) error
+	UpsertTargetGroupSpec(ctx context.Context, tgSpec models.TargetGroupSpec) error
 }
 
 type Server struct {

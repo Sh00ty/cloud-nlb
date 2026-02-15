@@ -9,13 +9,13 @@ import (
 	"github.com/cespare/xxhash"
 	"github.com/rs/zerolog/log"
 
-	"github.com/Sh00ty/network-lb/health-check-node/internal/models"
-	"github.com/Sh00ty/network-lb/health-check-node/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
 )
 
 type ShardingNodeID int
 
-type vshard uint
+type Vshard uint
 
 const nodeIDPrefix = "hc-worker-"
 
@@ -32,7 +32,7 @@ func (n ShardingNodeID) ToNodeID() models.NodeID {
 	return models.NodeID(fmt.Sprintf("%s%d", nodeIDPrefix, n))
 }
 
-type ContistentHashing interface {
+type ConsistentHashing interface {
 	MarkUnhealthy(ShardingNodeID) error
 	MarkHealthy(ShardingNodeID) error
 	GetWithOffset(key int64, backupNum uint) (ShardingNodeID, error)
@@ -43,29 +43,29 @@ type ConsistentSharder struct {
 	replicationFactor uint16
 
 	// vshard -> nodeid
-	myVShards      map[vshard]struct{}
-	checksByVShard map[vshard]map[string]struct{}
+	myVShards      map[Vshard]struct{}
+	checksByVShard map[Vshard]map[string]struct{}
 
 	vShardCount uint64
 
-	vShardsIpSharder   ContistentHashing
-	nodeVShardsSharder ContistentHashing
+	vShardsIpSharder   ConsistentHashing
+	nodeVShardsSharder ConsistentHashing
 }
 
 func NewConsistentSharder(
-	nodesCh ContistentHashing,
-	vshardCh ContistentHashing,
+	nodesCh ConsistentHashing,
+	vshardCh ConsistentHashing,
 	vshardCount uint64,
 	replicationFactor uint16,
 	myNode models.NodeID,
 ) (*ConsistentSharder, error) {
 	const bigSearchLimmit = 1024 * 1024
 	var (
-		checksByVShard = make(map[vshard]map[string]struct{}, vshardCount)
-		myVShards      = make(map[vshard]struct{})
+		checksByVShard = make(map[Vshard]map[string]struct{}, vshardCount)
+		myVShards      = make(map[Vshard]struct{})
 	)
 	for i := range vshardCount {
-		vshard := vshard(i)
+		vshard := Vshard(i)
 		checksByVShard[vshard] = make(map[string]struct{})
 		myVShards[vshard] = struct{}{}
 
@@ -83,25 +83,16 @@ func NewConsistentSharder(
 	}, nil
 }
 
-func (s *ConsistentSharder) GetTargetVshard(targetKey string) vshard {
+func (s *ConsistentSharder) GetTargetVshard(targetKey string) Vshard {
 	targetHash := xxhash.Sum64([]byte(targetKey))
 	vs, err := s.vShardsIpSharder.GetWithOffset(int64(targetHash), 0)
 	if err != nil {
 		panic(err)
 	}
-	return vshard(vs)
+	return Vshard(vs)
 }
 
-func (s *ConsistentSharder) getTargetVshard(targetKey string) vshard {
-	targetHash := xxhash.Sum64([]byte(targetKey))
-	vs, err := s.vShardsIpSharder.GetWithOffset(int64(targetHash), 0)
-	if err != nil {
-		panic(err)
-	}
-	return vshard(vs)
-}
-
-func (s *ConsistentSharder) getNodeIDsByVshard(vs vshard) []models.NodeID {
+func (s *ConsistentSharder) getNodeIDsByVshard(vs Vshard) []models.NodeID {
 	nodesForVshard := make([]models.NodeID, 0, s.replicationFactor)
 	for i := range uint(s.replicationFactor) {
 		nodeID, err := s.nodeVShardsSharder.GetWithOffset(int64(vs), i)
@@ -116,7 +107,7 @@ func (s *ConsistentSharder) getNodeIDsByVshard(vs vshard) []models.NodeID {
 func (s *ConsistentSharder) LinkTarget(target healthcheck.TargetAddr) bool {
 	var (
 		targetKey = target.String()
-		vshard    = s.getTargetVshard(targetKey)
+		vshard    = s.GetTargetVshard(targetKey)
 	)
 
 	if _, exists := s.checksByVShard[vshard][targetKey]; exists {
@@ -129,7 +120,7 @@ func (s *ConsistentSharder) LinkTarget(target healthcheck.TargetAddr) bool {
 func (s *ConsistentSharder) RemoveTargetLink(target healthcheck.TargetAddr) bool {
 	var (
 		targetKey = target.String()
-		vshard    = s.getTargetVshard(targetKey)
+		vshard    = s.GetTargetVshard(targetKey)
 	)
 
 	if _, exists := s.checksByVShard[vshard][targetKey]; !exists {
@@ -148,7 +139,7 @@ func (s *ConsistentSharder) AddNewMember(ctx context.Context, nodeID models.Node
 	s.nodeVShardsSharder.MarkHealthy(NodeIDToChID(nodeID))
 
 	dropTargets := make([]healthcheck.TargetAddr, 0, 128)
-	for vshard := range vshard(s.vShardCount) {
+	for vshard := range Vshard(s.vShardCount) {
 
 		nodeIDsforVShard := s.getNodeIDsByVshard(vshard)
 
@@ -177,7 +168,7 @@ func (s *ConsistentSharder) RemoveMember(ctx context.Context, nodeID models.Node
 	s.nodeVShardsSharder.MarkUnhealthy(NodeIDToChID(nodeID))
 
 	shardsToFetch := make([]uint, 0, s.vShardCount)
-	for vshard := range vshard(s.vShardCount) {
+	for vshard := range Vshard(s.vShardCount) {
 		nodeIDsforVShard := s.getNodeIDsByVshard(vshard)
 		if !slices.Contains(nodeIDsforVShard, s.MyNodeID) {
 			continue
@@ -193,7 +184,7 @@ func (s *ConsistentSharder) RemoveMember(ctx context.Context, nodeID models.Node
 }
 
 func (s *ConsistentSharder) NeedHandle(target healthcheck.TargetAddr) bool {
-	vshard := s.getTargetVshard(target.String())
+	vshard := s.GetTargetVshard(target.String())
 	nodeIDs := s.getNodeIDsByVshard(vshard)
 
 	log.Debug().Msgf("target %+v assigned to vshard=%d and nodes=%v", target.String(), vshard, nodeIDs)

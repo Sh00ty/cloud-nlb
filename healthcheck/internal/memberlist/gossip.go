@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/memberlist"
 	"github.com/rs/zerolog/log"
 
-	"github.com/Sh00ty/network-lb/health-check-node/internal/models"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
 )
 
 type Config struct {

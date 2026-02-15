@@ -7,8 +7,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/Sh00ty/network-lb/control-plane/internal/models"
-	"github.com/rs/zerolog/log"
+	"github.com/Sh00ty/cloud-nlb/control-plane/internal/models"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -25,32 +24,32 @@ func NewEtcdEndpointChangelogHandler(handler EndpointChangeHandler) etcdEndpoint
 	return etcdEndpointChangelogHandler{handler: handler}
 }
 
-func (h etcdEndpointChangelogHandler) Handle(ctx context.Context, events []*clientv3.Event) error {
-	for _, event := range events {
-		parsedEvent, err := parseEndpointChange(event.Kv)
-		if err != nil {
-			log.Error().Err(err).Msg("failed to parse endpoint changelog event from kv entry")
-			continue
-		}
-		modelEvent := models.EndpointEvent{
-			Type:           parsedEvent.Type,
-			TargetGroupID:  parsedEvent.TargetGroupID,
-			DesiredVersion: parsedEvent.Timestamp,
-			Time:           parsedEvent.Time,
-			Spec: models.EndpointSpec{
-				IP:     net.ParseIP(parsedEvent.Endpoint.IP),
-				Port:   parsedEvent.Endpoint.Port,
-				Weight: parsedEvent.Endpoint.Weight,
-			},
-		}
-		h.handler.HandleEndpointChange(ctx, modelEvent, uint64(event.Kv.ModRevision))
+func (h etcdEndpointChangelogHandler) Handle(ctx context.Context, event *clientv3.Event) error {
+	if event.Kv == nil {
+		return nil
 	}
+	parsedEvent, err := parseEndpointChange(event.Kv)
+	if err != nil {
+		return fmt.Errorf("parsing endpoint changelog event from kv entry: %w", err)
+	}
+	modelEvent := models.EndpointEvent{
+		Type:           parsedEvent.Type,
+		TargetGroupID:  parsedEvent.TargetGroupID,
+		DesiredVersion: parsedEvent.Timestamp,
+		Time:           parsedEvent.Time,
+		Spec: models.EndpointSpec{
+			IP:     net.ParseIP(parsedEvent.Endpoint.IP),
+			Port:   parsedEvent.Endpoint.Port,
+			Weight: parsedEvent.Endpoint.Weight,
+		},
+	}
+	h.handler.HandleEndpointChange(ctx, modelEvent, uint64(event.Kv.ModRevision))
 	return nil
 }
 
 func parseEndpointChange(kv *mvccpb.KeyValue) (*endpointLogEntry, error) {
 	key := string(kv.Key)
-	afterPrefix, ok := strings.CutPrefix(key, tgEndpointsLogFolder()+"/")
+	afterPrefix, ok := strings.CutPrefix(key, EndpointsLogFolder()+"/")
 	if !ok {
 		return nil, fmt.Errorf("not found changelog prefix in key: %s", key)
 	}
