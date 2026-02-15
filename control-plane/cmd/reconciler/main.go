@@ -18,9 +18,12 @@ import (
 )
 
 type Config struct {
-	PodID        string `envconfig:"POD_ID"`
-	LoggerLevel  string `envconfig:"LOGGER_LEVEL"`
-	EtcdEndpoint string `envconfig:"ETCD_ENDPOINT"`
+	PodID                        string        `envconfig:"POD_ID"`
+	LoggerLevel                  string        `envconfig:"LOGGER_LEVEL"`
+	EtcdEndpoint                 string        `envconfig:"ETCD_ENDPOINT"`
+	TargetGroupReplicationFactor uint8         `envconfig:"TARGET_GROUP_REPLICATION_FACTOR"`
+	DataPlaneDeathEventDelay     time.Duration `envconfig:"DATA_PLANE_NODE_DEATH_EVENT_DELAY"`
+	ForceReconcileInterval       time.Duration `envconfig:"FORCE_RECONCILE_INTERVAL"`
 }
 
 func loggerLevelFromString(level string) zerolog.Level {
@@ -69,7 +72,13 @@ func main() {
 			continue
 		}
 
-		reconcilerSvc := reconciler.NewReconciler(reconcileRepo, 2, 15*time.Second, 5*time.Minute, log.Logger)
+		reconcilerSvc := reconciler.NewReconciler(
+			reconcileRepo,
+			int(appCfg.TargetGroupReplicationFactor),
+			appCfg.DataPlaneDeathEventDelay,
+			appCfg.ForceReconcileInterval,
+			log.Logger,
+		)
 
 		dplStateWatchHandler := etcd.NewDataPlaneStateChangeHandler(reconcilerSvc.GetEventsChan())
 		tgCreationWatchHandler := etcd.NewTargetGroupCreationHandler(reconcilerSvc.GetEventsChan())
