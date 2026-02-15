@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package healthcheck.v1;
+
+option go_package = "github.com/Sh00ty/cloud-nlb/healthcheck/pkg/protobuf/hcpbv1;hcpbv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+
+enum StrategyType {
+    STRATEGY_TYPE_UNSPECIFIED = 0;
+    STRATEGY_TYPE_MOCK = 1;
+    STRATEGY_TYPE_HTTP = 2;
+    STRATEGY_TYPE_TCP = 3;
+}
+
+message Settings {
+    string target_group = 1;
+    google.protobuf.Duration interval = 2;
+    uint32 success_before_passing = 3;
+    uint32 failures_before_critical = 4;
+    bool initial_state = 5;
+    StrategyType strategy = 6;
+    google.protobuf.Struct strategy_settings = 7;
+}
+
+message Endpoint {
+    string real_ip = 1;
+    uint32 port = 2;
+}
+
+message EndpointStatus {
+  string real_ip = 1;
+  uint32 port = 2;
+  string target_group = 3;
+  bool is_healthy = 4;
+  string last_error = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message CreateSettingsRequest {
+  Settings settings = 1;
+}
+
+message CreateSettingsResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message AddEndpointsRequest {
+  string target_group = 1;
+  repeated Endpoint endpoints = 2;
+}
+
+message AddEndpointsResponse {
+  uint32 added_count = 1;
+}
+
+message RemoveEndpointsRequest {
+  string target_group = 1;
+  repeated Endpoint endpoints = 2;
+}
+
+message RemoveEndpointsResponse {
+  uint32 removed_count = 1;
+}
+
+message GetEndpointStatusesRequest {
+  string target_group = 1;
+}
+
+message GetEndpointStatusesResponse {
+  repeated EndpointStatus statuses = 1;
+}
+
+service HealthCheckService {
+    rpc CreateSettings(CreateSettingsRequest) returns (CreateSettingsResponse);
+    rpc AddEndpoints(AddEndpointsRequest) returns (AddEndpointsResponse);
+    rpc RemoveEndpoints(RemoveEndpointsRequest) returns (RemoveEndpointsResponse);
+    rpc GetEndpointStatuses(GetEndpointStatusesRequest) returns (GetEndpointStatusesResponse);
+}

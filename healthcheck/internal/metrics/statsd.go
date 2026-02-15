@@ -13,7 +13,7 @@ type Statsd struct {
 func NewStatsd(nodeName string, prefix string, addr string) Metrics {
 	clnt := statsd.NewClient(
 		addr,
-		statsd.MetricPrefix("apps.nlb."),
+		statsd.MetricPrefix("apps.cloud-nlb."),
 		statsd.DefaultTags(statsd.StringTag("node", nodeName)),
 	)
 	return &Statsd{

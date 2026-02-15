@@ -7,19 +7,19 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/Sh00ty/network-lb/health-check-node/internal/models"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
 )
 
-type Notifyer interface {
+type Notifier interface {
 	NotifyHcStatusChanged(models.HcEvent)
 }
 
-func NewExecutor(notifyer Notifyer, concurreny uint16, buffer uint32) *executor {
+func NewExecutor(notifier Notifier, concurrency uint16, buffer uint32) *executor {
 	return &executor{
 		inputChan:   make(chan *models.HealthCheck, buffer),
 		close:       make(chan struct{}),
-		concurrency: concurreny,
-		notifyer:    notifyer,
+		concurrency: concurrency,
+		notifier:    notifier,
 	}
 }
 
@@ -27,7 +27,7 @@ type executor struct {
 	concurrency uint16
 	inputChan   chan *models.HealthCheck
 
-	notifyer Notifyer
+	notifier Notifier
 
 	// closed by atomic
 	closed     int64
@@ -45,12 +45,12 @@ func (e *executor) Run() {
 				changed := task.Executable.DoHealthCheckIteration()
 				if changed {
 					newStatus, err := task.Executable.Info()
-					e.notifyer.NotifyHcStatusChanged(models.HcEvent{
-						SettingID:  task.Settings.ID,
-						Target:     task.Target,
-						HcInverval: task.Settings.Interval,
-						NewStatus:  newStatus,
-						Error:      err,
+					e.notifier.NotifyHcStatusChanged(models.HcEvent{
+						TargetGroup: task.Settings.TargetGroup,
+						Target:      task.Target,
+						HcInterval:  task.Settings.Interval,
+						NewStatus:   newStatus,
+						Error:       err,
 					})
 				}
 			}

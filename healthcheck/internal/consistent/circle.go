@@ -17,7 +17,7 @@ import (
 
 	blake2b "github.com/minio/blake2b-simd"
 
-	"github.com/Sh00ty/network-lb/health-check-node/internal/sharder"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/sharder"
 )
 
 const replicationFactor = 10

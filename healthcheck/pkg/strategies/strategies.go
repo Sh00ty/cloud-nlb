@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Sh00ty/network-lb/health-check-node/pkg/healthcheck"
-	"github.com/Sh00ty/network-lb/health-check-node/pkg/strategies/httphc"
-	"github.com/Sh00ty/network-lb/health-check-node/pkg/strategies/mockhc"
-	"github.com/Sh00ty/network-lb/health-check-node/pkg/strategies/tcpconnhc"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/strategies/httphc"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/strategies/mockhc"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/strategies/tcpconnhc"
 )
 
 func NewStrategy(name healthcheck.StrategyName, target healthcheck.TargetAddr, checkCfg []byte) (healthcheck.Strategy, error) {
@@ -33,7 +33,7 @@ func NewStrategy(name healthcheck.StrategyName, target healthcheck.TargetAddr, c
 			return mockhc.NewMockHC(settings.(*mockhc.MockHCSettings)), nil
 		}
 	default:
-		settingsVar = string("")
+		settingsVar = new(string)
 		createFunc = func(a any) (healthcheck.Strategy, error) {
 			return mockhc.NewMockHC(&mockhc.MockHCSettings{
 				Name:     "defaul mock healthcheck",

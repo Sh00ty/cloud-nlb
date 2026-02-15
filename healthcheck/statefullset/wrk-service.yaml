@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hc-worker-headless
+  namespace: cloud-nlb
+  labels:
+    app: hc-worker
+spec:
+  clusterIP: None
+  selector:
+    app: hc-worker
+  ports:
+    - name: metrics
+      port: 8080
+      targetPort: 8080

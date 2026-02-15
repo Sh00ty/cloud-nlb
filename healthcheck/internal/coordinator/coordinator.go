@@ -8,16 +8,19 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/Sh00ty/network-lb/health-check-node/internal/models"
-	"github.com/Sh00ty/network-lb/health-check-node/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
 )
 
 type ChecksSourceRepo interface {
 	GetTargets(ctx context.Context, vshards []uint) ([]healthcheck.Target, error)
-	GetSettingsForTargets(ctx context.Context, checkIDs []int64) (map[int64]healthcheck.Settings, error)
+	GetSettingsForTargetGroups(
+		ctx context.Context,
+		targetGroups []healthcheck.TargetGroupID,
+	) (map[healthcheck.TargetGroupID]healthcheck.Settings, error)
 }
 
-type CheckScheduller interface {
+type CheckScheduler interface {
 	Add(hc models.HealthCheck) error
 	Remove(target healthcheck.TargetAddr) bool
 }
@@ -34,7 +37,7 @@ type CheckSharder interface {
 type Coordinator struct {
 	mu               *sync.Mutex
 	checksSource     ChecksSourceRepo
-	sched            CheckScheduller
+	sched            CheckScheduler
 	checkSharder     CheckSharder
 	membershipEvents chan models.MemberShipEvent
 }
@@ -42,7 +45,7 @@ type Coordinator struct {
 func NewCoordinator(ctx context.Context,
 	checksSource ChecksSourceRepo,
 	membershipEvents chan models.MemberShipEvent,
-	sched CheckScheduller,
+	sched CheckScheduler,
 	sharder CheckSharder,
 ) (*Coordinator, error) {
 	c := &Coordinator{
@@ -56,19 +59,19 @@ func NewCoordinator(ctx context.Context,
 }
 
 func (c *Coordinator) FetchTargets(ctx context.Context, vshards []uint) error {
-	// TODO: split fetch and sharding stages, to make wainter more eficcient
+	// TODO: split fetch and sharding stages, to make waiter more efficient
 	targets, err := c.checksSource.GetTargets(ctx, vshards)
 	if err != nil {
 		return fmt.Errorf("failed to get ranges for current node: %w", err)
 	}
-	settingsToFetch := make([]int64, 0, len(targets))
+	targetGroupsToFetch := make([]healthcheck.TargetGroupID, 0, len(targets))
 	for _, target := range targets {
 		if !c.checkSharder.NeedHandle(target.ToAddr()) {
 			continue
 		}
-		settingsToFetch = append(settingsToFetch, target.SettingID)
+		targetGroupsToFetch = append(targetGroupsToFetch, target.TargetGroup)
 	}
-	settingsByID, err := c.checksSource.GetSettingsForTargets(ctx, settingsToFetch)
+	settingsByTg, err := c.checksSource.GetSettingsForTargetGroups(ctx, targetGroupsToFetch)
 	if err != nil {
 		return fmt.Errorf("failed to get check settings: %w", err)
 	}
@@ -81,19 +84,19 @@ func (c *Coordinator) FetchTargets(ctx context.Context, vshards []uint) error {
 			log.Info().Msgf("skip target %v", target)
 			continue
 		}
-		settings, exists := settingsByID[target.SettingID]
+		settings, exists := settingsByTg[target.TargetGroup]
 		if !exists {
 			log.Error().Msgf("not found settings for target: %+v", target)
 			continue
 		}
-		parcedHc, err := models.NewHealthCheck(target.ToAddr(), &settings)
+		parsedHc, err := models.NewHealthCheck(target.ToAddr(), &settings)
 		if err != nil {
 			return fmt.Errorf("failed to create healthcheck: %w", err)
 		}
-		c.sched.Add(parcedHc)
+		c.sched.Add(parsedHc)
 		c.checkSharder.LinkTarget(target.ToAddr())
 
-		log.Info().Msgf("added check into sheduller: %v", target)
+		log.Info().Msgf("added check into scheduler: %v", target)
 	}
 	return nil
 }
@@ -132,7 +135,7 @@ func (c *Coordinator) processNodeDeath(ctx context.Context, nodeID models.NodeID
 		log.Error().Err(err).Msg("sharder remove member error")
 		return
 	}
-	// TODO: retrys + don't lose membership events
+	// TODO: retry + don't lose membership events
 	err = c.FetchTargets(ctx, shardsToFetch)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to make cold start on member dead event")
@@ -174,9 +177,9 @@ type TargetEvent struct {
 
 func (c *Coordinator) HandleTargetEvents(ctx context.Context, targetEvents []TargetEvent) error {
 	var (
-		add      = make([]healthcheck.Target, 0, len(targetEvents))
-		delete   = make([]healthcheck.Target, 0, len(targetEvents))
-		checkIDs = make([]int64, 0, len(targetEvents))
+		add          = make([]healthcheck.Target, 0, len(targetEvents))
+		delete       = make([]healthcheck.Target, 0, len(targetEvents))
+		targetGroups = make([]healthcheck.TargetGroupID, 0, len(targetEvents))
 	)
 	for _, event := range targetEvents {
 		if !c.checkSharder.NeedHandle(event.Target.ToAddr()) {
@@ -192,17 +195,17 @@ func (c *Coordinator) HandleTargetEvents(ctx context.Context, targetEvents []Tar
 		}
 	}
 	for _, needToAdd := range add {
-		checkIDs = append(checkIDs, needToAdd.SettingID)
+		targetGroups = append(targetGroups, needToAdd.TargetGroup)
 	}
-	settingsByID, err := c.checksSource.GetSettingsForTargets(ctx, checkIDs)
+	settingsByTg, err := c.checksSource.GetSettingsForTargetGroups(ctx, targetGroups)
 	if err != nil {
-		return fmt.Errorf("failed to get checks settings for targers: %w", err)
+		return fmt.Errorf("failed to get checks settings for targets: %w", err)
 	}
 	for _, targetToAdd := range add {
 		if !c.checkSharder.LinkTarget(targetToAdd.ToAddr()) {
 			continue
 		}
-		settings, exists := settingsByID[targetToAdd.SettingID]
+		settings, exists := settingsByTg[targetToAdd.TargetGroup]
 		if !exists {
 			return fmt.Errorf("not found settings for target %+v", targetToAdd)
 		}

@@ -1,3 +1,15 @@
 {
-    "cmake.sourceDirectory": "/Users/psshlykov/prog/balancer_nir_mipt/vpp/src"
+    "cmake.sourceDirectory": "/Users/psshlykov/prog/balancer_nir_mipt/vpp/src",
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "local",
+            "database": "postgres",
+            "username": "postgres"
+        }
+    ]
 }

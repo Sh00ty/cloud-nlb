@@ -20,8 +20,10 @@ type Strategy interface {
 	DoHealthCheck() (bool, error)
 }
 
+type TargetGroupID string
+
 type Settings struct {
-	ID                     int64
+	TargetGroup            TargetGroupID
 	Strategy               StrategyName
 	StrategySettings       []byte
 	Interval               time.Duration
@@ -31,9 +33,9 @@ type Settings struct {
 }
 
 type Target struct {
-	SettingID int64
-	RealIP    net.IP
-	Port      uint16
+	TargetGroup TargetGroupID
+	RealIP      net.IP
+	Port        uint16
 }
 
 func (t Target) ToAddr() TargetAddr {

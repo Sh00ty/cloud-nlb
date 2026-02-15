@@ -15,25 +15,18 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/vrischmann/envconfig"
 
-	"github.com/Sh00ty/network-lb/health-check-node/internal/consistent"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/coordinator"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/coordinator/repository/yugabyte"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/coordinator/targetwatcher"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/executor"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/memberlist"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/models"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/notifyer"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/scheduller"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/sender"
-	"github.com/Sh00ty/network-lb/health-check-node/internal/sharder"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/consistent"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/coordinator"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/coordinator/repository/postgres"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/coordinator/targetwatcher"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/executor"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/memberlist"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/notifyer"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/scheduler"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/sender"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/sharder"
 )
-
-type mockNotifyer struct {
-}
-
-func (mockNotifyer) NotifyHcStatusChanged(e models.HcEvent) {
-	log.Printf("hc status changed: %v (%t)", e.Target, e.NewStatus)
-}
 
 func loggerLevelFromString(level string) zerolog.Level {
 	level = strings.ToLower(level)
@@ -56,8 +49,8 @@ type Config struct {
 
 	DatabaseHost     string `envconfig:"DATABASE_HOST"`
 	DatabaseUser     string `envconfig:"DATABASE_USER"`
-	DatabesePassword string `envconfig:"DATABASE_PASSWORD"`
-	DatabesePort     uint16 `envconfig:"DATABASE_PORT"`
+	DatabasePassword string `envconfig:"DATABASE_PASSWORD"`
+	DatabasePort     uint16 `envconfig:"DATABASE_PORT"`
 
 	QueueAddr  string `envconfig:"QUEUE_ADDR"`
 	QueueTopic string `envconfig:"QUEUE_TARGET_UPDATES_TOPIC"`
@@ -68,7 +61,7 @@ type Config struct {
 	VShardCount            int           `envconfig:"HC_VIRTUAL_SHARDS"`
 	HcReplicationFactor    uint16        `envconfig:"HC_REPLICATION_FACTOR"`
 
-	ExecutorConcurreny   uint16        `envconfig:"EXECUTOR_CONCURRENCY"`
+	ExecutorConcurrency  uint16        `envconfig:"EXECUTOR_CONCURRENCY"`
 	ExecutorBuffer       uint32        `envconfig:"EXECUTOR_BUFFER"`
 	ResendStatusInterval time.Duration `envconfig:"RESEND_STATUS_INTERVAL"`
 }
@@ -86,12 +79,12 @@ func main() {
 
 	log.Warn().Msgf("running node %s", appCfg.NodeID)
 
-	checksRepo, err := yugabyte.NewRepo(
+	checksRepo, err := postgres.NewRepo(
 		ctx,
 		appCfg.DatabaseUser,
-		appCfg.DatabesePassword,
+		appCfg.DatabasePassword,
 		appCfg.DatabaseHost,
-		appCfg.DatabesePort,
+		appCfg.DatabasePort,
 	)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to init yugabyte database repository")
@@ -144,24 +137,24 @@ func main() {
 
 	checkExecutor := executor.NewExecutor(
 		notifyer,
-		appCfg.ExecutorConcurreny,
+		appCfg.ExecutorConcurrency,
 		appCfg.ExecutorBuffer,
 	)
 	go checkExecutor.Run()
 
-	scheduller := scheduller.New(
+	scheduler := scheduler.New(
 		nil,
 		checkExecutor,
 	)
 	defer checkExecutor.Close()
 
-	go scheduller.Run(ctx)
+	go scheduler.Run(ctx)
 
 	cord, err := coordinator.NewCoordinator(
 		ctx,
 		checksRepo,
 		membershipEventsChan,
-		scheduller,
+		scheduler,
 		sharder,
 	)
 	if err != nil {
@@ -194,14 +187,14 @@ func main() {
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to join gossip cluster")
 		}
-		log.Info().Msg("sucessfully joined gossip cluster")
+		log.Info().Msg("successfully joined gossip cluster")
 	}
 
 	serverClose := startProbeServer()
 	defer serverClose()
 
 	<-ctx.Done()
-	memberList.GrasefullClose(time.Second)
+	memberList.GracefullyClose(time.Second)
 }
 
 func startProbeServer() func() {

@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/memberlist"
 	"github.com/rs/zerolog/log"
 
-	"github.com/Sh00ty/network-lb/health-check-node/internal/models"
+	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
 )
 
 type Config struct {
@@ -120,14 +120,14 @@ func (l *MemberList) Join(ctx context.Context) error {
 	return nil
 }
 
-func (l *MemberList) GrasefullClose(timeout time.Duration) error {
-	log.Warn().Msg("start gracefull leaving from gossip cluster")
+func (l *MemberList) GracefullyClose(timeout time.Duration) error {
+	log.Warn().Msg("start graceful leaving from gossip cluster")
 
 	return l.list.Leave(timeout)
 }
 
 func (l *MemberList) Close() error {
-	log.Warn().Msg("force live gossip cluter")
+	log.Warn().Msg("force live gossip cluster")
 
 	return l.list.Shutdown()
 }
