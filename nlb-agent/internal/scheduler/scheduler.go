@@ -17,11 +17,11 @@ type ControlPlane interface {
 }
 
 type Reconciler interface {
-	Reconcile(ctx context.Context, recUint *models.ReconciliationUnit) error
+	UpdateDesired(ctx context.Context, recUint *models.ReconciliationUnit) error
 }
 
 type PersistentState interface {
-	GetAllTargetGroupsStates(ctx context.Context) (uint64, []models.TargetGroupState, error)
+	GetPlacement(ctx context.Context) (models.NodeState, error)
 }
 
 func NewScheduler(
@@ -86,35 +86,26 @@ func (s *Scheduler) Run(ctx context.Context) error {
 }
 
 func (s *Scheduler) runIteration(ctx context.Context, reqID string) error {
-	placementVersion, tgStates, err := s.state.GetAllTargetGroupsStates(ctx)
+	placement, err := s.state.GetPlacement(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get target groups current state from persisted state: %w", err)
 	}
+	placement.NodeName = s.nodeID
 
-	state := make(map[models.TargetGroupID]models.TargetGroupState, len(tgStates))
-	for _, tgStat := range tgStates {
-		state[tgStat.ID] = tgStat
-	}
-	nodeState := models.NodeState{
-		NodeName:          s.nodeID,
-		PlacementVersion:  placementVersion,
-		TargetGroupStates: state,
-	}
-
-	reconciliationUnit, err := s.controlPlane.PollUpdatesIfExists(ctx, nodeState, reqID)
+	reconciliationUnit, err := s.controlPlane.PollUpdatesIfExists(ctx, placement, reqID)
 	if err != nil {
 		return fmt.Errorf("failed to poll updates from control plane: %w", err)
 	}
 	if reconciliationUnit == nil {
-		log.Info().Msgf("request %s: not modified", reqID)
+		log.Debug().Msgf("request %s: not modified", reqID)
 		return nil
 	}
 	log.Info().Msgf("got new state from control-plane with placement version: %d", reconciliationUnit.PlacementVersion)
 
 	ts := time.Now()
-	err = s.reconciler.Reconcile(ctx, reconciliationUnit)
+	err = s.reconciler.UpdateDesired(ctx, reconciliationUnit)
 	if err != nil {
-		return fmt.Errorf("failed to reconcile incoming uint: %+v", *reconciliationUnit)
+		return fmt.Errorf("failed to reconcile incoming uint: %+v: %w", *reconciliationUnit, err)
 	}
 	duration := time.Since(ts)
 	log.Info().Msgf("successfully reconciled uint with request id %s: duration %d ms", reqID, duration.Milliseconds())

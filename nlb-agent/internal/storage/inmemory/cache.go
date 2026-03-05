@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/models"
+	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/reconciler"
 )
 
 type cacheEntry struct {
@@ -25,17 +26,19 @@ func NewInMemoryState() *InMemStateCache {
 	}
 }
 
-func (c *InMemStateCache) SetAssignment(ctx context.Context, ver uint64) error {
+func (c *InMemStateCache) SavePlacementVersion(ctx context.Context, ver uint64) (bool, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	changed := false
 	if c.AssignmentVersion < ver {
 		c.AssignmentVersion = ver
+		changed = true
 	}
-	return nil
+	return changed, nil
 }
 
-func (c *InMemStateCache) SetTargetGroupSpecVersion(ctx context.Context, tgID models.TargetGroupID, ver uint64) error {
+func (c *InMemStateCache) SetDesiredSpec(ctx context.Context, tgID models.TargetGroupID, spec models.TargetGroupSpec, ver uint64) (bool, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -48,10 +51,10 @@ func (c *InMemStateCache) SetTargetGroupSpecVersion(ctx context.Context, tgID mo
 		entry.entry.SpecVersion = ver
 	}
 	c.cache[tgID] = entry
-	return nil
+	return true, nil
 }
 
-func (c *InMemStateCache) SetTargetGroupEndpointVersion(ctx context.Context, tgID models.TargetGroupID, ver uint64) error {
+func (c *InMemStateCache) SetDesiredEndpoints(ctx context.Context, tgID models.TargetGroupID, endpoints []models.EndpointSpec, ver uint64) (bool, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -64,24 +67,36 @@ func (c *InMemStateCache) SetTargetGroupEndpointVersion(ctx context.Context, tgI
 		entry.entry.EndpointVersion = ver
 	}
 	c.cache[tgID] = entry
-	return nil
+	return true, nil
 }
 
-func (c *InMemStateCache) RemoveTargetGroup(ctx context.Context, tgID models.TargetGroupID) error {
+func (c *InMemStateCache) DeleteDesired(ctx context.Context, tgIDs []models.TargetGroupID) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	delete(c.cache, tgID)
-	return nil
-}
-
-func (c *InMemStateCache) GetAllTargetGroupsStates(ctx context.Context) (uint64, []models.TargetGroupState, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	result := make([]models.TargetGroupState, 0, len(c.cache))
-	for _, entry := range c.cache {
-		result = append(result, entry.entry)
+	for _, tgID := range tgIDs {
+		delete(c.cache, tgID)
 	}
-	return c.AssignmentVersion, result, nil
+	return nil
+}
+
+func (c *InMemStateCache) GetPlacement(ctx context.Context) (models.NodeState, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	tgStates := make(map[models.TargetGroupID]models.TargetGroupState, len(c.cache))
+	for _, entry := range c.cache {
+		tgStates[entry.entry.ID] = entry.entry
+	}
+	return models.NodeState{
+		PlacementVersion:  c.AssignmentVersion,
+		TargetGroupStates: tgStates,
+	}, nil
+}
+func (c *InMemStateCache) GetDesiredEndpoints(tgID models.TargetGroupID) (*reconciler.VersionedEndpoints, bool) {
+	return nil, false
+}
+
+func (c *InMemStateCache) GetDesiredSpec(tgID models.TargetGroupID) (*reconciler.VersionedSpec, bool) {
+	return nil, false
 }

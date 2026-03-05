@@ -6,3 +6,13 @@ type ReconciliationUnit struct {
 	Updated          []*TargetGroupChange
 	Removed          []TargetGroupID
 }
+
+type TargetGroupChange struct {
+	ID          TargetGroupID
+	SpecVersion uint64
+	Spec        *TargetGroupSpec
+
+	EndpointsVersion uint64
+	Changelog        []EndpointEvent
+	// TODO: snapshot
+}
