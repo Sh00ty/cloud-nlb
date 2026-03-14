@@ -8,6 +8,7 @@ import (
 
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/models"
 	"github.com/hashicorp/go-uuid"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/time/rate"
 )
@@ -29,6 +30,7 @@ func NewScheduler(
 	controlPlane ControlPlane,
 	reconciler Reconciler,
 	state PersistentState,
+	log zerolog.Logger,
 ) *Scheduler {
 	return &Scheduler{
 		nodeID:               nodeID,
@@ -38,6 +40,7 @@ func NewScheduler(
 		limiter:              rate.NewLimiter(rate.Every(4*time.Second), 4),
 		afterErrorTokenUsage: 2,
 		afterOkTokenUsage:    1,
+		log:                  log.With().Str("component", "scheduler").Logger(),
 	}
 }
 
@@ -50,6 +53,8 @@ type Scheduler struct {
 	afterErrorTokenUsage int
 	afterOkTokenUsage    int
 	wasError             bool
+
+	log zerolog.Logger
 }
 
 func (s *Scheduler) Run(ctx context.Context) error {
@@ -75,7 +80,9 @@ func (s *Scheduler) Run(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("failed to generate uuid for request, probably need restart: %w", err)
 		}
+		iterStart := time.Now()
 		err = s.runIteration(ctx, requestID)
+		iterationDuration.WithLabelValues(hasError(err)).Observe(time.Since(iterStart).Seconds())
 		if err == nil {
 			s.wasError = false
 			continue
@@ -92,22 +99,32 @@ func (s *Scheduler) runIteration(ctx context.Context, reqID string) error {
 	}
 	placement.NodeName = s.nodeID
 
+	pollStart := time.Now()
 	reconciliationUnit, err := s.controlPlane.PollUpdatesIfExists(ctx, placement, reqID)
 	if err != nil {
+		pollDuration.WithLabelValues("error").Observe(time.Since(pollStart).Seconds())
 		return fmt.Errorf("failed to poll updates from control plane: %w", err)
 	}
 	if reconciliationUnit == nil {
+		pollDuration.WithLabelValues("not_modified").Observe(time.Since(pollStart).Seconds())
 		log.Debug().Msgf("request %s: not modified", reqID)
 		return nil
 	}
+	pollDuration.WithLabelValues("has_changes").Observe(time.Since(pollStart).Seconds())
+
 	log.Info().Msgf("got new state from control-plane with placement version: %d", reconciliationUnit.PlacementVersion)
 
-	ts := time.Now()
+	reconcileStart := time.Now()
 	err = s.reconciler.UpdateDesired(ctx, reconciliationUnit)
 	if err != nil {
+		reconcileDuration.WithLabelValues("true").Observe(time.Since(reconcileStart).Seconds())
 		return fmt.Errorf("failed to reconcile incoming uint: %+v: %w", *reconciliationUnit, err)
 	}
-	duration := time.Since(ts)
-	log.Info().Msgf("successfully reconciled uint with request id %s: duration %d ms", reqID, duration.Milliseconds())
+	reconcileDuration.WithLabelValues("false").Observe(time.Since(reconcileStart).Seconds())
+
+	log.Info().
+		Msgf("successfully reconciled uint with request id %s: duration %d ms",
+			reqID, time.Since(reconcileStart),
+		)
 	return nil
 }

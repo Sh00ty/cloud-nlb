@@ -8,6 +8,7 @@ import (
 
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/models"
 	"github.com/avast/retry-go/v4"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 )
 
@@ -23,7 +24,7 @@ type status struct {
 
 type targetGroupEndpoints struct {
 	statuses   map[EndpointKey]status
-	generation uint
+	generation uint64
 }
 
 type TargetGroupStorage interface {
@@ -105,6 +106,19 @@ func (s *EndpointsHealthService) WatchForTargetGroup(ctx context.Context, tgID m
 		s.handlingTargetGroups[tgID] = time.Time{}
 	}
 
+	watchedTargetGroups.Set(float64(len(s.handlingTargetGroups)))
+	return nil
+}
+
+func (s *EndpointsHealthService) StopWatchForTargetGroup(ctx context.Context, tgID models.TargetGroupID) error {
+	s.handlingTargetGroupsGuard.Lock()
+	delete(s.handlingTargetGroups, tgID)
+	watchedTargetGroups.Set(float64(len(s.handlingTargetGroups)))
+	s.handlingTargetGroupsGuard.Unlock()
+
+	s.actualStatusesGuard.Lock()
+	delete(s.actualStatuses, tgID)
+	s.actualStatusesGuard.Unlock()
 	return nil
 }
 
@@ -117,6 +131,8 @@ func (s *EndpointsHealthService) IsWatchFor(ctx context.Context, tgID models.Tar
 }
 
 func (s *EndpointsHealthService) SyncStatuses(ctx context.Context, tgIDs []models.TargetGroupID) {
+	defer prometheus.NewTimer(syncDuration).ObserveDuration()
+
 	needFetch := make([]models.TargetGroupID, 0, len(tgIDs))
 
 	s.handlingTargetGroupsGuard.Lock()
@@ -135,6 +151,7 @@ func (s *EndpointsHealthService) SyncStatuses(ctx context.Context, tgIDs []model
 
 	wg := sync.WaitGroup{}
 
+	syncTargetGroupsTotal.Add(float64(len(needFetch)))
 	// TODO: probably we can get here a data-race, i think that we need to make this function atomic
 	for _, tgID := range needFetch {
 		wg.Add(1)
@@ -145,10 +162,15 @@ func (s *EndpointsHealthService) SyncStatuses(ctx context.Context, tgIDs []model
 
 			err := retry.Do(
 				func() error {
+					fetchStart := time.Now()
+
 					statuses, err := s.hcSvcClient.GetEndpointStatuses(ctx, tgID)
 					if err != nil {
+						fetchDuration.WithLabelValues("true").Observe(time.Since(fetchStart).Seconds())
 						return fmt.Errorf("getting endpoint statuses: %w", err)
 					}
+					fetchDuration.WithLabelValues("false").Observe(time.Since(fetchStart).Seconds())
+
 					updated := s.updateEndpointStatuses(ctx, tgID, statuses)
 					s.log.Info().
 						Int("updated", updated).
@@ -180,6 +202,7 @@ func (s *EndpointsHealthService) UpdateEndpointsStatuses(
 
 	for tgID, stats := range statuses {
 		updated := s.updateEndpointStatuses(ctx, tgID, stats)
+		endpointStatusUpdatesTotal.Add(float64(updated))
 		log.Info().
 			Str("tg_id", string(tgID)).
 			Int("updated", updated).
@@ -219,11 +242,11 @@ func (s *EndpointsHealthService) updateEndpointStatuses(
 				healthy:   stat.Healthy,
 				updatedAt: stat.UpdatedAt,
 			}
-			log.Debug().Msg("[new]: updated endpoint status")
+			log.Info().Msg("[new]: updated endpoint status")
 			continue
 		}
 		if actual.updatedAt.After(stat.UpdatedAt) {
-			log.Debug().Msg("not updated due to older updated at")
+			log.Warn().Msg("not updated due to older updated at")
 			continue
 		}
 		knownStatuses.statuses[key] = status{
@@ -246,6 +269,7 @@ func (s *EndpointsHealthService) triggerReconciliation(ctx context.Context, tgID
 	select {
 	case <-ctx.Done():
 	case s.reconcilerTaskChan <- []models.TargetGroupID{tgID}:
+		reconciliationTriggersTotal.Inc()
 		s.log.Debug().Str("tg_id", string(tgID)).Msg("triggered target group reconciliation")
 	}
 }
@@ -270,17 +294,6 @@ func (s *EndpointsHealthService) RemoveEndpoint(ctx context.Context, tgID models
 	return nil
 }
 
-func (s *EndpointsHealthService) StopWatchForTargetGroup(ctx context.Context, tgID models.TargetGroupID) error {
-	s.handlingTargetGroupsGuard.Lock()
-	delete(s.handlingTargetGroups, tgID)
-	s.handlingTargetGroupsGuard.Unlock()
-
-	s.actualStatusesGuard.Lock()
-	delete(s.actualStatuses, tgID)
-	s.actualStatusesGuard.Unlock()
-	return nil
-}
-
 func (s *EndpointsHealthService) GetEndpointsStatus(
 	ctx context.Context,
 	tgID models.TargetGroupID,
@@ -302,16 +315,24 @@ func (s *EndpointsHealthService) GetEndpointsStatus(
 	return stat.healthy
 }
 
-func EpStatusKey(stat models.EndpointStatus) EndpointKey {
-	return EndpointKey{
-		IP:   string(stat.Header.IP),
-		Port: stat.Header.Port,
+func (s *EndpointsHealthService) GetTgVersion(ctx context.Context, tg models.TargetGroupID) (uint64, bool) {
+	s.actualStatusesGuard.Lock()
+	defer s.actualStatusesGuard.Unlock()
+
+	info, exists := s.actualStatuses[tg]
+	if !exists {
+		return 0, false
 	}
+	return info.generation, true
+}
+
+func EpStatusKey(stat models.EndpointStatus) EndpointKey {
+	return EpHdrKey(stat.Header)
 }
 
 func EpHdrKey(hdr models.EndpointHdr) EndpointKey {
 	return EndpointKey{
-		IP:   string(hdr.IP),
+		IP:   hdr.IP.String(),
 		Port: hdr.Port,
 	}
 }

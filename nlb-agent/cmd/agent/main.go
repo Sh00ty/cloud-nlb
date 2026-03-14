@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/coordinator/etcd"
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/endpointshc"
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/endpointshc/hcsrv"
+	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/endpointshc/statecache"
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/endpointshc/watcher/kafka"
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/models"
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/reconciler"
@@ -19,6 +21,7 @@ import (
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/storage/persistent"
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/vpp/stubvpp"
 	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/vrischmann/envconfig"
@@ -82,6 +85,8 @@ func main() {
 	if appCfg.LoggerUsePretty {
 		log.Logger = log.Logger.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
+	go startMetrics()
+
 	nodeID := appCfg.NodeID
 	if len(os.Args) > 1 {
 		nodeID = os.Args[1]
@@ -125,6 +130,7 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to init persistent spec storage")
 	}
+	defer storage.Close()
 
 	vpp := stubvpp.NewStubVPP(log.Logger)
 	reconcileTaskChan := make(chan []models.TargetGroupID, 128)
@@ -140,13 +146,14 @@ func main() {
 		reconcileTaskChan,
 		storage,
 		endpointsSvc,
+		statecache.New(),
 		appCfg.MaxReconcileAttempts,
 		appCfg.ForceReconcileInterval,
 		appCfg.ReconcilerConcurrency,
 		vpp,
 		&log.Logger,
 	)
-	sched := scheduler.NewScheduler(nodeID, cpl, rec, storage)
+	sched := scheduler.NewScheduler(nodeID, cpl, rec, storage, log.Logger)
 
 	endpointsSvc.SyncStatuses(ctx, storage.GetAllTargetGroupIDs())
 
@@ -158,6 +165,7 @@ func main() {
 		endpointsSvc,
 		log.Logger,
 	)
+	defer epStatusWatcher.Close(ctx)
 
 	go rec.Run(ctx)
 	go func() {
@@ -171,4 +179,16 @@ func main() {
 
 	log.Info().Msg("agent started")
 	<-ctx.Done()
+}
+
+func startMetrics() {
+	var (
+		addr = os.Getenv("METRICS_ADDR")
+		mux  = http.NewServeMux()
+	)
+	if addr == "" {
+		return
+	}
+	mux.Handle("/metrics", promhttp.Handler())
+	http.ListenAndServe(addr, mux)
 }

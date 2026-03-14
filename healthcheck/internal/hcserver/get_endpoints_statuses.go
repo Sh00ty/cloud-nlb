@@ -7,6 +7,7 @@ import (
 	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/protobuf/api/proto/hcpbv1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (srv *Server) GetEndpointStatuses(
@@ -25,6 +26,7 @@ func (srv *Server) GetEndpointStatuses(
 			TargetGroup: string(epStat.TargetGroup),
 			IsHealthy:   epStat.Status,
 			LastError:   epStat.Error,
+			UpdatedAt:   timestamppb.New(epStat.UpdatedAt),
 		})
 	}
 	return &hcpbv1.GetEndpointStatusesResponse{Statuses: pbStatuses}, nil

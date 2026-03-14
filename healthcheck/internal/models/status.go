@@ -19,4 +19,5 @@ type TargetStatus struct {
 	Target      healthcheck.TargetAddr
 	Error       string
 	Status      bool
+	UpdatedAt   time.Time
 }

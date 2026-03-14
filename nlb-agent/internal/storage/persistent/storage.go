@@ -176,9 +176,6 @@ func (s *Storage) SetActualSpec(_ context.Context, tgID models.TargetGroupID, sp
 
 	entry := reconciler.VersionedSpec{Version: version, Spec: spec}
 	// actual spec exists only in memory of agent
-	if err := s.putJSON(bucketTGSpec, actualKey(tgID), entry); err != nil {
-		return err
-	}
 	s.cache.actualSpecs[tgID] = entry
 	return nil
 }
@@ -225,9 +222,6 @@ func (s *Storage) SetActualEndpoints(_ context.Context, tgID models.TargetGroupI
 	defer s.mu.Unlock()
 
 	entry := reconciler.VersionedEndpoints{Version: version, Endpoints: endpoints}
-	if err := s.putJSON(bucketEndpoints, actualKey(tgID), entry); err != nil {
-		return err
-	}
 	s.cache.actualEndpoints[tgID] = entry
 	return nil
 }
@@ -277,22 +271,6 @@ func (s *Storage) DeleteDesired(_ context.Context, tgIDs []models.TargetGroupID)
 func (s *Storage) DeleteActual(_ context.Context, tgID models.TargetGroupID) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	err := s.db.Update(func(tx *bbolt.Tx) error {
-		specBucket := tx.Bucket(bucketTGSpec)
-		epBucket := tx.Bucket(bucketEndpoints)
-
-		if err := specBucket.Delete(actualKey(tgID)); err != nil {
-			return fmt.Errorf("delete actual spec: %w", err)
-		}
-		if err := epBucket.Delete(actualKey(tgID)); err != nil {
-			return fmt.Errorf("delete actual endpoints: %w", err)
-		}
-		return nil
-	})
-	if err != nil {
-		return err
-	}
 
 	delete(s.cache.actualSpecs, tgID)
 	delete(s.cache.actualEndpoints, tgID)
@@ -404,38 +382,6 @@ func (s *Storage) GetPlacement(ctx context.Context) (models.NodeState, error) {
 	}, nil
 }
 
-// ResetAllActual drops all actual versions to zero.
-// Called at startup before VPP dump reconciliation to ensure
-// we don't trust stale actual state from a previous run.
-func (s *Storage) ResetAllActual(_ context.Context) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	err := s.db.Update(func(tx *bbolt.Tx) error {
-		specBucket := tx.Bucket(bucketTGSpec)
-		epBucket := tx.Bucket(bucketEndpoints)
-
-		for id := range s.cache.actualSpecs {
-			if err := specBucket.Delete(actualKey(id)); err != nil {
-				return fmt.Errorf("delete actual spec %s: %w", id, err)
-			}
-		}
-		for id := range s.cache.actualEndpoints {
-			if err := epBucket.Delete(actualKey(id)); err != nil {
-				return fmt.Errorf("delete actual endpoints %s: %w", id, err)
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		return fmt.Errorf("reset all actual: %w", err)
-	}
-
-	s.cache.actualSpecs = make(map[models.TargetGroupID]reconciler.VersionedSpec)
-	s.cache.actualEndpoints = make(map[models.TargetGroupID]reconciler.VersionedEndpoints)
-	return nil
-}
-
 func (s *Storage) putJSON(bucket []byte, key []byte, value any) error {
 	data, err := json.Marshal(value)
 	if err != nil {
@@ -456,10 +402,6 @@ func (s *Storage) putRaw(bucket []byte, key []byte, data []byte) error {
 
 func desiredKey(tgID models.TargetGroupID) []byte {
 	return []byte(prefixDesired + string(tgID))
-}
-
-func actualKey(tgID models.TargetGroupID) []byte {
-	return []byte(prefixActual + string(tgID))
 }
 
 func isDesiredKey(key []byte) bool {

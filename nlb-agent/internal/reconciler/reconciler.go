@@ -25,6 +25,7 @@ func New(
 	reconcileTaskChan chan []models.TargetGroupID,
 	stateStor Storage,
 	endpointsStatusManager EndpointsStatusManager,
+	endpointStatusCache EndpointStatusCache,
 	maxReconcileAttempts uint8,
 	forceReconcileInterval time.Duration,
 	concurrency uint8,
@@ -38,9 +39,10 @@ func New(
 			maxAttempts:            maxReconcileAttempts,
 			stor:                   stateStor,
 			endpointsStatusManager: endpointsStatusManager,
+			endpointStatusCache:    endpointStatusCache,
 			vpp:                    vpp,
 			pending:                make(map[models.TargetGroupID]struct{}),
-			queue:                  make(chan reconcileTask),
+			queue:                  make(chan reconcileTask, 1),
 			log: log.With().
 				Str("component", "reconcile_wrk").
 				Uint8("worker_id", i).
@@ -73,6 +75,7 @@ func (r *Reconciler) Run(ctx context.Context) {
 				return
 			case <-r.forceReconcileTicker.C:
 				tgIDs := r.stor.GetAllTargetGroupIDs()
+				targetGroupsTotal.Set(float64(len(tgIDs)))
 				r.enqueueReconcileTask(tgIDs)
 			case task := <-r.reconcileTaskChan:
 				r.enqueueReconcileTask(task)
@@ -101,21 +104,30 @@ func (r *Reconciler) UpdateDesired(ctx context.Context, recUnit *models.Reconcil
 	if err != nil {
 		r.log.Error().Err(err).Msg("updating existing target groups specs")
 	}
+	desiredChangesTotal.WithLabelValues("updated").Add(float64(len(recUnit.Updated)))
+
 	err = r.addNewTargetGroups(ctx, recUnit.Added)
 	if err != nil {
 		return fmt.Errorf("adding new target groups: %w", err)
 	}
+	desiredChangesTotal.WithLabelValues("added").Add(float64(len(recUnit.Updated)))
+
+	// may be removed have to be before add to make replaces correctly
 	err = r.removeTargetGroups(ctx, recUnit.Removed)
 	if err != nil {
 		return fmt.Errorf("removing target groups: %w", err)
 	}
+	desiredChangesTotal.WithLabelValues("removed").Add(float64(len(recUnit.Updated)))
+
 	updated, err := r.stor.SavePlacementVersion(ctx, recUnit.PlacementVersion)
 	if err != nil {
 		return fmt.Errorf("saving placement version: %d", recUnit.PlacementVersion)
 	}
 	if updated {
+		placementVersionUpdatesTotal.Inc()
 		r.log.Info().Uint64("placement_version", recUnit.PlacementVersion).Msg("updated placement version")
 	}
+	placementVersion.Set(float64(recUnit.PlacementVersion))
 	return r.makeReconcileEvent(ctx, recUnit)
 }
 

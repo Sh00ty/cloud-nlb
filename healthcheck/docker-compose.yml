@@ -44,7 +44,8 @@ services:
       - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
       - --default-log-level=warn
       # here external addr is 192.168.5.2 for colima host
-      - --advertise-kafka-addr internal://redpanda:9092,external://192.168.5.2:19092
+      # TODO:
+      - --advertise-kafka-addr internal://redpanda:9092,external://127.0.0.1:19092
       - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
       - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:18082
       - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"runtime"
 	"sync/atomic"
+	"time"
 
 	"github.com/rs/zerolog/log"
 
@@ -15,6 +16,7 @@ type Notifier interface {
 }
 
 func NewExecutor(notifier Notifier, concurrency uint16, buffer uint32) *executor {
+	channelBufferCapacity.Set(float64(buffer))
 	return &executor{
 		inputChan:   make(chan *models.HealthCheck, buffer),
 		close:       make(chan struct{}),
@@ -39,10 +41,16 @@ func (e *executor) Run() {
 	for i := range e.concurrency {
 		go func() {
 			for task := range e.inputChan {
+				channelBufferUsage.Set(float64(len(e.inputChan)))
 
 				log.Debug().Msgf("executor [%d] received task: %+v", i, task.Target)
 
+				ts := time.Now()
 				changed := task.Executable.DoHealthCheckIteration()
+				taskDuration.
+					WithLabelValues(boolToStr(changed)).
+					Observe(time.Since(ts).Seconds())
+
 				if changed {
 					newStatus, err := task.Executable.Info()
 					e.notifier.NotifyHcStatusChanged(models.HcEvent{
@@ -67,6 +75,7 @@ func (e *executor) ExecuteHealthCheck(t *models.HealthCheck) error {
 
 	select {
 	case e.inputChan <- t:
+		channelBufferUsage.Set(float64(len(e.inputChan)))
 		return nil
 	case <-e.close:
 		return fmt.Errorf("failed to send task to executor: closed")

@@ -1,0 +1,39 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:10090"]
+
+  - job_name: "health-check-node"
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["host.docker.internal:9100"]
+        labels:
+          instance: "hc-worker-0"
+
+  - job_name: "nlb-agent"
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["host.docker.internal:9101"]
+        labels:
+          instance: "dpl-node-1"
+
+  - job_name: "control-plane"
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["host.docker.internal:9102"]
+        labels:
+          instance: "control-plane-reconciler"
+      - targets: ["host.docker.internal:9103"]
+        labels:
+          instance: "control-plane-apiserver"
+
+  # - job_name: "testserver"
+  #   scrape_interval: 5s
+  #   static_configs:
+  #     - targets: ["host.docker.internal:9050"]
+  #       labels:
+  #         instance: "testserver-0"

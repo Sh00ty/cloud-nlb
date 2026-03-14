@@ -220,20 +220,16 @@ func (r *Repository) UpdateTargetsStatuses(ctx context.Context, events []models.
 	do update set
 		status = excluded.status,
 		last_error = excluded.last_error,
-		updated_at = case
-			when excluded.status = true then now()
-			when target_statuses.updated_at <= now() - $6::interval then now()
-			else target_statuses.updated_at
-		end
-	where excluded.status = true
-	or target_statuses.updated_at <= now() - $6::interval;
-	`
+		updated_at = now()
+	where
+		target_statuses.status is distinct from excluded.status;`
+
 	b := pgx.Batch{}
 	for _, event := range events {
-		intervalStr := fmt.Sprintf("%d microseconds", event.HcInterval.Microseconds())
 		errorStr := ""
 		if event.Error != nil {
 			errorStr = event.Error.Error()
+			errorStr = errorStr[:min(128, len(errorStr))]
 		}
 		b.Queue(
 			sql,
@@ -242,7 +238,6 @@ func (r *Repository) UpdateTargetsStatuses(ctx context.Context, events []models.
 			event.TargetGroup,
 			event.NewStatus,
 			errorStr,
-			intervalStr,
 		)
 	}
 	result := r.db.SendBatch(ctx, &b)
@@ -256,7 +251,7 @@ func (r *Repository) UpdateTargetsStatuses(ctx context.Context, events []models.
 		if tag.RowsAffected() > 0 {
 			log.Info().Msgf("updated target status by event: %+v", event)
 		} else {
-			log.Warn().Msgf("not updated target status by event %+v, several nodes make updates, skip this", event)
+			log.Warn().Msgf("not updated target status by event %+v, no changes", event)
 		}
 	}
 	return len(events), nil
@@ -299,7 +294,7 @@ func (r *Repository) GetTargetStatuses(
 	targetGroup healthcheck.TargetGroupID,
 ) ([]models.TargetStatus, error) {
 	sql := `
-	select real_ip, port, target_group, last_error, status
+	select real_ip, port, target_group, last_error, status, updated_at
 	from target_statuses
 	where target_group = $1;
 	`
@@ -320,6 +315,7 @@ func (r *Repository) GetTargetStatuses(
 			&target.TargetGroup,
 			&target.Error,
 			&target.Status,
+			&target.UpdatedAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan target value: %w", err)

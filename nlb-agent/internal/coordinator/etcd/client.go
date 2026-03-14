@@ -55,6 +55,15 @@ func NewClient(ctx context.Context, host string, nodeID string, ttlUntilDeathInS
 	}, nil
 }
 
+// func (c *Client) MakeAsDead(ctx context.Context, reason string) error {
+// 	const status = "drained"
+
+// }
+
+// func (c *Client) MakeAlive(ctx context.Context) error {
+
+// }
+
 func (c *Client) Register(ctx context.Context) error {
 	resp, err := c.etcd.KV.Get(ctx, dplStatus(c.nodeID))
 	if err != nil {

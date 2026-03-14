@@ -37,7 +37,7 @@ func (c *Client) GetEndpointStatuses(ctx context.Context, targetGroup models.Tar
 		result = append(result, models.EndpointStatus{
 			Header: models.EndpointHdr{
 				TargetGroupID: targetGroup,
-				IP:            net.IP(stat.RealIp),
+				IP:            net.ParseIP(stat.RealIp),
 				Port:          uint16(stat.Port),
 			},
 			UpdatedAt: stat.UpdatedAt.AsTime(),

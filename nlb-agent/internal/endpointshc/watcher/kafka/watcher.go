@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net"
+	"time"
 
 	"github.com/rs/zerolog"
 
@@ -41,6 +42,13 @@ func NewStatusesWatcher(
 			MaxBytes:    10 * 1024 * 1024,
 			GroupID:     nodeID,
 			StartOffset: kafka.LastOffset,
+			Logger:      &log,
+			ErrorLogger: &log,
+
+			SessionTimeout:         6 * time.Second,
+			RebalanceTimeout:       6 * time.Second,
+			HeartbeatInterval:      2 * time.Second,
+			PartitionWatchInterval: 5 * time.Second,
 		})
 	return &StatusesWatcher{
 		msgReader: reader,
@@ -57,6 +65,7 @@ func (w *StatusesWatcher) RunEndpointStatusesWatcher(ctx context.Context) error 
 				return err
 			}
 			_ = w.msgReader.CommitMessages(ctx, msg)
+			watcherEventsCount.WithLabelValues("error").Inc()
 			continue
 		}
 
@@ -64,6 +73,7 @@ func (w *StatusesWatcher) RunEndpointStatusesWatcher(ctx context.Context) error 
 		err = json.Unmarshal(msg.Value, &goMsg)
 		if err != nil {
 			w.log.Error().Err(err).Msg("failed to decode message from json")
+			watcherEventsCount.WithLabelValues("bad_format").Inc()
 			_ = w.msgReader.CommitMessages(ctx, msg)
 			continue
 		}
@@ -72,11 +82,14 @@ func (w *StatusesWatcher) RunEndpointStatusesWatcher(ctx context.Context) error 
 			log    = w.log.With().Interface("message", goMsg).Logger()
 			epStat = models.EndpointStatus{}
 		)
+
 		switch goMsg.Op {
 		case "c", "r", "u":
 			tgID := models.TargetGroupID(goMsg.After.TargetGroup)
-			if !w.svc.IsWatchFor(ctx, epStat.Header.TargetGroupID) {
+			if !w.svc.IsWatchFor(ctx, tgID) {
 				log.Debug().Str("tg_id", string(tgID)).Msg("not updated endpoint status change: not watching for this target group")
+
+				watcherEventsCount.WithLabelValues("tg_skipped").Inc()
 				continue
 			}
 
@@ -95,7 +108,7 @@ func (w *StatusesWatcher) RunEndpointStatusesWatcher(ctx context.Context) error 
 				log.Error().Err(err).Msg("failed to remove endpoint message")
 				continue
 			}
-			log.Debug().Msg("updated endpoint status")
+			watcherEventsCount.WithLabelValues("updated").Inc()
 		case "d":
 			epStat.Header = models.EndpointHdr{
 				TargetGroupID: models.TargetGroupID(goMsg.Before.TargetGroup),
@@ -110,8 +123,10 @@ func (w *StatusesWatcher) RunEndpointStatusesWatcher(ctx context.Context) error 
 				log.Error().Err(err).Msg("failed to remove endpoint message")
 				continue
 			}
+			watcherEventsCount.WithLabelValues("removed").Inc()
 			log.Debug().Msg("removed endpoint status")
 		default:
+			watcherEventsCount.WithLabelValues("unknown").Inc()
 			log.Info().Msgf("skipped change message with unknown op")
 		}
 		err = w.msgReader.CommitMessages(ctx, msg)

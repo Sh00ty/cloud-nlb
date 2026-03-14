@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/vrischmann/envconfig"
@@ -64,11 +66,15 @@ type Config struct {
 	ExecutorConcurrency  uint16        `envconfig:"EXECUTOR_CONCURRENCY"`
 	ExecutorBuffer       uint32        `envconfig:"EXECUTOR_BUFFER"`
 	ResendStatusInterval time.Duration `envconfig:"RESEND_STATUS_INTERVAL"`
+
+	NeedProbes bool `envconfig:"NEED_PROBES"`
 }
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
+
+	godotenv.Load()
 
 	appCfg := Config{}
 	err := envconfig.Init(&appCfg)
@@ -76,6 +82,8 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to read app config")
 	}
 	log.Logger = log.Level(loggerLevelFromString(appCfg.LoggerLevel))
+
+	go startMetrics()
 
 	log.Warn().Msgf("running node %s", appCfg.NodeID)
 
@@ -145,6 +153,7 @@ func main() {
 	scheduler := scheduler.New(
 		nil,
 		checkExecutor,
+		log.Logger,
 	)
 	defer checkExecutor.Close()
 
@@ -156,6 +165,7 @@ func main() {
 		membershipEventsChan,
 		scheduler,
 		sharder,
+		log.Logger,
 	)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create coordinator")
@@ -190,8 +200,10 @@ func main() {
 		log.Info().Msg("successfully joined gossip cluster")
 	}
 
-	serverClose := startProbeServer()
-	defer serverClose()
+	if appCfg.NeedProbes {
+		serverClose := startProbeServer()
+		defer serverClose()
+	}
 
 	<-ctx.Done()
 	memberList.GracefullyClose(time.Second)
@@ -220,4 +232,16 @@ func startProbeServer() func() {
 	return func() {
 		_ = srv.Close()
 	}
+}
+
+func startMetrics() {
+	var (
+		addr = os.Getenv("METRICS_ADDR")
+		mux  = http.NewServeMux()
+	)
+	if addr == "" {
+		return
+	}
+	mux.Handle("/metrics", promhttp.Handler())
+	http.ListenAndServe(addr, mux)
 }

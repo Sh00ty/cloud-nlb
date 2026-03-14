@@ -49,6 +49,7 @@ func (c *SenderControler) Run(ctx context.Context) {
 			if !ok {
 				return
 			}
+			start := time.Now()
 			err := retry.Do(
 				func() error {
 					_, err := c.statusRepo.UpdateTargetsStatuses(ctx, []models.HcEvent{event})
@@ -56,10 +57,13 @@ func (c *SenderControler) Run(ctx context.Context) {
 				},
 				retry.Attempts(3),
 			)
+			sendDuration.WithLabelValues(boolToStr(err == nil)).Observe(time.Since(start).Seconds())
+
 			if err != nil {
 				log.Error().Err(err).Msg("failed to save target update, put it into unsent queue")
 				c.unsentGuard.Lock()
 				c.unsent = append(c.unsent, event)
+				unsentQueueSize.Set(float64(len(c.unsent)))
 				c.unsentGuard.Unlock()
 			}
 		}
@@ -70,15 +74,31 @@ func (c *SenderControler) sendUnsentEvents(ctx context.Context) {
 	c.unsentGuard.Lock()
 	defer c.unsentGuard.Unlock()
 
-	// если c.unsend
+	if len(c.unsent) == 0 {
+		return
+	}
+
+	start := time.Now()
+	total := len(c.unsent)
+
 	done, err := c.statusRepo.UpdateTargetsStatuses(ctx, c.unsent)
 	if err != nil {
 		log.Warn().Err(err).Msgf("failed to update unsent events: done %d", done)
 
-		newUnsent := make([]models.HcEvent, len(c.unsent)-done)
+		unsentResyncDuration.WithLabelValues("false").Observe(time.Since(start).Seconds())
+		unsentResyncEventsTotal.WithLabelValues("sent").Add(float64(done))
+		unsentResyncEventsTotal.WithLabelValues("remained").Add(float64(total - done))
+
+		newUnsent := make([]models.HcEvent, total-done)
 		copy(newUnsent, c.unsent[done:])
 		c.unsent = newUnsent
+		unsentQueueSize.Set(float64(len(c.unsent)))
 		return
 	}
+
+	unsentResyncDuration.WithLabelValues("true").Observe(time.Since(start).Seconds())
+	unsentResyncEventsTotal.WithLabelValues("sent").Add(float64(total))
+
 	c.unsent = c.unsent[:0]
+	unsentQueueSize.Set(float64(0))
 }

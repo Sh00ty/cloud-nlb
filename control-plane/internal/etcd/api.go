@@ -104,6 +104,8 @@ func (c *ApiClient) ExecuteIncrementally(
 		if resp.Succeeded {
 			return nil
 		}
+		txRetriesTotal.WithLabelValues(timeStampKey).Inc()
+
 		tgTimestampStr, err := extractStringFromTxnResponse(resp)
 		if err != nil {
 			return fmt.Errorf("failed to extract current timestamp %s: %w", timeStampKey, err)
@@ -120,8 +122,15 @@ func (c *ApiClient) ExecuteIncrementally(
 	)
 }
 
-func (c *ApiClient) SetTargetGroupSpec(ctx context.Context, tg models.TargetGroupSpec) error {
+func (c *ApiClient) SetTargetGroupSpec(ctx context.Context, tg models.TargetGroupSpec) (err error) {
 	const firstEventTimestamp = "0"
+
+	start := time.Now()
+	defer func() {
+		kvOperationDuration.
+			WithLabelValues("set_tg_spec", errToBool(err)).
+			Observe(time.Since(start).Seconds())
+	}()
 
 	tx := c.etcd.Txn(ctx).If(
 		clientv3.Compare(
@@ -200,6 +209,11 @@ func (c *ApiClient) AddEndpoint(
 	tgID models.TargetGroupID,
 	ep models.EndpointSpec,
 ) error {
+	start := time.Now()
+	defer func() {
+		kvOperationDuration.WithLabelValues("add_endpoint", "false").Observe(time.Since(start).Seconds())
+	}()
+
 	addEpFunc := c.getEndpointEventOpFunc(models.EventTypeAddEndpoint, tgID, ep)
 	err := c.ExecuteIncrementally(ctx, tgEndpointsTimestamp(tgID), addEpFunc)
 	if err != nil {
@@ -213,6 +227,11 @@ func (c *ApiClient) RemoveEndpoint(
 	tgID models.TargetGroupID,
 	ep models.EndpointSpec,
 ) error {
+	start := time.Now()
+	defer func() {
+		kvOperationDuration.WithLabelValues("remove_endpoint", "false").Observe(time.Since(start).Seconds())
+	}()
+
 	addEpFunc := c.getEndpointEventOpFunc(models.EventTypeRemoveEndpoint, tgID, ep)
 	err := c.ExecuteIncrementally(ctx, tgEndpointsTimestamp(tgID), addEpFunc)
 	if err != nil {
@@ -224,10 +243,17 @@ func (c *ApiClient) RemoveEndpoint(
 func (c *ApiClient) GetTargetGroupDiff(
 	ctx context.Context,
 	current apiruntime.TargetGroupState,
-) (models.TargetGroup, error) {
+) (result models.TargetGroup, err error) {
+	start := time.Now()
+	defer func() {
+		kvOperationDuration.
+			WithLabelValues("get_tg_diff", errToBool(err)).
+			Observe(time.Since(start).Seconds())
+	}()
+
 	// here we don't need consistency cause all event version and states can go only further (better for us)
 	// TODO: changelog support
-	result := models.TargetGroup{
+	result = models.TargetGroup{
 		Spec: models.TargetGroupSpec{
 			ID: current.TgID,
 		},

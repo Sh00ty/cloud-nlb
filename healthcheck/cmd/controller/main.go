@@ -14,6 +14,7 @@ import (
 	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/hcserver"
 	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/sharder"
 	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/protobuf/api/proto/hcpbv1"
+	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/vrischmann/envconfig"
@@ -47,11 +48,14 @@ type Config struct {
 	ServerPort       uint16 `envconfig:"GRPC_SERVER_PORT"`
 	GrpcDebug        bool   `envconfig:"GRPC_DEBUG"`
 	VShardCount      int    `envconfig:"HC_VIRTUAL_SHARDS"`
+	NeedProbes       bool   `envconfig:"NEED_PROBES"`
 }
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
+
+	godotenv.Load()
 
 	appCfg := Config{}
 	err := envconfig.Init(&appCfg)
@@ -116,9 +120,10 @@ func main() {
 			log.Fatal().Err(err).Msg("failed to start serving grpc requests")
 		}
 	}()
-
-	serverClose := startProbeServer()
-	defer serverClose()
+	if appCfg.NeedProbes {
+		serverClose := startProbeServer()
+		defer serverClose()
+	}
 
 	<-ctx.Done()
 }

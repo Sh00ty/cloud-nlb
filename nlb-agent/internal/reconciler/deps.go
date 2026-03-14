@@ -43,6 +43,12 @@ type EndpointsStatusManager interface {
 	StopWatchForTargetGroup(ctx context.Context, tgID models.TargetGroupID) error
 
 	GetEndpointsStatus(ctx context.Context, tgID models.TargetGroupID, endpoint models.EndpointHdr) bool
+	GetTgVersion(ctx context.Context, tg models.TargetGroupID) (uint64, bool)
+}
+
+type EndpointStatusCache interface {
+	GetTgEndpointsVerState(ctx context.Context, tg models.TargetGroupID) (uint64, bool)
+	SetTgEndpointsVerState(ctx context.Context, tg models.TargetGroupID, stateVer uint64)
 }
 
 type VPPManager interface {

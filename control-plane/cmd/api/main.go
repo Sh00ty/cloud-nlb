@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vrischmann/envconfig"
 
 	"github.com/Sh00ty/cloud-nlb/control-plane/internal/api/apirpc"
@@ -28,11 +29,12 @@ import (
 type Config struct {
 	DataPlaneSubscribeGcInterval time.Duration `envconfig:"DATA_PLANE_SUBSCRIBE_GC_INTERVAL"`
 	LoggerLevel                  string        `envconfig:"LOGGER_LEVEL"`
-	EtcdRuntimeMaxConcurrency    int64         `envconfig:"ETCD_RUNTIME_MAC_CONCURRENCY"`
+	EtcdRuntimeMaxConcurrency    int64         `envconfig:"ETCD_RUNTIME_MAX_CONCURRENCY"`
 	EtcdEndpoint                 string        `envconfig:"ETCD_ENDPOINT"`
 	ServerAddr                   string        `envconfig:"GRPC_SERVER_ADDR"`
 	ServerPort                   uint16        `envconfig:"GRPC_SERVER_PORT"`
 	IsDebug                      bool          `envconfig:"DEBUG"`
+	NeedProbes                   bool          `envconfig:"NEED_PROBES"`
 }
 
 func loggerLevelFromString(level string) zerolog.Level {
@@ -63,6 +65,8 @@ func main() {
 	}
 
 	log.Logger = log.Level(loggerLevelFromString(appCfg.LoggerLevel))
+
+	go startMetrics()
 
 	etcdClnt, err := etcd.NewApiClient(ctx, appCfg.EtcdEndpoint)
 	if err != nil {
@@ -143,8 +147,10 @@ func main() {
 		}
 	}()
 
-	serverClose := startProbeServer()
-	defer serverClose()
+	if appCfg.NeedProbes {
+		serverClose := startProbeServer()
+		defer serverClose()
+	}
 
 	<-ctx.Done()
 	srv.GracefulStop()
@@ -173,4 +179,16 @@ func startProbeServer() func() {
 	return func() {
 		_ = srv.Close()
 	}
+}
+
+func startMetrics() {
+	var (
+		addr = os.Getenv("API_METRICS_ADDR")
+		mux  = http.NewServeMux()
+	)
+	if addr == "" {
+		return
+	}
+	mux.Handle("/metrics", promhttp.Handler())
+	http.ListenAndServe(addr, mux)
 }

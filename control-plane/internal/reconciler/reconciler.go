@@ -147,6 +147,12 @@ func (r *Reconciler) Init(
 			r.targetGroups[tgID].Assignments[dplID] = struct{}{}
 		}
 	}
+
+	r.updateStateGauges()
+	r.recordLoadDistribution()
+	eventChannelUsage.Set(float64(len(r.eventCh)))
+	delayedEventsQueueSize.Set(float64(r.delayedEvents.Len()))
+
 	r.delayEvent(Event{Type: RunReconcile}, 0)
 }
 
@@ -156,13 +162,16 @@ func (r *Reconciler) RunReconciler(ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		case event, ok := <-r.eventCh:
+			eventChannelUsage.Set(float64(len(r.eventCh)))
 			if !ok {
 				return nil
 			}
 			r.eventTimestamp++
 			event.timestamp = r.eventTimestamp
 
+			incomingEventsTotal.WithLabelValues(string(event.Type)).Inc()
 			r.log.Info().Msgf("got new event: %v", event)
+
 			r.processIncomingEvent(event, true)
 		case <-r.delayEventTimer.C:
 			if r.delayedEvents.Len() == 0 {
@@ -182,6 +191,7 @@ func (r *Reconciler) processIncomingEvent(event Event, canSchedule bool) {
 			r.handleDataPlaneDeath(event)
 			return
 		}
+		delayedEventsTotal.WithLabelValues(string(DataPlaneDead)).Inc()
 		r.delayEvent(event, r.nodeDeathEventDelay)
 	case DataPlaneAlive:
 		r.handleDataPlaneAlive(event)
@@ -197,11 +207,13 @@ func (r *Reconciler) processIncomingEvent(event Event, canSchedule bool) {
 func (r *Reconciler) handleTargetGroupEvent(event Event) {
 	tgID := *event.TargetGroupID
 	if _, exists := r.targetGroups[tgID]; exists {
+		skippedEventsTotal.WithLabelValues(string(TargetGroupCreated), "tg_exists").Inc()
 		return
 	}
 	r.targetGroups[tgID] = TargetGroupStatus{
 		Assignments: make(map[models.DataPlaneID]struct{}),
 	}
+	targetGroupsTotal.Set(float64(len(r.targetGroups)))
 	r.reconcile()
 }
 
@@ -217,6 +229,7 @@ func (r *Reconciler) handleDataPlaneDeath(event Event) {
 		dplState.Timestamp > event.timestamp {
 
 		r.log.Warn().Msgf("skip death event: have alive event with bigger timestamp")
+		skippedEventsTotal.WithLabelValues(string(DataPlaneDead), "stale_death").Inc()
 		return
 	}
 	dplState.LastEvent = &event.Type
@@ -226,6 +239,7 @@ func (r *Reconciler) handleDataPlaneDeath(event Event) {
 
 	if oldState != models.Alive {
 		r.log.Info().Msgf("skip event %s, already applied", event)
+		skippedEventsTotal.WithLabelValues(string(DataPlaneDead), "already_dead").Inc()
 		return
 	}
 	r.reconcile()
@@ -255,6 +269,7 @@ func (r *Reconciler) handleDataPlaneAlive(event Event) {
 		r.dplStatuses[nodeID] = dplState
 
 		r.log.Info().Msgf("node already alive: %s", event)
+		skippedEventsTotal.WithLabelValues(string(DataPlaneAlive), "already_alive").Inc()
 		return
 	}
 	dplState.State = models.Alive

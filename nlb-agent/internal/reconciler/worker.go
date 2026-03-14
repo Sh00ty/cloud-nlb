@@ -3,7 +3,9 @@ package reconciler
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
+	"time"
 
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/models"
 	"github.com/rs/zerolog"
@@ -21,6 +23,7 @@ type worker struct {
 
 	stor                   Storage
 	endpointsStatusManager EndpointsStatusManager
+	endpointStatusCache    EndpointStatusCache
 	vpp                    VPPManager
 
 	mu          sync.Mutex
@@ -55,6 +58,7 @@ func (w *worker) enqueue(task reconcileTask) {
 			Str("tg_id", string(task.tgID)).
 			Msg("worker queue full, dropping reconcile task")
 	}
+	workerQueueSize.WithLabelValues(strconv.Itoa(w.id)).Set(float64(len(w.queue)))
 }
 
 func (w *worker) run(ctx context.Context) {
@@ -77,25 +81,30 @@ func (w *worker) removePending(tgID models.TargetGroupID) {
 	defer w.mu.Unlock()
 
 	delete(w.pending, tgID)
+	workerQueueSize.WithLabelValues(strconv.Itoa(w.id)).Set(float64(len(w.queue)))
 }
 
 func (w *worker) processTask(ctx context.Context, task reconcileTask) {
 	log := w.log.With().Str("tg_id", string(task.tgID)).Logger()
 
+	startTime := time.Now()
 	reconciled, err := w.reconcileTargetGroup(ctx, task.tgID)
 	if err != nil {
-		log.Error().Err(err).Msg("reconciliation failed, will retry on next cycle")
-
 		task.lastError = multierr.Append(task.lastError, err)
 		task.attempt++
 		w.enqueue(task)
+
+		reconcileDuration.WithLabelValues("error").Observe(time.Since(startTime).Seconds())
+		log.Error().Err(err).Msg("reconciliation failed, will retry on next cycle")
 		return
 	}
 
 	if reconciled {
 		log.Info().Msg("reconciliation completed")
+		reconcileDuration.WithLabelValues("changed").Observe(time.Since(startTime).Seconds())
 	} else {
-		log.Info().Msg("already in sync")
+		log.Debug().Msg("already in sync")
+		reconcileDuration.WithLabelValues("in_sync").Observe(time.Since(startTime).Seconds())
 	}
 }
 
@@ -123,11 +132,17 @@ func (w *worker) reconcileTargetGroup(ctx context.Context, tgID models.TargetGro
 	var (
 		desiredEps, hasDesiredEps = w.stor.GetDesiredEndpoints(ctx, tgID)
 		actualEps, hasActualEps   = w.stor.GetActualEndpoints(ctx, tgID)
+		hasSpecChanges            = hasDesiredEps && (!hasActualEps || actualEps.Version != desiredEps.Version)
 	)
 
-	needEpReconcile := hasDesiredEps && (!hasActualEps || actualEps.Version != desiredEps.Version)
-	if needEpReconcile {
-		if err := w.reconcileEndpoints(ctx, tgID, desiredEps, actualEps); err != nil {
+	var (
+		desiredStateGeneration, hasDesiredState = w.endpointsStatusManager.GetTgVersion(ctx, tgID)
+		actualStateGeneration, hasActualState   = w.endpointStatusCache.GetTgEndpointsVerState(ctx, tgID)
+
+		hasStateChanges = hasDesiredState && (!hasActualState || actualStateGeneration != desiredStateGeneration)
+	)
+	if hasSpecChanges || hasStateChanges {
+		if err := w.reconcileEndpoints(ctx, tgID, desiredEps, actualEps, desiredStateGeneration); err != nil {
 			return changed, fmt.Errorf("reconciling endpoints: %w", err)
 		}
 		changed = true
@@ -157,6 +172,7 @@ func (w *worker) reconcileEndpoints(
 	tgID models.TargetGroupID,
 	desired *VersionedEndpoints,
 	actual *VersionedEndpoints,
+	statusGeneration uint64,
 ) error {
 	var actualEps []models.EndpointSpec
 	if actual != nil {
@@ -170,17 +186,20 @@ func (w *worker) reconcileEndpoints(
 		Int("actual_count", len(actualEps)).
 		Msg("applying endpoints to VPP")
 
-	toAdd, toDelete := w.getEndpointsDiff(ctx, tgID, desired.Endpoints, actualEps)
+	toAdd, toDelete, newActual := w.getEndpointsDiff(ctx, tgID, desired.Endpoints, actualEps)
 	if err := w.vpp.RemoveEndpoints(ctx, tgID, toDelete); err != nil {
 		return fmt.Errorf("removing endpoints from vpp: %w", err)
 	}
 	if err := w.vpp.AddEndpoints(ctx, tgID, toAdd); err != nil {
 		return fmt.Errorf("adding endpoints to vpp: %w", err)
 	}
-	if err := w.stor.SetActualEndpoints(ctx, tgID, desired.Endpoints, desired.Version); err != nil {
+	if err := w.stor.SetActualEndpoints(ctx, tgID, newActual, desired.Version); err != nil {
 		return fmt.Errorf("persisting actual endpoints: %w", err)
 	}
+	w.endpointStatusCache.SetTgEndpointsVerState(ctx, tgID, statusGeneration)
 
+	endpointsDiffTotal.WithLabelValues("to_add").Add(float64(len(toAdd)))
+	endpointsDiffTotal.WithLabelValues("to_delete").Add(float64(len(toAdd)))
 	return nil
 }
 
@@ -188,7 +207,11 @@ func (w *worker) getEndpointsDiff(
 	ctx context.Context,
 	tgID models.TargetGroupID,
 	desired, actual []models.EndpointSpec,
-) (toAdd []models.EndpointSpec, toDelete []models.EndpointSpec) {
+) (
+	toAdd []models.EndpointSpec,
+	toDelete []models.EndpointSpec,
+	newActual []models.EndpointSpec,
+) {
 	type epKey struct {
 		ip   string
 		port uint16
@@ -217,13 +240,18 @@ func (w *worker) getEndpointsDiff(
 			IP:            desiredEp.IP,
 			Port:          desiredEp.Port,
 		})
+		if !healthy {
+			continue
+		}
 
 		actualEp, exists := actualMap[k]
-		if !exists && healthy {
+		if !exists {
+			newActual = append(newActual, desiredEp)
 			toAdd = append(toAdd, desiredEp)
 			continue
 		}
 		if desiredEp.Weight != actualEp.Weight {
+			newActual = append(newActual, desiredEp)
 			toAdd = append(toAdd, desiredEp)
 			toDelete = append(toDelete, actualEp)
 		}
@@ -238,7 +266,9 @@ func (w *worker) getEndpointsDiff(
 		_, exists := desiredMap[k]
 		if !exists || !healthy {
 			toDelete = append(toDelete, actualEp)
+			continue
 		}
+		newActual = append(newActual, actualEp)
 	}
 	return
 }
