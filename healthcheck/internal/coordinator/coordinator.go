@@ -9,8 +9,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/models"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/healthcheck"
 )
 
 type ChecksSourceRepo interface {
@@ -36,7 +36,8 @@ type CheckSharder interface {
 
 // TODO: hc settings deduplication
 type Coordinator struct {
-	mu *sync.Mutex
+	mu                    *sync.Mutex
+	sharderSchedulerGuard *sync.Mutex
 
 	checksSource ChecksSourceRepo
 	sched        CheckScheduler
@@ -56,12 +57,13 @@ func NewCoordinator(ctx context.Context,
 ) (*Coordinator, error) {
 	log = log.With().Str("component", "coordinator").Logger()
 	c := &Coordinator{
-		mu:               &sync.Mutex{},
-		membershipEvents: membershipEvents,
-		checksSource:     checksSource,
-		sched:            sched,
-		checkSharder:     sharder,
-		log:              log,
+		mu:                    &sync.Mutex{},
+		sharderSchedulerGuard: &sync.Mutex{},
+		membershipEvents:      membershipEvents,
+		checksSource:          checksSource,
+		sched:                 sched,
+		checkSharder:          sharder,
+		log:                   log,
 	}
 	return c, nil
 }
@@ -89,8 +91,9 @@ func (c *Coordinator) FetchTargets(ctx context.Context, vshards []uint) error {
 		return fmt.Errorf("getting healthcheck settings: %w", err)
 	}
 
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	// TODO: check if necessary
+	c.sharderSchedulerGuard.Lock()
+	defer c.sharderSchedulerGuard.Unlock()
 
 	for _, target := range targets {
 		log := c.log.With().Interface("target", target).Logger()
@@ -222,6 +225,11 @@ func (c *Coordinator) HandleTargetEvents(ctx context.Context, targetEvents []Tar
 	if err != nil {
 		return fmt.Errorf("failed to get checks settings for targets: %w", err)
 	}
+
+	// TODO: check if necessary
+	c.sharderSchedulerGuard.Lock()
+	defer c.sharderSchedulerGuard.Unlock()
+
 	for _, targetToAdd := range add {
 		if !c.checkSharder.LinkTarget(targetToAdd.ToAddr()) {
 			continue

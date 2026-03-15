@@ -3,7 +3,7 @@ package notifyer
 import (
 	"sync/atomic"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/models"
 )
 
 type ChanNotifier struct {

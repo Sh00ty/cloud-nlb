@@ -10,9 +10,9 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/pgerror"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/models"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/pgerror"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/healthcheck"
 )
 
 const (
@@ -86,7 +86,8 @@ func (r *Repository) CreateTargets(ctx context.Context, targets []healthcheck.Ta
 
 	sql := `
 	insert into targets (real_ip, port, target_group, vshard)
-	values ($1, $2, $3, $4);
+	values ($1, $2, $3, $4)
+	ON CONFLICT (real_ip, port, target_group) DO NOTHING;
 	`
 
 	tx, err := r.db.BeginTx(ctx, pgx.TxOptions{

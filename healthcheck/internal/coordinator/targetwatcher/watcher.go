@@ -10,8 +10,8 @@ import (
 	"github.com/rs/zerolog/log"
 	kafka "github.com/segmentio/kafka-go"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/coordinator"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/coordinator"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/healthcheck"
 )
 
 type Coordinator interface {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/protobuf/api/proto/hcpbv1"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/protobuf/api/proto/hcpbv1"
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/models"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

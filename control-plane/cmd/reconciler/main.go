@@ -63,6 +63,8 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to create reconciliation etcd repository")
 	}
 
+	go startProbeServer()
+
 	leaderCtx, cancelLeader := context.WithCancel(ctx)
 	defer cancelLeader()
 	for {
@@ -123,6 +125,31 @@ func main() {
 			cancelLeader()
 			leaderCtx, cancelLeader = context.WithCancel(ctx)
 		}
+	}
+}
+
+func startProbeServer() func() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		w.WriteHeader(http.StatusOK)
+	})
+	mux.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		w.WriteHeader(http.StatusOK)
+	})
+	srv := http.Server{
+		Handler: mux,
+		Addr:    "0.0.0.0:8080",
+	}
+	go func() {
+		err := srv.ListenAndServe()
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to start http server")
+		}
+	}()
+	return func() {
+		_ = srv.Close()
 	}
 }
 

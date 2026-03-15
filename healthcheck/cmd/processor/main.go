@@ -17,17 +17,17 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/vrischmann/envconfig"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/consistent"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/coordinator"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/coordinator/repository/postgres"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/coordinator/targetwatcher"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/executor"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/memberlist"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/notifyer"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/scheduler"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/sender"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/sharder"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/consistent"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/coordinator"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/coordinator/repository/postgres"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/coordinator/targetwatcher"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/executor"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/memberlist"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/models"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/notifyer"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/scheduler"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/sender"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/sharder"
 )
 
 func loggerLevelFromString(level string) zerolog.Level {

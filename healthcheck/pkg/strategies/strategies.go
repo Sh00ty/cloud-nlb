@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/strategies/httphc"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/strategies/mockhc"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/strategies/tcpconnhc"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/strategies/httphc"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/strategies/mockhc"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/strategies/tcpconnhc"
 )
 
 func NewStrategy(name healthcheck.StrategyName, target healthcheck.TargetAddr, checkCfg []byte) (healthcheck.Strategy, error) {

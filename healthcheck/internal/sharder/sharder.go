@@ -10,8 +10,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog/log"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/models"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/healthcheck"
 )
 
 type ShardingNodeID int

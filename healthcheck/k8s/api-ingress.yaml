@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: hc-api-server
+  namespace: cloud-nlb
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`hc-server.local`)
+      kind: Rule
+      services:
+        - name: hc-api-server
+          port: 9090
+          scheme: h2c

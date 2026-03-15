@@ -3,10 +3,10 @@ package hcserver
 import (
 	"context"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/sharder"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/protobuf/api/proto/hcpbv1"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/models"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/sharder"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/protobuf/api/proto/hcpbv1"
 )
 
 type Sharder interface {

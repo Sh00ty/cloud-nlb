@@ -22,6 +22,19 @@
   "links": [],
   "panels": [
     {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 51,
+      "panels": [],
+      "title": "Status",
+      "type": "row"
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
@@ -134,7 +147,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 0
+        "y": 1
       },
       "id": 1,
       "options": {
@@ -153,7 +166,7 @@
       },
       "targets": [
         {
-          "expr": "nlb_control_plane_reconciler_data_planes_by_state{job=\"control-plane\"}",
+          "expr": "nlb_control_plane_reconciler_data_planes_by_state{job=\"kubernetes-pods\"}",
           "legendFormat": "{{state}}",
           "refId": "A"
         }
@@ -188,7 +201,7 @@
         "h": 4,
         "w": 6,
         "x": 12,
-        "y": 0
+        "y": 1
       },
       "id": 2,
       "options": {
@@ -215,7 +228,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "nlb_control_plane_reconciler_data_planes_total{job=\"control-plane\", instance=~\"control-plane-reconciler\"}",
+          "expr": "nlb_control_plane_reconciler_data_planes_total{job=\"kubernetes-pods\", pod=~\"control-plane-reconciler.*\"}",
           "legendFormat": "data planes",
           "range": true,
           "refId": "A"
@@ -226,7 +239,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "nlb_control_plane_reconciler_target_groups_total{job=\"control-plane\", instance=~\"control-plane-reconciler\"}",
+          "expr": "nlb_control_plane_reconciler_target_groups_total{job=\"kubernetes-pods\", pod=~\"control-plane-reconciler.*\"}",
           "legendFormat": "target groups",
           "range": true,
           "refId": "B"
@@ -270,7 +283,7 @@
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 0
+        "y": 1
       },
       "id": 3,
       "options": {
@@ -297,7 +310,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "nlb_control_plane_reconciler_under_replicated_target_groups{job=\"control-plane\", instance=~\"control-plane-reconciler\"}",
+          "expr": "nlb_control_plane_reconciler_under_replicated_target_groups{job=\"kubernetes-pods\", pod=~\"control-plane-reconciler.*\"}",
           "legendFormat": "under-replicated",
           "range": true,
           "refId": "A"
@@ -388,7 +401,7 @@
         "h": 4,
         "w": 12,
         "x": 12,
-        "y": 4
+        "y": 5
       },
       "id": 4,
       "options": {
@@ -410,7 +423,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "nlb_control_plane_reconciler_under_replicated_target_groups{job=\"control-plane\", instance=\"control-plane-reconciler\"}",
+          "expr": "nlb_control_plane_reconciler_under_replicated_target_groups{job=\"kubernetes-pods\", pod=\"control-plane-reconciler.*\"}",
           "legendFormat": "under-replicated",
           "range": true,
           "refId": "A"
@@ -425,7 +438,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 9
       },
       "id": 24,
       "panels": [
@@ -478,8 +491,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -591,7 +603,7 @@
           },
           "targets": [
             {
-              "expr": "sum by (type) (rate(nlb_control_plane_reconciler_incoming_events_total{job=\"control-plane\"}[$__rate_interval]))",
+              "expr": "sum by (type) (rate(nlb_control_plane_reconciler_incoming_events_total{job=\"kubernetes-pods\"}[$__rate_interval]))",
               "legendFormat": "{{type}}",
               "refId": "A"
             }
@@ -648,8 +660,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -685,7 +696,7 @@
           },
           "targets": [
             {
-              "expr": "sum by (type, reason) (rate(nlb_control_plane_reconciler_skipped_events_total{job=\"control-plane\"}[$__rate_interval]))",
+              "expr": "sum by (type, reason) (rate(nlb_control_plane_reconciler_skipped_events_total{job=\"kubernetes-pods\"}[$__rate_interval]))",
               "legendFormat": "{{type}} — {{reason}}",
               "refId": "A"
             }
@@ -743,8 +754,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "yellow",
@@ -786,7 +796,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "nlb_control_plane_reconciler_event_channel_usage{job=\"control-plane\", instance=~\"control-plane-reconciler\"}",
+              "expr": "nlb_control_plane_reconciler_event_channel_usage{job=\"kubernetes-pods\", pod=~\"control-plane-reconciler.*\"}",
               "legendFormat": "channel usage",
               "range": true,
               "refId": "A"
@@ -844,8 +854,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -883,8 +892,8 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "nlb_control_plane_reconciler_delayed_events_queue_size{job=\"control-plane\"}",
-              "legendFormat": "{{instance}}.delayed queue",
+              "expr": "nlb_control_plane_reconciler_delayed_events_queue_size{job=\"kubernetes-pods\"}",
+              "legendFormat": "{{pod}}.delayed queue",
               "range": true,
               "refId": "A"
             }
@@ -941,8 +950,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -975,7 +983,7 @@
           },
           "targets": [
             {
-              "expr": "sum by (type) (rate(nlb_control_plane_reconciler_delayed_events_total{job=\"control-plane\"}[$__rate_interval]))",
+              "expr": "sum by (type) (rate(nlb_control_plane_reconciler_delayed_events_total{job=\"kubernetes-pods\"}[$__rate_interval]))",
               "legendFormat": "{{type}}",
               "refId": "A"
             }
@@ -1032,8 +1040,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1070,7 +1077,7 @@
           },
           "targets": [
             {
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le) (rate(nlb_control_plane_reconciler_reconcile_duration_seconds_bucket{job=\"control-plane\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le) (rate(nlb_control_plane_reconciler_reconcile_duration_seconds_bucket{job=\"kubernetes-pods\"}[$__rate_interval])))",
               "legendFormat": "p${percentile:raw}",
               "refId": "A"
             }
@@ -1127,8 +1134,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1225,7 +1231,7 @@
           },
           "targets": [
             {
-              "expr": "sum by (result) (rate(nlb_control_plane_reconciler_reconcile_total{job=\"control-plane\"}[$__rate_interval]))",
+              "expr": "sum by (result) (rate(nlb_control_plane_reconciler_reconcile_total{job=\"kubernetes-pods\"}[$__rate_interval]))",
               "legendFormat": "{{result}}",
               "refId": "A"
             }
@@ -1283,8 +1289,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "yellow",
@@ -1321,7 +1326,7 @@
           },
           "targets": [
             {
-              "expr": "sum(rate(nlb_control_plane_reconciler_reconcile_total{job=\"control-plane\", result=\"error\"}[$__rate_interval])) / clamp_min(sum(rate(nlb_control_plane_reconciler_reconcile_total{job=\"control-plane\"}[$__rate_interval])), 1) * 100",
+              "expr": "sum(rate(nlb_control_plane_reconciler_reconcile_total{job=\"kubernetes-pods\", result=\"error\"}[$__rate_interval])) / clamp_min(sum(rate(nlb_control_plane_reconciler_reconcile_total{job=\"kubernetes-pods\"}[$__rate_interval])), 1) * 100",
               "legendFormat": "error %",
               "refId": "A"
             }
@@ -1378,8 +1383,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1433,7 +1437,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "rate(nlb_control_plane_reconciler_reconcile_retries_total{job=\"control-plane\", instance=~\"control-plane-reconciler\"}[$__rate_interval])",
+              "expr": "rate(nlb_control_plane_reconciler_reconcile_retries_total{job=\"kubernetes-pods\", pod=~\"control-plane-reconciler.*\"}[$__rate_interval])",
               "legendFormat": "retries/s",
               "range": true,
               "refId": "A"
@@ -1508,7 +1512,7 @@
           "pluginVersion": "10.4.0",
           "targets": [
             {
-              "expr": "sum by (le) (increase(nlb_control_plane_reconciler_reconcile_duration_seconds_bucket{job=\"control-plane\"}[$__rate_interval]))",
+              "expr": "sum by (le) (increase(nlb_control_plane_reconciler_reconcile_duration_seconds_bucket{job=\"kubernetes-pods\"}[$__rate_interval]))",
               "format": "heatmap",
               "legendFormat": "{{le}}",
               "refId": "A"
@@ -1566,8 +1570,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1604,7 +1607,7 @@
           },
           "targets": [
             {
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le) (rate(nlb_control_plane_reconciler_placement_update_duration_seconds_bucket{job=\"control-plane\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le) (rate(nlb_control_plane_reconciler_placement_update_duration_seconds_bucket{job=\"kubernetes-pods\"}[$__rate_interval])))",
               "legendFormat": "p${percentile:raw}",
               "refId": "A"
             }
@@ -1661,8 +1664,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1695,7 +1697,7 @@
           },
           "targets": [
             {
-              "expr": "rate(nlb_control_plane_reconciler_placement_updates_total{job=\"control-plane\"}[$__rate_interval])",
+              "expr": "rate(nlb_control_plane_reconciler_placement_updates_total{job=\"kubernetes-pods\"}[$__rate_interval])",
               "legendFormat": "updates/s",
               "refId": "A"
             }
@@ -1752,8 +1754,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1820,12 +1821,12 @@
           },
           "targets": [
             {
-              "expr": "rate(nlb_control_plane_reconciler_tg_movements_total{job=\"control-plane\"}[$__rate_interval])",
+              "expr": "rate(nlb_control_plane_reconciler_tg_movements_total{job=\"kubernetes-pods\"}[$__rate_interval])",
               "legendFormat": "movements",
               "refId": "A"
             },
             {
-              "expr": "rate(nlb_control_plane_reconciler_tg_replacements_total{job=\"control-plane\"}[$__rate_interval])",
+              "expr": "rate(nlb_control_plane_reconciler_tg_replacements_total{job=\"kubernetes-pods\"}[$__rate_interval])",
               "legendFormat": "replacements",
               "refId": "B"
             }
@@ -1882,8 +1883,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1954,7 +1954,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "nlb_control_plane_reconciler_tg_movements_total{job=\"control-plane\", instance=~\"control-plane-reconciler\"}",
+              "expr": "nlb_control_plane_reconciler_tg_movements_total{job=\"kubernetes-pods\", pod=~\"control-plane-reconciler.*\"}",
               "legendFormat": "movements",
               "range": true,
               "refId": "A"
@@ -1965,7 +1965,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "nlb_control_plane_reconciler_tg_replacements_total{job=\"control-plane\", instance=~\"control-plane-reconciler\"}",
+              "expr": "nlb_control_plane_reconciler_tg_replacements_total{job=\"kubernetes-pods\", pod=~\"control-plane-reconciler.*\"}",
               "legendFormat": "replacements",
               "range": true,
               "refId": "B"
@@ -2040,7 +2040,7 @@
           "pluginVersion": "10.4.0",
           "targets": [
             {
-              "expr": "sum by (le) (increase(nlb_control_plane_reconciler_dpl_load_distribution_bucket{job=\"control-plane\"}[$__rate_interval]))",
+              "expr": "sum by (le) (increase(nlb_control_plane_reconciler_dpl_load_distribution_bucket{job=\"kubernetes-pods\"}[$__rate_interval]))",
               "format": "heatmap",
               "legendFormat": "{{le}}",
               "refId": "A"
@@ -2098,8 +2098,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2181,17 +2180,17 @@
           },
           "targets": [
             {
-              "expr": "histogram_quantile(0.5, sum by (le) (rate(nlb_control_plane_reconciler_dpl_load_distribution_bucket{job=\"control-plane\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(0.5, sum by (le) (rate(nlb_control_plane_reconciler_dpl_load_distribution_bucket{job=\"kubernetes-pods\"}[$__rate_interval])))",
               "legendFormat": "avg",
               "refId": "A"
             },
             {
-              "expr": "histogram_quantile(1.0, sum by (le) (rate(nlb_control_plane_reconciler_dpl_load_distribution_bucket{job=\"control-plane\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(1.0, sum by (le) (rate(nlb_control_plane_reconciler_dpl_load_distribution_bucket{job=\"kubernetes-pods\"}[$__rate_interval])))",
               "legendFormat": "max",
               "refId": "B"
             },
             {
-              "expr": "histogram_quantile(0.0, sum by (le) (rate(nlb_control_plane_reconciler_dpl_load_distribution_bucket{job=\"control-plane\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(0.0, sum by (le) (rate(nlb_control_plane_reconciler_dpl_load_distribution_bucket{job=\"kubernetes-pods\"}[$__rate_interval])))",
               "legendFormat": "min",
               "refId": "C"
             }
@@ -2265,7 +2264,7 @@
           "pluginVersion": "10.4.0",
           "targets": [
             {
-              "expr": "sum by (le) (increase(nlb_control_plane_reconciler_placement_update_duration_seconds_bucket{job=\"control-plane\"}[$__rate_interval]))",
+              "expr": "sum by (le) (increase(nlb_control_plane_reconciler_placement_update_duration_seconds_bucket{job=\"kubernetes-pods\"}[$__rate_interval]))",
               "format": "heatmap",
               "legendFormat": "{{le}}",
               "refId": "A"
@@ -2323,8 +2322,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2357,12 +2355,12 @@
           },
           "targets": [
             {
-              "expr": "sum(rate(nlb_control_plane_reconciler_reconcile_total{job=\"control-plane\"}[$__rate_interval]))",
+              "expr": "sum(rate(nlb_control_plane_reconciler_reconcile_total{job=\"kubernetes-pods\"}[$__rate_interval]))",
               "legendFormat": "reconciles/s",
               "refId": "A"
             },
             {
-              "expr": "sum(rate(nlb_control_plane_reconciler_reconcile_duration_seconds_count{job=\"control-plane\"}[$__rate_interval]))",
+              "expr": "sum(rate(nlb_control_plane_reconciler_reconcile_duration_seconds_count{job=\"kubernetes-pods\"}[$__rate_interval]))",
               "legendFormat": "attempts/s",
               "refId": "B"
             }
@@ -2384,8 +2382,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2404,8 +2401,7 @@
                       "mode": "absolute",
                       "steps": [
                         {
-                          "color": "green",
-                          "value": null
+                          "color": "green"
                         },
                         {
                           "color": "yellow",
@@ -2432,8 +2428,7 @@
                       "mode": "absolute",
                       "steps": [
                         {
-                          "color": "green",
-                          "value": null
+                          "color": "green"
                         },
                         {
                           "color": "yellow",
@@ -2460,8 +2455,7 @@
                       "mode": "absolute",
                       "steps": [
                         {
-                          "color": "green",
-                          "value": null
+                          "color": "green"
                         },
                         {
                           "color": "yellow",
@@ -2509,7 +2503,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "nlb_control_plane_reconciler_data_planes_by_state{job=\"control-plane\", state=\"alive\", instance=~\"control-plane-reconciler\"}",
+              "expr": "nlb_control_plane_reconciler_data_planes_by_state{job=\"kubernetes-pods\", state=\"alive\", pod=~\"control-plane-reconciler.*\"}",
               "legendFormat": "alive DPLs",
               "range": true,
               "refId": "A"
@@ -2520,7 +2514,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "nlb_control_plane_reconciler_data_planes_by_state{job=\"control-plane\", state=\"dead\", instance=~\"control-plane-reconciler\"}",
+              "expr": "nlb_control_plane_reconciler_data_planes_by_state{job=\"kubernetes-pods\", state=\"dead\", pod=~\"control-plane-reconciler.*\"}",
               "legendFormat": "dead DPLs",
               "range": true,
               "refId": "B"
@@ -2531,7 +2525,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "nlb_control_plane_reconciler_target_groups_total{job=\"control-plane\", instance=~\"control-plane-reconciler\"}",
+              "expr": "nlb_control_plane_reconciler_target_groups_total{job=\"kubernetes-pods\", pod=~\"control-plane-reconciler.*\"}",
               "legendFormat": "total TGs",
               "range": true,
               "refId": "C"
@@ -2542,7 +2536,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "nlb_control_plane_reconciler_under_replicated_target_groups{job=\"control-plane\", instance=~\"control-plane-reconciler\"}",
+              "expr": "nlb_control_plane_reconciler_under_replicated_target_groups{job=\"kubernetes-pods\", pod=~\"control-plane-reconciler.*\"}",
               "legendFormat": "under-replicated TGs",
               "range": true,
               "refId": "D"
@@ -2553,7 +2547,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "nlb_control_plane_reconciler_event_channel_usage{job=\"control-plane\", instance=~\"control-plane-reconciler\"}",
+              "expr": "nlb_control_plane_reconciler_event_channel_usage{job=\"kubernetes-pods\", pod=~\"control-plane-reconciler.*\"}",
               "legendFormat": "channel usage",
               "range": true,
               "refId": "E"
@@ -2564,7 +2558,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "nlb_control_plane_reconciler_delayed_events_queue_size{job=\"control-plane\", instance=~\"control-plane-reconciler\"}",
+              "expr": "nlb_control_plane_reconciler_delayed_events_queue_size{job=\"kubernetes-pods\", pod=~\"control-plane-reconciler.*\"}",
               "legendFormat": "delayed queue",
               "range": true,
               "refId": "F"
@@ -2583,7 +2577,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 10
       },
       "id": 32,
       "panels": [
@@ -2636,8 +2630,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2708,7 +2701,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "max(nlb_control_plane_api_runtime_target_group_cache_size{job=\"control-plane\"})",
+              "expr": "max(nlb_control_plane_api_runtime_target_group_cache_size{job=\"kubernetes-pods\"})",
               "legendFormat": "target groups",
               "range": true,
               "refId": "A"
@@ -2719,7 +2712,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "max(nlb_control_plane_api_runtime_dataplane_cache_size{job=\"control-plane\"})",
+              "expr": "max(nlb_control_plane_api_runtime_dataplane_cache_size{job=\"kubernetes-pods\"})",
               "hide": false,
               "legendFormat": "data planes",
               "range": true,
@@ -2778,8 +2771,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "yellow",
@@ -2816,7 +2808,7 @@
           },
           "targets": [
             {
-              "expr": "nlb_control_plane_api_runtime_coordinator_sema_waiters{job=\"control-plane\"}",
+              "expr": "nlb_control_plane_api_runtime_coordinator_sema_waiters{job=\"kubernetes-pods\"}",
               "legendFormat": "sema waiters",
               "refId": "A"
             }
@@ -2873,8 +2865,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2911,7 +2902,7 @@
           },
           "targets": [
             {
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le, result) (rate(nlb_control_plane_api_runtime_get_changes_duration_seconds_bucket{job=\"control-plane\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le, result) (rate(nlb_control_plane_api_runtime_get_changes_duration_seconds_bucket{job=\"kubernetes-pods\"}[$__rate_interval])))",
               "legendFormat": "{{result}} p${percentile:raw}",
               "refId": "A"
             }
@@ -2968,8 +2959,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -3056,7 +3046,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (result) (rate(nlb_control_plane_api_runtime_get_changes_duration_seconds_count{job=\"control-plane\"}[$__rate_interval]))",
+              "expr": "sum by (result) (rate(nlb_control_plane_api_runtime_get_changes_duration_seconds_count{job=\"kubernetes-pods\"}[$__rate_interval]))",
               "legendFormat": "{{result}}",
               "range": true,
               "refId": "A"
@@ -3114,8 +3104,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -3202,7 +3191,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum (increase(nlb_control_plane_api_runtime_changes_new_tg_total{job=\"control-plane\"}[$__rate_interval]))",
+              "expr": "sum (increase(nlb_control_plane_api_runtime_changes_new_tg_total{job=\"kubernetes-pods\"}[$__rate_interval]))",
               "legendFormat": "new",
               "range": true,
               "refId": "A"
@@ -3213,7 +3202,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum(increase(nlb_control_plane_api_runtime_changes_updated_tg_total{job=\"control-plane\"}[$__rate_interval]))",
+              "expr": "sum(increase(nlb_control_plane_api_runtime_changes_updated_tg_total{job=\"kubernetes-pods\"}[$__rate_interval]))",
               "legendFormat": "updated",
               "range": true,
               "refId": "B"
@@ -3224,7 +3213,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum(increase(nlb_control_plane_api_runtime_changes_removed_tg_total{job=\"control-plane\"}[$__rate_interval]))",
+              "expr": "sum(increase(nlb_control_plane_api_runtime_changes_removed_tg_total{job=\"kubernetes-pods\"}[$__rate_interval]))",
               "legendFormat": "removed",
               "range": true,
               "refId": "C"
@@ -3282,8 +3271,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -3380,7 +3368,7 @@
           },
           "targets": [
             {
-              "expr": "sum by (type) (rate(nlb_control_plane_api_runtime_notifications_total{job=\"control-plane\"}[$__rate_interval]))",
+              "expr": "sum by (type) (rate(nlb_control_plane_api_runtime_notifications_total{job=\"kubernetes-pods\"}[$__rate_interval]))",
               "legendFormat": "{{type}}",
               "refId": "A"
             }
@@ -3437,8 +3425,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -3520,7 +3507,7 @@
           },
           "targets": [
             {
-              "expr": "sum by (type) (rate(nlb_control_plane_api_runtime_incoming_events_total{job=\"control-plane\"}[$__rate_interval]))",
+              "expr": "sum by (type) (rate(nlb_control_plane_api_runtime_incoming_events_total{job=\"kubernetes-pods\"}[$__rate_interval]))",
               "legendFormat": "{{type}}",
               "refId": "A"
             }
@@ -3534,6 +3521,985 @@
             "uid": "PBFA97CFB590B2093"
           },
           "description": "Пропущенные события: stale, дубли, version gap",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "bars",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 34
+          },
+          "id": 40,
+          "options": {
+            "legend": {
+              "calcs": [
+                "last",
+                "sum"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum by (type, reason) (rate(nlb_control_plane_api_runtime_incoming_events_skipped_total{job=\"kubernetes-pods\", pod=~\"control-plane-apiserver*\"}[$__rate_interval]))",
+              "legendFormat": "{{type}} — {{reason}}",
+              "refId": "A"
+            }
+          ],
+          "title": "API Runtime — Skipped Events Rate (по type + reason)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "description": "Время рефетча данных из coordinator/etcd",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 42
+          },
+          "id": 41,
+          "options": {
+            "legend": {
+              "calcs": [
+                "last",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le, target) (rate(nlb_control_plane_api_runtime_coordinator_fetch_duration_seconds_bucket{job=\"kubernetes-pods\", pod=~\"control-plane-apiserver*\"}[$__rate_interval])))",
+              "legendFormat": "{{target}} p${percentile:raw}",
+              "refId": "A"
+            }
+          ],
+          "title": "API Runtime — Coordinator Fetch Latency (по target)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "bars",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": ".*error=false.*"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": ".*error=true.*"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 42
+          },
+          "id": 33,
+          "options": {
+            "legend": {
+              "calcs": [
+                "last",
+                "sum"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum by (target, error) (rate(nlb_control_plane_api_runtime_coordinator_fetch_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"control-plane-apiserver*\"}[$__rate_interval]))",
+              "legendFormat": "{{target}} error={{error}}",
+              "refId": "A"
+            }
+          ],
+          "title": "API Runtime — Coordinator Fetch Rate (по target + error)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 5
+                  },
+                  {
+                    "color": "red",
+                    "value": 20
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 50
+          },
+          "id": 34,
+          "options": {
+            "legend": {
+              "calcs": [
+                "last",
+                "mean"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum by (target) (rate(nlb_control_plane_api_runtime_coordinator_fetch_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"control-plane-apiserver*\", error=\"true\"}[$__rate_interval])) / clamp_min(sum by (target) (rate(nlb_control_plane_api_runtime_coordinator_fetch_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"control-plane-apiserver*\"}[$__rate_interval])), 1) * 100",
+              "legendFormat": "{{target}} error %",
+              "refId": "A"
+            }
+          ],
+          "title": "API Runtime — Coordinator Fetch Error Ratio % (по target)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "description": "Время цикла garbage collection подписок",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 50
+          },
+          "id": 35,
+          "options": {
+            "legend": {
+              "calcs": [
+                "last",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le) (rate(nlb_control_plane_api_runtime_gc_duration_seconds_bucket{job=\"kubernetes-pods\", pod=~\"control-plane-apiserver*\"}[$__rate_interval])))",
+              "legendFormat": "p${percentile:raw}",
+              "refId": "A"
+            }
+          ],
+          "title": "API Runtime — GC Duration",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "bars",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "total deleted"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "orange",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 58
+          },
+          "id": 36,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(nlb_control_plane_api_runtime_gc_deleted_subscriptions_total{job=\"kubernetes-pods\", pod=~\"control-plane-apiserver*\"}[$__rate_interval]))",
+              "legendFormat": "total deleted",
+              "refId": "A"
+            }
+          ],
+          "title": "API Runtime — GC Deleted Subscriptions Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "bars",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 58
+          },
+          "id": 37,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(nlb_control_plane_api_runtime_new_node_processed_total{job=\"kubernetes-pods\", pod=~\"control-plane-apiserver*\"}[$__rate_interval]))",
+              "legendFormat": "new nodes/s",
+              "refId": "A"
+            }
+          ],
+          "title": "API Runtime — New Nodes Discovered Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "description": "Нагрузка на каждый apiserver инстанс",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 66
+          },
+          "id": 38,
+          "options": {
+            "legend": {
+              "calcs": [
+                "last",
+                "mean"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum by (pod) (rate(nlb_control_plane_api_runtime_get_changes_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"control-plane-apiserver*\"}[$__rate_interval]))",
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ],
+          "title": "API Runtime — Per-Instance GetChanges Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "description": "Размер кешей на каждом apiserver инстансе",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 66
+          },
+          "id": 39,
+          "options": {
+            "legend": {
+              "calcs": [
+                "last"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "expr": "nlb_control_plane_api_runtime_target_group_cache_size{job=\"kubernetes-pods\", pod=~\"control-plane-apiserver*\"}",
+              "legendFormat": "{{pod}} TG",
+              "refId": "A"
+            },
+            {
+              "expr": "nlb_control_plane_api_runtime_dataplane_cache_size{job=\"kubernetes-pods\", pod=~\"control-plane-apiserver*\"}",
+              "legendFormat": "{{pod}} DPL",
+              "refId": "B"
+            }
+          ],
+          "title": "API Runtime — Per-Instance Cache Sizes",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Runtime",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "id": 52,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "description": "1 = этот инстанс является reconciler лидером",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                {
+                  "options": {
+                    "0": {
+                      "color": "yellow",
+                      "text": "FOLLOWER"
+                    },
+                    "1": {
+                      "color": "green",
+                      "text": "LEADER"
+                    }
+                  },
+                  "type": "value"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "yellow",
+                    "value": null
+                  },
+                  {
+                    "color": "green",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 0,
+            "y": 4
+          },
+          "id": 42,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+              },
+              "editorMode": "code",
+              "expr": "nlb_control_plane_etcd_is_leader{job=\"kubernetes-pods\", pod=~\"control-plane-reconciler.*\"}",
+              "legendFormat": "{{pod}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "etcd — Is Leader",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "description": "Скорость обработки watch событий из etcd по каждому prefix",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -3592,11 +4558,11 @@
           },
           "gridPos": {
             "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 34
+            "w": 18,
+            "x": 6,
+            "y": 4
           },
-          "id": 40,
+          "id": 43,
           "options": {
             "legend": {
               "calcs": [
@@ -3614,12 +4580,12 @@
           },
           "targets": [
             {
-              "expr": "sum by (type, reason) (rate(nlb_control_plane_api_runtime_incoming_events_skipped_total{job=\"control-plane\", instance=~\"control-plane-apiserver*\"}[$__rate_interval]))",
-              "legendFormat": "{{type}} — {{reason}}",
+              "expr": "sum by (prefix) (rate(nlb_control_plane_etcd_watch_events_total{job=\"kubernetes-pods\"}[$__rate_interval]))",
+              "legendFormat": "{{prefix}}",
               "refId": "A"
             }
           ],
-          "title": "API Runtime — Skipped Events Rate (по type + reason)",
+          "title": "etcd — Watch Events Rate (по prefix)",
           "type": "timeseries"
         },
         {
@@ -3627,7 +4593,460 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "description": "Время рефетча данных из coordinator/etcd",
+          "description": "Ошибки watcher: canceled, unexpected error, handler error",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "bars",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": ".*canceled.*"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "orange",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": ".*handler_error.*"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": ".*error.*"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "dark-red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 12
+          },
+          "id": 44,
+          "options": {
+            "legend": {
+              "calcs": [
+                "last",
+                "sum"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum by (prefix, reason) (rate(nlb_control_plane_etcd_watch_errors_total{job=\"kubernetes-pods\"}[$__rate_interval]))",
+              "legendFormat": "{{prefix}} — {{reason}}",
+              "refId": "A"
+            }
+          ],
+          "title": "etcd — Watch Errors Rate (по prefix + reason)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "description": "Рестарты watcher: reset_revision или canceled",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "bars",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": ".*reset_revision.*"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": ".*canceled.*"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "orange",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 12
+          },
+          "id": 45,
+          "options": {
+            "legend": {
+              "calcs": [
+                "last",
+                "sum"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum by (prefix, reason) (rate(nlb_control_plane_etcd_watch_restarts_total{job=\"kubernetes-pods\"}[$__rate_interval]))",
+              "legendFormat": "{{prefix}} — {{reason}}",
+              "refId": "A"
+            }
+          ],
+          "title": "etcd — Watch Restarts Rate (по prefix + reason)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "description": "Последняя обработанная revision по каждому watcher. Отставание = проблема.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 20
+          },
+          "id": 46,
+          "options": {
+            "legend": {
+              "calcs": [
+                "last"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "expr": "nlb_control_plane_etcd_watch_last_revision{job=\"kubernetes-pods\"}",
+              "legendFormat": "{{prefix}}",
+              "refId": "A"
+            }
+          ],
+          "title": "etcd — Watch Last Revision (по prefix)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "description": "Разница revision между watcher-ами. Большой лаг = один watcher отстаёт.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 100
+                  },
+                  {
+                    "color": "red",
+                    "value": 1000
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 20
+          },
+          "id": 47,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "max(nlb_control_plane_etcd_watch_last_revision{job=\"kubernetes-pods\"}) - min(nlb_control_plane_etcd_watch_last_revision{job=\"kubernetes-pods\"})",
+              "legendFormat": "revision lag",
+              "refId": "A"
+            }
+          ],
+          "title": "etcd — Watch Revision Lag Between Prefixes",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "description": "Время etcd KV операций по типам",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -3688,9 +5107,9 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 42
+            "y": 28
           },
-          "id": 41,
+          "id": 48,
           "options": {
             "legend": {
               "calcs": [
@@ -3709,12 +5128,18 @@
           },
           "targets": [
             {
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le, target) (rate(nlb_control_plane_api_runtime_coordinator_fetch_duration_seconds_bucket{job=\"control-plane\", instance=~\"control-plane-apiserver*\"}[$__rate_interval])))",
-              "legendFormat": "{{target}} p${percentile:raw}",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+              },
+              "editorMode": "code",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le, operation) (rate(nlb_control_plane_etcd_kv_operation_duration_seconds_bucket{job=\"kubernetes-pods\"}[$__rate_interval])))",
+              "legendFormat": "{{operation}} p${percentile:raw}",
+              "range": true,
               "refId": "A"
             }
           ],
-          "title": "API Runtime — Coordinator Fetch Latency (по target)",
+          "title": "etcd — KV Operation Latency (по operation)",
           "type": "timeseries"
         },
         {
@@ -3722,6 +5147,108 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "description": "Общий перцентиль всех etcd KV операций",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 28
+          },
+          "id": 49,
+          "options": {
+            "legend": {
+              "calcs": [
+                "last",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+              },
+              "editorMode": "code",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le) (rate(nlb_control_plane_etcd_kv_operation_duration_seconds_bucket{job=\"kubernetes-pods\"}[$__rate_interval])))",
+              "legendFormat": "p${percentile:raw}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "etcd — KV Operation Latency (суммарно)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "description": "Скорость etcd операций с разбивкой по успеху/ошибке",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -3812,10 +5339,10 @@
           "gridPos": {
             "h": 8,
             "w": 12,
-            "x": 12,
-            "y": 42
+            "x": 0,
+            "y": 36
           },
-          "id": 33,
+          "id": 50,
           "options": {
             "legend": {
               "calcs": [
@@ -3833,597 +5360,16 @@
           },
           "targets": [
             {
-              "expr": "sum by (target, error) (rate(nlb_control_plane_api_runtime_coordinator_fetch_duration_seconds_count{job=\"control-plane\", instance=~\"control-plane-apiserver*\"}[$__rate_interval]))",
-              "legendFormat": "{{target}} error={{error}}",
+              "expr": "sum by (operation, error) (rate(nlb_control_plane_etcd_kv_operation_duration_seconds_count{job=\"kubernetes-pods\"}[$__rate_interval]))",
+              "legendFormat": "{{operation}} error={{error}}",
               "refId": "A"
             }
           ],
-          "title": "API Runtime — Coordinator Fetch Rate (по target + error)",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 20,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "smooth",
-                "lineWidth": 2,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "max": 100,
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "yellow",
-                    "value": 5
-                  },
-                  {
-                    "color": "red",
-                    "value": 20
-                  }
-                ]
-              },
-              "unit": "percent"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 50
-          },
-          "id": 34,
-          "options": {
-            "legend": {
-              "calcs": [
-                "last",
-                "mean"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "desc"
-            }
-          },
-          "targets": [
-            {
-              "expr": "sum by (target) (rate(nlb_control_plane_api_runtime_coordinator_fetch_duration_seconds_count{job=\"control-plane\", instance=~\"control-plane-apiserver*\", error=\"true\"}[$__rate_interval])) / clamp_min(sum by (target) (rate(nlb_control_plane_api_runtime_coordinator_fetch_duration_seconds_count{job=\"control-plane\", instance=~\"control-plane-apiserver*\"}[$__rate_interval])), 1) * 100",
-              "legendFormat": "{{target}} error %",
-              "refId": "A"
-            }
-          ],
-          "title": "API Runtime — Coordinator Fetch Error Ratio % (по target)",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "description": "Время цикла garbage collection подписок",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 10,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "smooth",
-                "lineWidth": 2,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "s"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 50
-          },
-          "id": 35,
-          "options": {
-            "legend": {
-              "calcs": [
-                "last",
-                "mean",
-                "max"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "desc"
-            }
-          },
-          "targets": [
-            {
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le) (rate(nlb_control_plane_api_runtime_gc_duration_seconds_bucket{job=\"control-plane\", instance=~\"control-plane-apiserver*\"}[$__rate_interval])))",
-              "legendFormat": "p${percentile:raw}",
-              "refId": "A"
-            }
-          ],
-          "title": "API Runtime — GC Duration",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "bars",
-                "fillOpacity": 80,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "short"
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "total deleted"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "orange",
-                      "mode": "fixed"
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 58
-          },
-          "id": 36,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "expr": "sum(rate(nlb_control_plane_api_runtime_gc_deleted_subscriptions_total{job=\"control-plane\", instance=~\"control-plane-apiserver*\"}[$__rate_interval]))",
-              "legendFormat": "total deleted",
-              "refId": "A"
-            }
-          ],
-          "title": "API Runtime — GC Deleted Subscriptions Rate",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "bars",
-                "fillOpacity": 80,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "ops"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 58
-          },
-          "id": 37,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "expr": "sum(rate(nlb_control_plane_api_runtime_new_node_processed_total{job=\"control-plane\", instance=~\"control-plane-apiserver*\"}[$__rate_interval]))",
-              "legendFormat": "new nodes/s",
-              "refId": "A"
-            }
-          ],
-          "title": "API Runtime — New Nodes Discovered Rate",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "description": "Нагрузка на каждый apiserver инстанс",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 15,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "smooth",
-                "lineWidth": 2,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "ops"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 66
-          },
-          "id": 38,
-          "options": {
-            "legend": {
-              "calcs": [
-                "last",
-                "mean"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "desc"
-            }
-          },
-          "targets": [
-            {
-              "expr": "sum by (instance) (rate(nlb_control_plane_api_runtime_get_changes_duration_seconds_count{job=\"control-plane\", instance=~\"control-plane-apiserver*\"}[$__rate_interval]))",
-              "legendFormat": "{{instance}}",
-              "refId": "A"
-            }
-          ],
-          "title": "API Runtime — Per-Instance GetChanges Rate",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "description": "Размер кешей на каждом apiserver инстансе",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 15,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "smooth",
-                "lineWidth": 2,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "short"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 66
-          },
-          "id": 39,
-          "options": {
-            "legend": {
-              "calcs": [
-                "last"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "desc"
-            }
-          },
-          "targets": [
-            {
-              "expr": "nlb_control_plane_api_runtime_target_group_cache_size{job=\"control-plane\", instance=~\"control-plane-apiserver*\"}",
-              "legendFormat": "{{instance}} TG",
-              "refId": "A"
-            },
-            {
-              "expr": "nlb_control_plane_api_runtime_dataplane_cache_size{job=\"control-plane\", instance=~\"control-plane-apiserver*\"}",
-              "legendFormat": "{{instance}} DPL",
-              "refId": "B"
-            }
-          ],
-          "title": "API Runtime — Per-Instance Cache Sizes",
+          "title": "etcd — KV Operation Rate (по operation + error)",
           "type": "timeseries"
         }
       ],
-      "title": "Runtime",
+      "title": "Etcd",
       "type": "row"
     }
   ],
@@ -4495,6 +5441,6 @@
   "timezone": "browser",
   "title": "Control-Plane",
   "uid": "bfft97l51nuo0b",
-  "version": 19,
+  "version": 21,
   "weekStart": ""
 }

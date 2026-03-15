@@ -92,7 +92,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "up{instance=~\"$instance\"}",
+          "expr": "up{pod=~\"$pod\"}",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -166,7 +166,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "sum(rate(nlb_agent_scheduler_iteration_duration_seconds_count{job=\"nlb-agent\", instance=~\"$instance\", error=\"true\"}[$__rate_interval])) / sum(rate(nlb_agent_scheduler_iteration_duration_seconds_count{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval])) * 100",
+          "expr": "sum(rate(nlb_agent_scheduler_iteration_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\", error=\"true\"}[$__rate_interval])) / sum(rate(nlb_agent_scheduler_iteration_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])) * 100",
           "instant": false,
           "legendFormat": "percentage",
           "range": true,
@@ -272,9 +272,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le, instance, error) (rate(nlb_agent_scheduler_iteration_duration_seconds_bucket{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le, pod, error) (rate(nlb_agent_scheduler_iteration_duration_seconds_bucket{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])))",
               "instant": false,
-              "legendFormat": "{{instance}}.p$percentile",
+              "legendFormat": "{{pod}}.p$percentile",
               "range": true,
               "refId": "A"
             }
@@ -368,9 +368,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance, error) (rate(nlb_agent_scheduler_iteration_duration_seconds_count{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval])) * 60",
+              "expr": "sum by (pod, error) (rate(nlb_agent_scheduler_iteration_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])) * 60",
               "instant": false,
-              "legendFormat": "{{instance}}.rps",
+              "legendFormat": "{{pod}}.rps",
               "range": true,
               "refId": "A"
             }
@@ -464,9 +464,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le, instance, error) (rate(nlb_agent_scheduler_reconcile_duration_seconds_bucket{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le, pod, error) (rate(nlb_agent_scheduler_reconcile_duration_seconds_bucket{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])))",
               "instant": false,
-              "legendFormat": "{{instance}}.p$percentile",
+              "legendFormat": "{{pod}}.p$percentile",
               "range": true,
               "refId": "A"
             }
@@ -546,9 +546,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "max by (instance) (nlb_agent_reconciler_worker_queue_size{job=\"nlb-agent\", instance=~\"$instance\"})",
+              "expr": "max by (pod) (nlb_agent_reconciler_worker_queue_size{job=\"kubernetes-pods\", pod=~\"$pod\"})",
               "instant": false,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             }
@@ -642,9 +642,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (worker_id, instance) (nlb_agent_reconciler_worker_queue_size{job=\"nlb-agent\", instance=~\"$instance\"})",
+              "expr": "sum by (worker_id, pod) (nlb_agent_reconciler_worker_queue_size{job=\"kubernetes-pods\", pod=~\"$pod\"})",
               "instant": false,
-              "legendFormat": "{{instance}}.worker={{worker_id}}",
+              "legendFormat": "{{pod}}.worker={{worker_id}}",
               "range": true,
               "refId": "A"
             }
@@ -709,7 +709,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "max(nlb_agent_reconciler_placement_version{job=\"nlb-agent\", instance=~\"$instance\"})-min(nlb_agent_reconciler_placement_version{job=\"nlb-agent\", instance=~\"$instance\"})",
+              "expr": "max(nlb_agent_reconciler_placement_version{job=\"kubernetes-pods\", pod=~\"$pod\"})-min(nlb_agent_reconciler_placement_version{job=\"kubernetes-pods\", pod=~\"$pod\"})",
               "hide": false,
               "instant": false,
               "legendFormat": "skew",
@@ -778,10 +778,10 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "nlb_agent_reconciler_placement_version{job=\"nlb-agent\", instance=~\"$instance\"}",
+              "expr": "nlb_agent_reconciler_placement_version{job=\"kubernetes-pods\", pod=~\"$pod\"}",
               "format": "time_series",
               "instant": true,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": false,
               "refId": "A"
             }
@@ -877,9 +877,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (result, instance) (rate(nlb_agent_reconciler_reconcile_duration_seconds_count{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (result, pod) (rate(nlb_agent_reconciler_reconcile_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
-              "legendFormat": "{{instance}}.{{result}}.rps",
+              "legendFormat": "{{pod}}.{{result}}.rps",
               "range": true,
               "refId": "A"
             }
@@ -973,9 +973,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le, instance) (rate(nlb_agent_reconciler_reconcile_duration_seconds_bucket{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le, pod) (rate(nlb_agent_reconciler_reconcile_duration_seconds_bucket{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])))",
               "instant": false,
-              "legendFormat": "{{instance}}.p$percentile",
+              "legendFormat": "{{pod}}.p$percentile",
               "range": true,
               "refId": "A"
             }
@@ -1069,9 +1069,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (increase(nlb_agent_reconciler_placement_version_updates_total{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (pod) (increase(nlb_agent_reconciler_placement_version_updates_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             }
@@ -1168,9 +1168,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance, action) (increase(nlb_agent_reconciler_desired_changes_total{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (pod, action) (increase(nlb_agent_reconciler_desired_changes_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
-              "legendFormat": "{{instance}}.{{action}}",
+              "legendFormat": "{{pod}}.{{action}}",
               "range": true,
               "refId": "A"
             }
@@ -1266,9 +1266,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (action, instance) (increase(nlb_agent_reconciler_endpoints_diff_total{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (action, pod) (increase(nlb_agent_reconciler_endpoints_diff_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
-              "legendFormat": "{{instance}}.{{action}}",
+              "legendFormat": "{{pod}}.{{action}}",
               "range": true,
               "refId": "A"
             }
@@ -1347,9 +1347,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (nlb_agent_endpoints_hc_watched_target_groups{job=\"nlb-agent\", instance=~\"$instance\"})",
+              "expr": "sum by (pod) (nlb_agent_endpoints_hc_watched_target_groups{job=\"kubernetes-pods\", pod=~\"$pod\"})",
               "instant": false,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             }
@@ -1443,9 +1443,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance, action) (rate(nlb_agent_endpoints_hc_watcher_endpoint_status_watcher_messages_total{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (pod, action) (rate(nlb_agent_endpoints_hc_watcher_endpoint_status_watcher_messages_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
-              "legendFormat": "{{instance}}.{{action}}",
+              "legendFormat": "{{pod}}.{{action}}",
               "range": true,
               "refId": "A"
             }
@@ -1539,9 +1539,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (rate(nlb_agent_endpoints_hc_sync_duration_seconds_count{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (pod) (rate(nlb_agent_endpoints_hc_sync_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
-              "legendFormat": "{{instance}}.rps",
+              "legendFormat": "{{pod}}.rps",
               "range": true,
               "refId": "A"
             }
@@ -1635,9 +1635,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le, instance) (rate(nlb_agent_endpoints_hc_sync_duration_seconds_bucket{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le, pod) (rate(nlb_agent_endpoints_hc_sync_duration_seconds_bucket{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])))",
               "instant": false,
-              "legendFormat": "{{instance}}.p$percentile",
+              "legendFormat": "{{pod}}.p$percentile",
               "range": true,
               "refId": "A"
             }
@@ -1731,9 +1731,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (error, instance) (rate(nlb_agent_endpoints_hc_fetch_duration_seconds_count{job=\"nlb-agent\", instance=~\"$instance\"}[5m]))",
+              "expr": "sum by (error, pod) (rate(nlb_agent_endpoints_hc_fetch_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}[5m]))",
               "instant": false,
-              "legendFormat": "{{instance}}.{{error}}",
+              "legendFormat": "{{pod}}.{{error}}",
               "range": true,
               "refId": "A"
             }
@@ -1827,9 +1827,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le, instance, error) (rate(nlb_agent_endpoints_hc_fetch_duration_seconds_bucket{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le, pod, error) (rate(nlb_agent_endpoints_hc_fetch_duration_seconds_bucket{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])))",
               "instant": false,
-              "legendFormat": "{{instance}}.{{error}}",
+              "legendFormat": "{{pod}}.{{error}}",
               "range": true,
               "refId": "A"
             }
@@ -1921,7 +1921,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (increase(nlb_agent_endpoints_hc_sync_target_groups_total{job=\"nlb-agent\", instance=~\"$instance\"}[5m])) / clamp_min(sum by (instance) (increase(nlb_agent_endpoints_hc_sync_duration_seconds_count{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval])), 1)",
+              "expr": "sum by (pod) (increase(nlb_agent_endpoints_hc_sync_target_groups_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[5m])) / clamp_min(sum by (pod) (increase(nlb_agent_endpoints_hc_sync_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])), 1)",
               "instant": false,
               "legendFormat": "__auto",
               "range": true,
@@ -2016,9 +2016,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (rate(nlb_agent_endpoints_hc_reconciliation_triggers_total{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (pod) (rate(nlb_agent_endpoints_hc_reconciliation_triggers_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             }
@@ -2112,7 +2112,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (rate(nlb_agent_endpoints_hc_sync_target_groups_total{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (pod) (rate(nlb_agent_endpoints_hc_sync_target_groups_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
               "legendFormat": "__auto",
               "range": true,
@@ -2185,8 +2185,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2223,7 +2222,7 @@
           },
           "targets": [
             {
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le, operation) (rate(nlb_agent_vpp_operation_duration_seconds_bucket{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le, operation) (rate(nlb_agent_vpp_operation_duration_seconds_bucket{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])))",
               "legendFormat": "{{operation}} p${percentile:raw}",
               "refId": "A"
             }
@@ -2280,8 +2279,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2318,7 +2316,7 @@
           },
           "targets": [
             {
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le) (rate(nlb_agent_vpp_operation_duration_seconds_bucket{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le) (rate(nlb_agent_vpp_operation_duration_seconds_bucket{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])))",
               "legendFormat": "p${percentile:raw}",
               "refId": "A"
             }
@@ -2375,8 +2373,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2443,7 +2440,7 @@
           },
           "targets": [
             {
-              "expr": "sum by (operation, error) (rate(nlb_agent_vpp_operation_duration_seconds_count{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (operation, error) (rate(nlb_agent_vpp_operation_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "legendFormat": "{{operation}} error={{error}}",
               "refId": "A"
             }
@@ -2501,8 +2498,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "yellow",
@@ -2542,7 +2538,7 @@
           },
           "targets": [
             {
-              "expr": "sum by (operation) (rate(nlb_agent_vpp_operation_duration_seconds_count{job=\"nlb-agent\", instance=~\"$instance\", error=\"true\"}[$__rate_interval])) / clamp_min(sum by (operation) (rate(nlb_agent_vpp_operation_duration_seconds_count{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval])), 1) * 100",
+              "expr": "sum by (operation) (rate(nlb_agent_vpp_operation_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\", error=\"true\"}[$__rate_interval])) / clamp_min(sum by (operation) (rate(nlb_agent_vpp_operation_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])), 1) * 100",
               "legendFormat": "{{operation}} error %",
               "refId": "A"
             }
@@ -2599,8 +2595,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2667,7 +2662,7 @@
           },
           "targets": [
             {
-              "expr": "sum by (operation) (rate(nlb_agent_vpp_endpoints_affected_total{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (operation) (rate(nlb_agent_vpp_endpoints_affected_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "legendFormat": "{{operation}}",
               "refId": "A"
             }
@@ -2724,8 +2719,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2766,8 +2760,8 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance, operation) (increase(nlb_agent_vpp_endpoints_affected_total{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval]))",
-              "legendFormat": "{{instance}} {{operation}}",
+              "expr": "sum by (pod, operation) (increase(nlb_agent_vpp_endpoints_affected_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
+              "legendFormat": "{{pod}} {{operation}}",
               "range": true,
               "refId": "A"
             }
@@ -2824,8 +2818,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2861,8 +2854,8 @@
           },
           "targets": [
             {
-              "expr": "sum by (instance) (rate(nlb_agent_vpp_operation_duration_seconds_count{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval]))",
-              "legendFormat": "{{instance}}",
+              "expr": "sum by (pod) (rate(nlb_agent_vpp_operation_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
+              "legendFormat": "{{pod}}",
               "refId": "A"
             }
           ],
@@ -2918,8 +2911,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2956,7 +2948,7 @@
           },
           "targets": [
             {
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le, operation, error) (rate(nlb_agent_vpp_operation_duration_seconds_bucket{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le, operation, error) (rate(nlb_agent_vpp_operation_duration_seconds_bucket{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])))",
               "legendFormat": "{{operation}} error={{error}} p${percentile:raw}",
               "refId": "A"
             }
@@ -3030,7 +3022,7 @@
           "pluginVersion": "10.4.0",
           "targets": [
             {
-              "expr": "sum by (le) (increase(nlb_agent_vpp_operation_duration_seconds_bucket{job=\"nlb-agent\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (le) (increase(nlb_agent_vpp_operation_duration_seconds_bucket{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "format": "heatmap",
               "legendFormat": "{{le}}",
               "refId": "A"
@@ -3087,23 +3079,23 @@
       },
       {
         "current": {
-          "selected": true,
-          "text": "dpl-node-1",
-          "value": "dpl-node-1"
+          "selected": false,
+          "text": "nlb-agent-0",
+          "value": "nlb-agent-0"
         },
         "datasource": {
           "type": "prometheus",
           "uid": "PBFA97CFB590B2093"
         },
-        "definition": "label_values(nlb_agent_reconciler_target_groups_total,instance)",
+        "definition": "label_values(nlb_agent_reconciler_target_groups_total,pod)",
         "hide": 0,
         "includeAll": false,
         "multi": false,
-        "name": "instance",
+        "name": "pod",
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(nlb_agent_reconciler_target_groups_total,instance)",
+          "query": "label_values(nlb_agent_reconciler_target_groups_total,pod)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
@@ -3122,6 +3114,6 @@
   "timezone": "browser",
   "title": "NLB Agent",
   "uid": "cffiz3xob9c00c",
-  "version": 8,
+  "version": 11,
   "weekStart": ""
 }

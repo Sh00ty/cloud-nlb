@@ -3,8 +3,8 @@ package hcserver
 import (
 	"context"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/protobuf/api/proto/hcpbv1"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/protobuf/api/proto/hcpbv1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"

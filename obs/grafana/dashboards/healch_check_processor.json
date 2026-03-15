@@ -94,7 +94,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "sum(health_check_node_scheduler_heap_size{job=\"health-check-node\"})",
+          "expr": "sum(health_check_node_scheduler_heap_size{job=\"kubernetes-pods\"})",
           "instant": false,
           "interval": "",
           "legendFormat": "count",
@@ -195,7 +195,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "sum by (type) (rate(health_check_node_coordinator_membership_events_total{job=\"health-check-node\"}[$__rate_interval]))",
+          "expr": "sum by (type) (rate(health_check_node_coordinator_membership_events_total{job=\"kubernetes-pods\"}[$__rate_interval]))",
           "instant": false,
           "legendFormat": "{{type}}",
           "range": true,
@@ -320,9 +320,9 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "sum by (operation) (rate(health_check_node_coordinator_target_events_total{job=\"health-check-node\"}[$__rate_interval]))",
+          "expr": "sum by (operation) (rate(health_check_node_coordinator_target_events_total{job=\"kubernetes-pods\"}[$__rate_interval]))",
           "instant": false,
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{pod}}",
           "range": true,
           "refId": "A"
         }
@@ -424,7 +424,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(${percentile:raw}, sum by (le) (rate(health_check_node_scheduler_invocation_delay_seconds_bucket{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(${percentile:raw}, sum by (le) (rate(health_check_node_scheduler_invocation_delay_seconds_bucket{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])))",
           "instant": false,
           "legendFormat": "P$percentile",
           "range": true,
@@ -521,10 +521,10 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "sum by (instance) (health_check_node_sharder_my_vshards_count{job=\"health-check-node\"})",
+          "expr": "sum by (pod) (health_check_node_sharder_my_vshards_count{job=\"kubernetes-pods\"})",
           "instant": false,
           "interval": "",
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{pod}}",
           "range": true,
           "refId": "A"
         }
@@ -596,7 +596,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "clamp_min(sum by (instance) (increase(health_check_node_sender_send_duration_seconds_count{job=\"health-check-node\", success=\"true\"}[$__rate_interval])), 1) / clamp_min(sum by (instance) (increase(health_check_node_sender_send_duration_seconds_count{job=\"health-check-node\"}[$__rate_interval])), 1) * 100",
+          "expr": "clamp_min(sum by (pod) (increase(health_check_node_sender_send_duration_seconds_count{job=\"kubernetes-pods\", success=\"true\"}[$__rate_interval])), 1) / clamp_min(sum by (pod) (increase(health_check_node_sender_send_duration_seconds_count{job=\"kubernetes-pods\"}[$__rate_interval])), 1) * 100",
           "hide": false,
           "instant": false,
           "legendFormat": "__auto",
@@ -608,7 +608,7 @@
       "type": "stat"
     },
     {
-      "collapsed": true,
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -616,506 +616,509 @@
         "y": 25
       },
       "id": 1,
-      "panels": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "s"
-            },
-            "overrides": [
-              {
-                "__systemRef": "hideSeriesFrom",
-                "matcher": {
-                  "id": "byNames",
-                  "options": {
-                    "mode": "exclude",
-                    "names": [
-                      "hc-worker-0"
-                    ],
-                    "prefix": "All except:",
-                    "readOnly": true
-                  }
-                },
-                "properties": [
-                  {
-                    "id": "custom.hideFrom",
-                    "value": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": true
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 26
-          },
-          "id": 2,
-          "options": {
-            "legend": {
-              "calcs": [
-                "lastNotNull",
-                "max",
-                "mean"
-              ],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
-              },
-              "editorMode": "code",
-              "expr": "histogram_quantile(${percentile:raw}, sum(rate(health_check_node_coordinator_fetch_targets_duration_seconds_bucket{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval])) by (instance, le))",
-              "instant": false,
-              "legendFormat": "{{instance}}",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "Coordinator — Fetch Targets Latency (${percentile}%%)",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "reqps"
-            },
-            "overrides": [
-              {
-                "__systemRef": "hideSeriesFrom",
-                "matcher": {
-                  "id": "byNames",
-                  "options": {
-                    "mode": "exclude",
-                    "names": [
-                      "hc-worker-0"
-                    ],
-                    "prefix": "All except:",
-                    "readOnly": true
-                  }
-                },
-                "properties": [
-                  {
-                    "id": "custom.hideFrom",
-                    "value": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": true
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 26
-          },
-          "id": 9,
-          "options": {
-            "legend": {
-              "calcs": [
-                "lastNotNull",
-                "max",
-                "mean"
-              ],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
-              },
-              "editorMode": "code",
-              "expr": "sum by (instance) (rate(health_check_node_coordinator_fetch_targets_duration_seconds_count{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval]))",
-              "instant": false,
-              "legendFormat": "{{instance}}",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "Fetch Targets Rate",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "reqps"
-            },
-            "overrides": [
-              {
-                "__systemRef": "hideSeriesFrom",
-                "matcher": {
-                  "id": "byNames",
-                  "options": {
-                    "mode": "exclude",
-                    "names": [
-                      "hc-worker-0"
-                    ],
-                    "prefix": "All except:",
-                    "readOnly": true
-                  }
-                },
-                "properties": [
-                  {
-                    "id": "custom.hideFrom",
-                    "value": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": true
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 34
-          },
-          "id": 18,
-          "options": {
-            "legend": {
-              "calcs": [
-                "lastNotNull",
-                "max",
-                "mean"
-              ],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
-              },
-              "editorMode": "code",
-              "expr": "sum by (instance) (rate(health_check_node_coordinator_fetched_targets_total{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval])) / clamp_min(sum by (instance) (rate(health_check_node_coordinator_fetch_targets_duration_seconds_count{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval])), 1)",
-              "instant": false,
-              "legendFormat": "{{instance}}",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "Coordinator — Fetched Targets per Fetch (среднее по инстансам)",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": [
-              {
-                "__systemRef": "hideSeriesFrom",
-                "matcher": {
-                  "id": "byNames",
-                  "options": {
-                    "mode": "exclude",
-                    "names": [
-                      "hc-worker-0.create"
-                    ],
-                    "prefix": "All except:",
-                    "readOnly": true
-                  }
-                },
-                "properties": [
-                  {
-                    "id": "custom.hideFrom",
-                    "value": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": true
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 34
-          },
-          "id": 22,
-          "options": {
-            "legend": {
-              "calcs": [
-                "lastNotNull",
-                "max",
-                "mean"
-              ],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
-              },
-              "editorMode": "code",
-              "expr": "sum by (instance,operation) (increase(health_check_node_coordinator_target_events_total{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval]))",
-              "instant": false,
-              "legendFormat": "{{instance}}.{{operation}}",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "Coordinator — Target Events CDC Count By Instance",
-          "type": "timeseries"
-        }
-      ],
+      "panels": [],
       "title": "Coordinator Stats",
       "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "hc-worker-0"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 26
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max",
+            "mean"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(${percentile:raw}, sum(rate(health_check_node_coordinator_fetch_targets_duration_seconds_bucket{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])) by (pod, le))",
+          "instant": false,
+          "legendFormat": "{{pod}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Coordinator — Fetch Targets Latency (${percentile}%%)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "reqps"
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "hc-worker-0"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 26
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max",
+            "mean"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (pod) (rate(health_check_node_coordinator_fetch_targets_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
+          "instant": false,
+          "legendFormat": "{{pod}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Fetch Targets Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "reqps"
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "hc-worker-0"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 34
+      },
+      "id": 18,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max",
+            "mean"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (pod) (rate(health_check_node_coordinator_fetched_targets_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])) / clamp_min(sum by (pod) (rate(health_check_node_coordinator_fetch_targets_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])), 1)",
+          "instant": false,
+          "legendFormat": "{{pod}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Coordinator — Fetched Targets per Fetch (среднее по инстансам)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "hc-worker-0.create"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 34
+      },
+      "id": 22,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max",
+            "mean"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (pod,operation) (increase(health_check_node_coordinator_target_events_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
+          "instant": false,
+          "legendFormat": "{{pod}}.{{operation}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Coordinator — Target Events CDC Count By Instance",
+      "type": "timeseries"
     },
     {
       "collapsed": true,
@@ -1123,7 +1126,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 42
       },
       "id": 13,
       "panels": [
@@ -1190,10 +1193,10 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "100 * sum by (instance) (health_check_node_executor_channel_buffer_usage{job=\"health-check-node\", instance=~\"$instance\"})\n/\nsum by (instance) (health_check_node_executor_channel_buffer_capacity{job=\"health-check-node\", instance=~\"$instance\"})",
+              "expr": "100 * sum by (pod) (health_check_node_executor_channel_buffer_usage{job=\"kubernetes-pods\", pod=~\"$pod\"})\n/\nsum by (pod) (health_check_node_executor_channel_buffer_capacity{job=\"kubernetes-pods\", pod=~\"$pod\"})",
               "hide": false,
               "instant": false,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             }
@@ -1291,11 +1294,11 @@
               },
               "disableTextWrap": false,
               "editorMode": "code",
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le, instance) (rate(health_check_node_executor_task_duration_seconds_bucket{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le, pod) (rate(health_check_node_executor_task_duration_seconds_bucket{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])))",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "instant": false,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A",
               "useBackend": false
@@ -1391,9 +1394,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (rate(health_check_node_executor_task_duration_seconds_count{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (pod) (rate(health_check_node_executor_task_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             }
@@ -1488,9 +1491,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (increase(health_check_node_executor_task_duration_seconds_count{job=\"health-check-node\", changed=\"true\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (pod) (increase(health_check_node_executor_task_duration_seconds_count{job=\"kubernetes-pods\", changed=\"true\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             }
@@ -1508,7 +1511,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 43
       },
       "id": 25,
       "panels": [
@@ -1575,7 +1578,7 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "clamp_min(sum by (instance) (increase(health_check_node_sender_send_duration_seconds_count{job=\"health-check-node\", success=\"true\", instance=~\"$instance\"}[$__rate_interval])), 1) / clamp_min(sum by (instance) (increase(health_check_node_sender_send_duration_seconds_count{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval])), 1) * 100",
+              "expr": "clamp_min(sum by (pod) (increase(health_check_node_sender_send_duration_seconds_count{job=\"kubernetes-pods\", success=\"true\", pod=~\"$pod\"}[$__rate_interval])), 1) / clamp_min(sum by (pod) (increase(health_check_node_sender_send_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])), 1) * 100",
               "hide": false,
               "instant": false,
               "legendFormat": "__auto",
@@ -1682,9 +1685,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (health_check_node_sender_unsent_resync_duration_seconds_count{job=\"health-check-node\", instance=~\"$instance\"}) or vector(0)",
+              "expr": "sum by (pod) (health_check_node_sender_unsent_resync_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}) or vector(0)",
               "instant": false,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             }
@@ -1782,11 +1785,11 @@
               },
               "disableTextWrap": false,
               "editorMode": "code",
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le, instance, success) (rate(health_check_node_sender_send_duration_seconds_bucket{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le, pod, success) (rate(health_check_node_sender_send_duration_seconds_bucket{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])))",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "instant": false,
-              "legendFormat": "{{instance}} success={{success}}",
+              "legendFormat": "{{pod}} success={{success}}",
               "range": true,
               "refId": "A",
               "useBackend": false
@@ -1882,9 +1885,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (success, instance) (rate(health_check_node_sender_send_duration_seconds_count{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (success, pod) (rate(health_check_node_sender_send_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
-              "legendFormat": "{{instance}}.{{success}}",
+              "legendFormat": "{{pod}}.{{success}}",
               "range": true,
               "refId": "A"
             }
@@ -1902,7 +1905,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 44
       },
       "id": 5,
       "panels": [
@@ -1993,9 +1996,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (rate(health_check_node_scheduler_schedule_duration_seconds_count{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (pod) (rate(health_check_node_scheduler_schedule_duration_seconds_count{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             }
@@ -2092,9 +2095,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le, instance) (rate(health_check_node_scheduler_schedule_duration_seconds_bucket{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le, pod) (rate(health_check_node_scheduler_schedule_duration_seconds_bucket{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])))",
               "instant": false,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             }
@@ -2195,9 +2198,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(${percentile:raw}, sum by (le, instance) (rate(health_check_node_scheduler_invocation_delay_seconds_bucket{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(${percentile:raw}, sum by (le, pod) (rate(health_check_node_scheduler_invocation_delay_seconds_bucket{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval])))",
               "instant": false,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             }
@@ -2291,9 +2294,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (health_check_node_scheduler_heap_size{job=\"health-check-node\", instance=~\"$instance\"})",
+              "expr": "sum by (pod) (health_check_node_scheduler_heap_size{job=\"kubernetes-pods\", pod=~\"$pod\"})",
               "instant": false,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             }
@@ -2388,9 +2391,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (rate(health_check_node_scheduler_empty_loop_iterations_total{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (pod) (rate(health_check_node_scheduler_empty_loop_iterations_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             }
@@ -2485,9 +2488,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (rate(health_check_node_scheduler_adds_total{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (pod) (rate(health_check_node_scheduler_adds_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
-              "legendFormat": "{{instance}}.add",
+              "legendFormat": "{{pod}}.add",
               "range": true,
               "refId": "A"
             },
@@ -2497,10 +2500,10 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (rate(health_check_node_scheduler_removes_total{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (pod) (rate(health_check_node_scheduler_removes_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "hide": false,
               "instant": false,
-              "legendFormat": "{{instance}}.remove",
+              "legendFormat": "{{pod}}.remove",
               "range": true,
               "refId": "B"
             }
@@ -2518,7 +2521,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 29
+        "y": 45
       },
       "id": 23,
       "panels": [
@@ -2611,9 +2614,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (type, instance) (rate(health_check_node_coordinator_membership_events_total{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (type, pod) (rate(health_check_node_coordinator_membership_events_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
-              "legendFormat": "{{type}}.{{instance}}",
+              "legendFormat": "{{type}}.{{pod}}",
               "range": true,
               "refId": "A"
             }
@@ -2631,7 +2634,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 46
       },
       "id": 33,
       "panels": [
@@ -2721,10 +2724,10 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (health_check_node_sharder_my_vshards_count{job=\"health-check-node\", instance=~\"$instance\"})",
+              "expr": "sum by (pod) (health_check_node_sharder_my_vshards_count{job=\"kubernetes-pods\", pod=~\"$pod\"})",
               "instant": false,
               "interval": "",
-              "legendFormat": "{{instance}}",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             },
@@ -2834,9 +2837,9 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (increase(health_check_node_sharder_dropped_targets_on_rebalance_total{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (pod) (increase(health_check_node_sharder_dropped_targets_on_rebalance_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "instant": false,
-              "legendFormat": "{{instance}}.dropped",
+              "legendFormat": "{{pod}}.dropped",
               "range": true,
               "refId": "A"
             },
@@ -2846,10 +2849,10 @@
                 "uid": "PBFA97CFB590B2093"
               },
               "editorMode": "code",
-              "expr": "sum by (instance) (increase(health_check_node_sharder_acquired_vshards_on_rebalance_total{job=\"health-check-node\", instance=~\"$instance\"}[$__rate_interval]))",
+              "expr": "sum by (pod) (increase(health_check_node_sharder_acquired_vshards_on_rebalance_total{job=\"kubernetes-pods\", pod=~\"$pod\"}[$__rate_interval]))",
               "hide": false,
               "instant": false,
-              "legendFormat": "{{instance}}.acquired",
+              "legendFormat": "{{pod}}.acquired",
               "range": true,
               "refId": "B"
             }
@@ -2918,15 +2921,15 @@
           "type": "prometheus",
           "uid": "PBFA97CFB590B2093"
         },
-        "definition": "label_values(health_check_node_executor_channel_buffer_usage,instance)",
+        "definition": "label_values(health_check_node_executor_channel_buffer_usage,pod)",
         "hide": 0,
         "includeAll": true,
         "multi": true,
-        "name": "instance",
+        "name": "pod",
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(health_check_node_executor_channel_buffer_usage,instance)",
+          "query": "label_values(health_check_node_executor_channel_buffer_usage,pod)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
@@ -2945,6 +2948,6 @@
   "timezone": "browser",
   "title": "Health Check Processor",
   "uid": "effii2tdwv20wb",
-  "version": 9,
+  "version": 13,
   "weekStart": ""
 }

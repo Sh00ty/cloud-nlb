@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nlb-agent-headless
+  namespace: cloud-nlb
+  labels:
+    app: nlb-agent
+spec:
+  clusterIP: None
+  selector:
+    app: nlb-agent
+  ports:
+    - name: metrics
+      port: 8080
+      targetPort: 8080

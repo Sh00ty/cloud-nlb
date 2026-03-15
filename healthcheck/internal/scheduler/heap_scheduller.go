@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/models"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/healthcheck"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 )
@@ -17,7 +17,7 @@ const (
 )
 
 type TaskExecutor interface {
-	ExecuteHealthCheck(hc *models.HealthCheck) error
+	ExecuteHealthCheck(hc models.HealthCheck) error
 }
 
 type Scheduler struct {
@@ -48,7 +48,7 @@ func (p *Scheduler) Remove(check healthcheck.TargetAddr) bool {
 	defer p.invocationHeapGuard.Unlock()
 
 	removed := p.invocationHeap.remove(check)
-	removesTotal.WithLabelValues("found", boolToStr(removed)).Add(1)
+	removesTotal.WithLabelValues(boolToStr(removed)).Add(1)
 
 	nextHc := p.invocationHeap.getNextHc()
 	p.timer.Reset(time.Until(invokeTimeOrDefault(nextHc)))
@@ -117,7 +117,7 @@ func (p *Scheduler) runIteration(invokeTime time.Time) {
 
 		// мы не боимся того, что забьется что-то в экзекуторе, так как
 		// min time heap сам по себе будет работать нормально
-		err := p.executor.ExecuteHealthCheck(wantExecute)
+		err := p.executor.ExecuteHealthCheck(*wantExecute)
 		if err != nil {
 			p.log.Error().Err(err).Msg("executing healthcheck task")
 		}

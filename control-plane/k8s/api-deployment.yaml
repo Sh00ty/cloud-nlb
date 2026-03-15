@@ -1,27 +1,34 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: control-plane
+  name: control-plane-apiserver
   namespace: cloud-nlb
   labels:
-    app: control-plane
+    app: control-plane-apiserver
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
-      app: control-plane
+      app: control-plane-apiserver
   template:
     metadata:
       labels:
-        app: control-plane
+        app: control-plane-apiserver
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8081"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
-      - name: control-plane
-        image: control-plane-api:dev
+      - name: control-plane-apiserver
+        image: control-plane-apiserver:dev
         imagePullPolicy: IfNotPresent
         ports:
         - name: grpc
           containerPort: 9090
+          protocol: TCP
+        - name: metrics
+          containerPort: 8081
           protocol: TCP
         - name: health
           containerPort: 8080
@@ -31,11 +38,11 @@ spec:
             name: control-plane-config
         resources:
           requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
             cpu: 500m
             memory: 512Mi
-          limits:
-            cpu: 2000m
-            memory: 2Gi
         livenessProbe:
           httpGet:
             path: /healthz
