@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 2,
+  "id": 3,
   "links": [],
   "panels": [
     {
@@ -3079,7 +3079,7 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "nlb-agent-0",
           "value": "nlb-agent-0"
         },
@@ -3089,8 +3089,8 @@
         },
         "definition": "label_values(nlb_agent_reconciler_target_groups_total,pod)",
         "hide": 0,
-        "includeAll": false,
-        "multi": false,
+        "includeAll": true,
+        "multi": true,
         "name": "pod",
         "options": [],
         "query": {
@@ -3114,6 +3114,6 @@
   "timezone": "browser",
   "title": "NLB Agent",
   "uid": "cffiz3xob9c00c",
-  "version": 11,
+  "version": 1,
   "weekStart": ""
 }

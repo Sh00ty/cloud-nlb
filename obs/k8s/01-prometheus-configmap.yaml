@@ -15,7 +15,11 @@ data:
           - targets: ["localhost:9090"]
 
       - job_name: "kubernetes-pods"
-        scrape_interval: 5s
+        # 2s scrape so chaos recovery/outage durations resolve to ~2s instead
+        # of being quantised to the old 5s/10s grid. testclient (the client-SLI
+        # source) is never a chaos target, so its counters are sampled cleanly
+        # every 2s and offline counter-differencing yields honest 2s resolution.
+        scrape_interval: 2s
         kubernetes_sd_configs:
           - role: pod
             namespaces:
@@ -67,3 +71,8 @@ data:
           - action: labelmap
             regex: __meta_kubernetes_node_label_(.+)
         metrics_path: /metrics/cadvisor
+      
+      - job_name: "kube-state-metrics"
+        scrape_interval: 15s
+        static_configs:
+          - targets: ["kube-state-metrics.monitoring.svc:8080"]

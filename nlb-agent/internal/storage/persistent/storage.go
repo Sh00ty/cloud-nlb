@@ -3,7 +3,10 @@ package persistent
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
+	"path"
 	"sync"
 	"time"
 
@@ -70,6 +73,11 @@ func newStateCache() *stateCache {
 }
 
 func New(storagePath string, log zerolog.Logger) (res *Storage, err error) {
+	err = os.Mkdir(path.Dir(storagePath), 0600)
+	if err != nil && !errors.Is(err, os.ErrExist) {
+		return nil, fmt.Errorf("failed to create base db directory: %w", err)
+	}
+
 	db, err := bbolt.Open(storagePath, 0600, &bbolt.Options{
 		Timeout:      500 * time.Millisecond,
 		NoGrowSync:   false,

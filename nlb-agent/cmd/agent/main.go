@@ -19,7 +19,10 @@ import (
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/reconciler"
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/scheduler"
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/storage/persistent"
+	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/vpp/ipvsvpp"
 	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/vpp/stubvpp"
+	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/vpp/testgovpp"
+	"github.com/Sh00ty/cloud-nlb/nlb-agent/internal/vpp/vppmetrics"
 	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
@@ -47,6 +50,8 @@ type Config struct {
 
 	QueueAddr  string `envconfig:"QUEUE_ADDR"`
 	QueueTopic string `envconfig:"QUEUE_ENDPOINT_STATUSES_TOPIC"`
+
+	VppMode string `envconfig:"VPP_MODE"`
 
 	IsDebug bool `envconfig:"DEBUG"`
 
@@ -104,11 +109,21 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to init etcd client")
 	}
-	err = coord.Register(ctx)
+	nodeLease, err := coord.Register(ctx)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to register data-plane in coordinator")
 	}
 	defer coord.Close(ctx)
+
+	go func() {
+		select {
+		case <-ctx.Done():
+			return
+		case <-nodeLease:
+			cancel()
+			return
+		}
+	}()
 
 	cpl, err := controlplane.NewClient(
 		appCfg.ControlPlaneAddr,
@@ -132,7 +147,22 @@ func main() {
 	}
 	defer storage.Close()
 
-	vpp := stubvpp.NewStubVPP(log.Logger)
+	var vpp reconciler.VPPManager
+	switch appCfg.VppMode {
+	case "IPVS":
+		vpp, err = ipvsvpp.New(log.Logger)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to init ipvs vpp manager")
+		}
+	case "USER_SPACE_TEST":
+		vpp = testgovpp.New(log.Logger)
+	case "STUB":
+		vpp = stubvpp.NewStubVPP(log.Logger)
+	default:
+		log.Fatal().Msgf("unknown VPP MODE: %s", appCfg.VppMode)
+	}
+	vpp = vppmetrics.NewVPPMetricsWrapper(log.Logger, vpp)
+
 	reconcileTaskChan := make(chan []models.TargetGroupID, 128)
 
 	endpointsSvc := endpointshc.NewEndpointHealthService(

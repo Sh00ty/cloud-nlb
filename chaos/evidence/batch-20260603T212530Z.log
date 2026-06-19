@@ -1,0 +1,49 @@
+[batch] start N=5 ns=cloud-nlb log=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/batch-20260603T212530Z.log ts=2026-06-03T21:25:30Z
+[batch] ===== run 1/5 : testsrvsyncer sync (2026-06-03T21:25:30Z) =====
+time=2026-06-04T00:25:31.187+03:00 level=INFO msg="starting sync" target_group=test-server namespace=cloud-nlb selector="app=test-server" tg_port=10000 hc_port=8090 dry_run=false
+time=2026-06-04T00:25:31.203+03:00 level=INFO msg="k8s client ready"
+time=2026-06-04T00:25:31.203+03:00 level=INFO msg="cpl connected" addr=control-plane-apiserver.local:30080
+time=2026-06-04T00:25:31.203+03:00 level=INFO msg="hc connected" addr=hc-server.local:30080
+time=2026-06-04T00:25:36.285+03:00 level=INFO msg="cpl: target group ensured" id="" version=0 created=false
+time=2026-06-04T00:25:41.392+03:00 level=WARN msg="hc: create settings (may already exist)" err="rpc error: code = Internal desc = failed to create hc settings: can't create two same settings for one pool"
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: fetched ready pods" count=16
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.238
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.250
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.252
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.237
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.246
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.239
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.251
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.243
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.242
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.248
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.241
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.240
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.244
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.245
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.249
+time=2026-06-04T00:25:41.409+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.247
+time=2026-06-04T00:25:41.413+03:00 level=INFO msg="hc: state" desired=16 current=16
+time=2026-06-04T00:25:41.413+03:00 level=INFO msg="hc: already in sync"
+time=2026-06-04T00:25:41.414+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.248 port=10000 dry_run=false
+time=2026-06-04T00:25:41.418+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.241 port=10000 dry_run=false
+time=2026-06-04T00:25:41.422+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.240 port=10000 dry_run=false
+time=2026-06-04T00:25:41.426+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.244 port=10000 dry_run=false
+time=2026-06-04T00:25:41.428+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.245 port=10000 dry_run=false
+time=2026-06-04T00:25:41.432+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.249 port=10000 dry_run=false
+time=2026-06-04T00:25:41.435+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.247 port=10000 dry_run=false
+time=2026-06-04T00:25:41.436+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.238 port=10000 dry_run=false
+time=2026-06-04T00:25:41.438+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.250 port=10000 dry_run=false
+time=2026-06-04T00:25:41.439+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.252 port=10000 dry_run=false
+time=2026-06-04T00:25:41.441+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.237 port=10000 dry_run=false
+time=2026-06-04T00:25:41.442+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.246 port=10000 dry_run=false
+time=2026-06-04T00:25:41.444+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.239 port=10000 dry_run=false
+time=2026-06-04T00:25:41.446+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.251 port=10000 dry_run=false
+time=2026-06-04T00:25:41.447+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.243 port=10000 dry_run=false
+time=2026-06-04T00:25:41.449+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.242 port=10000 dry_run=false
+time=2026-06-04T00:25:41.450+03:00 level=INFO msg="sync complete" target_group=test-server desired_pods=16 stale_removed=0
+[batch] ===== run 1/5 : run_experiment.sh =====
+[run] 20260603T212541Z  workflow=nlb-resilience-suite-colima-safe  dir=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260603T212541Z
+[run] workflow created, waiting for controller to own the run
+[run] run owned: entry=main-xfhh5 start=2026-06-03T21:25:42Z
+[run] waiting for completion (deadline 7800s)

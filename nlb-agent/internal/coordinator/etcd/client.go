@@ -64,10 +64,10 @@ func NewClient(ctx context.Context, host string, nodeID string, ttlUntilDeathInS
 
 // }
 
-func (c *Client) Register(ctx context.Context) error {
+func (c *Client) Register(ctx context.Context) (<-chan struct{}, error) {
 	resp, err := c.etcd.KV.Get(ctx, dplStatus(c.nodeID))
 	if err != nil {
-		return fmt.Errorf("failed to get current data-plane status: %w", err)
+		return nil, fmt.Errorf("failed to get current data-plane status: %w", err)
 	}
 	var (
 		leaseID = int64(0)
@@ -77,7 +77,7 @@ func (c *Client) Register(ctx context.Context) error {
 	}
 	err = c.acquireSession(ctx, leaseID)
 	if err != nil {
-		return fmt.Errorf("failed to acquire node etcd session: %w", err)
+		return nil, fmt.Errorf("failed to acquire node etcd session: %w", err)
 	}
 	_, err = c.etcd.KV.Put(
 		ctx,
@@ -86,9 +86,10 @@ func (c *Client) Register(ctx context.Context) error {
 		clientv3.WithLease(c.leaseID),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to mark node as alive: %w", err)
+		return nil, fmt.Errorf("failed to mark node as alive: %w", err)
 	}
-	return nil
+
+	return c.session.Done(), nil
 }
 
 func (c *Client) acquireSession(ctx context.Context, leaseId int64) error {

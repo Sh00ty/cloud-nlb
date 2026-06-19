@@ -1,0 +1,38 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Workflow
+metadata:
+  name: nlb-evidence-dryrun
+  namespace: cloud-nlb
+spec:
+  entry: main
+  templates:
+    - name: main
+      templateType: Serial
+      deadline: 6m
+      children:
+        - dry-warmup
+        - dry-server-failure
+        - dry-cooldown
+
+    # Baseline window so graphs show pre-failure steady state.
+    - name: dry-warmup
+      templateType: Suspend
+      deadline: 30s
+
+    # One injecting+recovering fault: exercises AllInjected/AllRecovered
+    # transitions so phase derivation is validated end-to-end.
+    - name: dry-server-failure
+      templateType: PodChaos
+      deadline: 60s
+      podChaos:
+        selector:
+          namespaces: [cloud-nlb]
+          labelSelectors:
+            app: test-server
+        mode: random-max-percent
+        value: '60'
+        action: pod-failure
+
+    - name: dry-cooldown
+      templateType: Suspend
+      deadline: 30s

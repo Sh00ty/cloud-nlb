@@ -28,6 +28,20 @@ infra:
 	cd ./healthcheck && docker-compose up -d
 
 
+.PHONY: chaos
+chaos:
+	kubectl create namespace chaos-mesh
+
+	helm install chaos-mesh chaos-mesh/chaos-mesh \
+	--namespace chaos-mesh \
+	--set chaosDaemon.runtime=containerd \
+	--set chaosDaemon.socketPath=/run/containerd/containerd.sock \
+	--set dashboard.securityMode=false
+
+	kubectl create clusterrolebinding chaos-controller-manager-cluster-view \
+		--clusterrole=cluster-admin \
+		--serviceaccount=chaos-mesh:chaos-controller-manager
+
 .PHONY: hosts-update
 hosts-update:
 	@if [ -z "$(COLIMA_IP)" ]; then echo "ERROR: colima not running"; exit 1; fi
@@ -39,22 +53,26 @@ hosts-update:
 
 
 .PHONY: build
-build: build-hc build-cp build-tools
+build: build-hc build-cp build-tools build-agent
 
 .PHONY: build-hc
 build-hc:
-	cd healthcheck && make build && cd ..
+	cd healthcheck && make build
 
 .PHONY: build-cp
 build-cp:
-	cd control-plane && make build && cd ..
+	cd control-plane && make build
+
+.PHONY: build-agent
+build-agent:
+	cd nlb-agent && make build
 
 .PHONY: build-tools
 build-tools:
 	cd tools && make build && cd ..
 
 .PHONY: deploy
-deploy: deploy-obs deploy-hc deploy-cp deploy-tools
+deploy: deploy-obs deploy-hc deploy-cp deploy-agent deploy-tools
 	@echo "All deployed!"
 	@$(MAKE) status
 
@@ -69,6 +87,10 @@ deploy-hc:
 .PHONY: deploy-cp
 deploy-cp:
 	cd control-plane && make deploy
+
+.PHONY: deploy-agent
+deploy-agent:
+	cd nlb-agent && make deploy
 
 .PHONY: deploy-tools
 deploy-tools:
@@ -88,6 +110,7 @@ status:
 
 .PHONY: clean
 clean:
-	kubectl delete -f control-plane/k8s/ --ignore-not-found
-	kubectl delete -f healthcheck/k8s/ --ignore-not-found
-	kubectl delete -f tools/k8s/ --ignore-not-found
+	cd control-plane && make delete
+	cd healthcheck && make delete
+	cd nlb-agent && make delete
+	cd tools && make delete

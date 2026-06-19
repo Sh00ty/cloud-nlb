@@ -7,6 +7,12 @@ metadata:
     app: prometheus
 spec:
   replicas: 1
+  # Recreate (not RollingUpdate): the TSDB PVC is ReadWriteOnce and Prometheus
+  # holds an exclusive lock on /prometheus, so a new pod cannot start while the
+  # old one is still running (it crashes with "lock DB directory"). Recreate
+  # tears the old pod down before bringing the new one up.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: prometheus
@@ -21,7 +27,8 @@ spec:
           image: prom/prometheus:v2.51.0
           args:
             - "--config.file=/etc/prometheus/prometheus.yml"
-            - "--storage.tsdb.retention.time=2d"
+            - "--storage.tsdb.retention.time=7d"
+            - "--storage.tsdb.retention.size=9GB"
             - "--storage.tsdb.path=/prometheus"
             - "--web.enable-lifecycle"
           ports:
@@ -36,10 +43,12 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 128Mi
+              memory: 256Mi
             limits:
+              # Headroom for the 2s pod scrape (≈2.5x more samples than the old
+              # 5s). Disk stays bounded by the 9GB tsdb size cap below.
               cpu: 500m
-              memory: 512Mi
+              memory: 1Gi
       volumes:
         - name: config
           configMap:
@@ -59,7 +68,7 @@ spec:
   storageClassName: local-path
   resources:
     requests:
-      storage: 5Gi
+      storage: 10Gi
 ---
 apiVersion: v1
 kind: Service

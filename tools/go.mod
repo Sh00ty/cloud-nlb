@@ -4,6 +4,7 @@ go 1.25.6
 
 require (
 	github.com/Sh00ty/cloud-nlb/control-plane v0.0.0-20260215210431-2d42edc917cf
+	github.com/Sh00ty/cloud-nlb/healthcheck v0.0.0-20260315200606-0eb3cea49b1b
 	github.com/prometheus/client_golang v1.23.2
 	google.golang.org/grpc v1.78.0
 	google.golang.org/protobuf v1.36.10
@@ -12,7 +13,6 @@ require (
 )
 
 require (
-	github.com/Sh00ty/cloud-nlb/healthcheck v0.0.0-00010101000000-000000000000
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
@@ -56,5 +56,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
-
-replace github.com/Sh00ty/cloud-nlb/healthcheck => ../healthcheck

@@ -15,6 +15,7 @@ import (
 	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/sharder"
 	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/protobuf/api/proto/hcpbv1"
 	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/vrischmann/envconfig"
@@ -63,6 +64,8 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to read app config")
 	}
 	log.Logger = log.Level(loggerLevelFromString(appCfg.LoggerLevel))
+
+	go startMetrics()
 
 	checksRepo, err := postgres.NewRepo(
 		ctx,
@@ -151,4 +154,16 @@ func startProbeServer() func() {
 	return func() {
 		_ = srv.Close()
 	}
+}
+
+func startMetrics() {
+	var (
+		addr = os.Getenv("METRICS_ADDR")
+		mux  = http.NewServeMux()
+	)
+	if addr == "" {
+		return
+	}
+	mux.Handle("/metrics", promhttp.Handler())
+	http.ListenAndServe(addr, mux)
 }

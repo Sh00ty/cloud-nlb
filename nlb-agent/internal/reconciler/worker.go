@@ -146,6 +146,11 @@ func (w *worker) reconcileTargetGroup(ctx context.Context, tgID models.TargetGro
 			return changed, fmt.Errorf("reconciling endpoints: %w", err)
 		}
 		changed = true
+	} else {
+		w.log.Debug().Msgf(
+			"skip endpoint reconciliation: hasSpecChanges=%t; hasStateChanges=%t",
+			hasSpecChanges, hasStateChanges,
+		)
 	}
 
 	return changed, nil
@@ -182,8 +187,8 @@ func (w *worker) reconcileEndpoints(
 	w.log.Debug().
 		Str("tg_id", string(tgID)).
 		Uint64("version", desired.Version).
-		Int("desired_count", len(desired.Endpoints)).
-		Int("actual_count", len(actualEps)).
+		Interface("desired_count", desired.Endpoints).
+		Interface("actual_count", actualEps).
 		Msg("applying endpoints to VPP")
 
 	toAdd, toDelete, newActual := w.getEndpointsDiff(ctx, tgID, desired.Endpoints, actualEps)

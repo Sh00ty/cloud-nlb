@@ -6,7 +6,7 @@ metadata:
   labels:
     app: test-server
 spec:
-  replicas: 5
+  replicas: 16
   selector:
     matchLabels:
       app: test-server
@@ -33,11 +33,16 @@ spec:
         - name: health
           containerPort: 8080
           protocol: TCP
+        - name: traffic
+          containerPort: 10000
+          protocol: TCP
         env:
           - name: METRICS_ADDR
             value: "0.0.0.0:8081"
           - name: HC_PORT
             value: "8090"
+          - name: TRAFFIC_PORT
+            value: "10000"
         resources:
           requests:
             cpu: 10m

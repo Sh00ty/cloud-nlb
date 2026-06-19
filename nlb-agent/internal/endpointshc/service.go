@@ -42,6 +42,7 @@ type EndpointsHealthService struct {
 	// tgID -> time of full resync
 	handlingTargetGroups map[models.TargetGroupID]time.Time
 	forceResyncInterval  time.Duration
+	needSyncChan         chan struct{}
 
 	actualStatusesGuard sync.Mutex
 	actualStatuses      map[models.TargetGroupID]*targetGroupEndpoints
@@ -62,6 +63,7 @@ func NewEndpointHealthService(
 	return &EndpointsHealthService{
 		hcSvcClient:         hcSvcClient,
 		forceResyncInterval: forceResyncInterval,
+		needSyncChan:        make(chan struct{}, 1),
 
 		handlingTargetGroups: make(map[models.TargetGroupID]time.Time),
 		actualStatuses:       make(map[models.TargetGroupID]*targetGroupEndpoints),
@@ -83,16 +85,18 @@ func (s *EndpointsHealthService) Run(ctx context.Context) {
 			select {
 			case <-ctx.Done():
 				return
+			case <-s.needSyncChan:
+				// TODO: not fetch all target groups info
 			case <-ticker.C:
-				s.handlingTargetGroupsGuard.Lock()
-				tgIDs := make([]models.TargetGroupID, 0, len(s.handlingTargetGroups))
-				for k := range s.actualStatuses {
-					tgIDs = append(tgIDs, k)
-				}
-				s.handlingTargetGroupsGuard.Unlock()
-
-				s.SyncStatuses(ctx, tgIDs)
 			}
+			s.handlingTargetGroupsGuard.Lock()
+			tgIDs := make([]models.TargetGroupID, 0, len(s.handlingTargetGroups))
+			for k := range s.handlingTargetGroups {
+				tgIDs = append(tgIDs, k)
+			}
+			s.handlingTargetGroupsGuard.Unlock()
+
+			s.SyncStatuses(ctx, tgIDs)
 		}
 	}()
 }
@@ -104,6 +108,11 @@ func (s *EndpointsHealthService) WatchForTargetGroup(ctx context.Context, tgID m
 	_, exists := s.handlingTargetGroups[tgID]
 	if !exists {
 		s.handlingTargetGroups[tgID] = time.Time{}
+
+		select {
+		case s.needSyncChan <- struct{}{}:
+		default:
+		}
 	}
 
 	watchedTargetGroups.Set(float64(len(s.handlingTargetGroups)))
@@ -152,6 +161,7 @@ func (s *EndpointsHealthService) SyncStatuses(ctx context.Context, tgIDs []model
 	wg := sync.WaitGroup{}
 
 	syncTargetGroupsTotal.Add(float64(len(needFetch)))
+
 	// TODO: probably we can get here a data-race, i think that we need to make this function atomic
 	for _, tgID := range needFetch {
 		wg.Add(1)
@@ -163,6 +173,8 @@ func (s *EndpointsHealthService) SyncStatuses(ctx context.Context, tgIDs []model
 			err := retry.Do(
 				func() error {
 					fetchStart := time.Now()
+
+					s.log.Debug().Str("tg_id", string(tgID)).Msg("started status syncing")
 
 					statuses, err := s.hcSvcClient.GetEndpointStatuses(ctx, tgID)
 					if err != nil {
@@ -332,7 +344,7 @@ func EpStatusKey(stat models.EndpointStatus) EndpointKey {
 
 func EpHdrKey(hdr models.EndpointHdr) EndpointKey {
 	return EndpointKey{
-		IP:   hdr.IP.String(),
-		Port: hdr.Port,
+		IP: hdr.IP.String(),
+		// Port: hdr.Port,
 	}
 }
