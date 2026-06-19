@@ -29,18 +29,28 @@ func (ar *ApiRuntime) GetChangesForDataPlane(
 	ctx context.Context,
 	state DataPlaneCurrentState,
 ) (DataPlaneChanges, error) {
+	start := time.Now()
+
 	placementDiff, needWait := ar.getDataplanePlacement(ctx, state)
 	if needWait {
+		getChangesDuration.WithLabelValues("wait").Observe(time.Since(start).Seconds())
 		return DataPlaneChanges{
 			NeedWait: true,
 		}, nil
 	}
 	changes, needWait := ar.getTargetGroupChanges(ctx, state, placementDiff)
 	if needWait {
+		getChangesDuration.WithLabelValues("wait").Observe(time.Since(start).Seconds())
 		return DataPlaneChanges{
 			NeedWait: true,
 		}, nil
 	}
+
+	getChangesDuration.WithLabelValues("changes").Observe(time.Since(start).Seconds())
+	changesNewTotal.Add(float64(len(changes.New)))
+	changesRemovedTotal.Add(float64(len(changes.Removed)))
+	changesUpdatedTotal.Add(float64(len(changes.Update)))
+
 	changes.PlacementVersion = placementDiff.placement
 	return changes, nil
 }
@@ -124,6 +134,10 @@ func (ar *ApiRuntime) processNewNode(
 		},
 	}
 	ar.dataPlaneCache[curDplState.NodeID] = dpl
+
+	newNodeProcessedTotal.Inc()
+	dataplaneCacheSize.Set(float64(len(ar.dataPlaneCache)))
+
 	go ar.fetchDataplaneInfo(ctx, curDplState.NodeID)
 	return nil
 }
@@ -148,6 +162,9 @@ func (ar *ApiRuntime) getTargetGroupChanges(
 		}
 		ar.tgGuard.Lock()
 		for _, tgID := range needFetch {
+			if _, exists := ar.targetGroupCache[tgID]; exists {
+				continue
+			}
 			ar.targetGroupCache[tgID] = &targetGroupCacheEntry{
 				subscriptions: map[uint64]Notifier{curDplState.Notifier.ID(): curDplState.Notifier},
 				tg:            models.TargetGroup{},
@@ -256,14 +273,27 @@ func (ar *ApiRuntime) fetchTargetGroupInfo(ctx context.Context, tgIDs []models.T
 	log.Warn().Msgf("need refetch target group cache: %+v", tgIDs)
 
 	for _, tgID := range tgIDs {
+		coordinatorSemaWaiters.Inc()
 		_ = ar.coordinatorSema.Acquire(ctx, 1)
+		coordinatorSemaWaiters.Dec()
+
 		go func() {
 			defer ar.coordinatorSema.Release(1)
 
 			ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 			defer cancel()
 
-			err := ar.updateTargetGroup(ctx, tgID)
+			var (
+				err        error
+				fetchStart = time.Now()
+			)
+			defer func() {
+				coordinatorFetchDuration.
+					WithLabelValues("target_group", errorToBool(err)).
+					Observe(time.Since(fetchStart).Seconds())
+			}()
+
+			err = ar.updateTargetGroup(ctx, tgID)
 			if err != nil {
 				log.Error().Err(err).Msgf("failed to fetch tg %s", tgID)
 				return

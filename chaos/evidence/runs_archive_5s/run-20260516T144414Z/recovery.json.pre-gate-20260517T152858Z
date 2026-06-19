@@ -1,0 +1,397 @@
+{
+  "run_dir": "run-20260516T144414Z",
+  "t0": 1778942654,
+  "step": 10,
+  "scenarios": {
+    "single-hc-kill": {
+      "kind": "PodChaos",
+      "group": "1",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "single-hc-failure-long": {
+      "kind": "PodChaos",
+      "group": "1",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "single-test-server-kill": {
+      "kind": "PodChaos",
+      "group": "1",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "single-agent-failure": {
+      "kind": "PodChaos",
+      "group": "1",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 240,
+      "baseline_rps": 49.8
+    },
+    "single-reconciler-kill": {
+      "kind": "PodChaos",
+      "group": "1",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "single-agent-cpu-stress": {
+      "kind": "StressChaos",
+      "group": "1",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "single-hc-mem-stress": {
+      "kind": "StressChaos",
+      "group": "1",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "single-infra-latency": {
+      "kind": "NetworkChaos",
+      "group": "1",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "single-infra-partition": {
+      "kind": "NetworkChaos",
+      "group": "1",
+      "outage_s": 10.0,
+      "recover_s": 46,
+      "recovered": false,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "server-container-kill-1": {
+      "kind": "PodChaos",
+      "group": "1",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 18.1
+    },
+    "pair-hc-kill-1": {
+      "kind": "PodChaos",
+      "group": "2",
+      "outage_s": 0.0,
+      "recover_s": 26,
+      "recovered": true,
+      "backend_unavail_s": 150,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "pair-servers-kill-1": {
+      "kind": "PodChaos",
+      "group": "2",
+      "outage_s": 0.0,
+      "recover_s": 26,
+      "recovered": true,
+      "backend_unavail_s": 150,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "pair-agent-kill-1": {
+      "kind": "PodChaos",
+      "group": "2",
+      "outage_s": 0.0,
+      "recover_s": 36,
+      "recovered": true,
+      "backend_unavail_s": 140,
+      "dpl_unavail_s": 190,
+      "baseline_rps": 49.8
+    },
+    "pair-both-servers-kill": {
+      "kind": "PodChaos",
+      "group": "2",
+      "outage_s": 0.0,
+      "recover_s": 36,
+      "recovered": true,
+      "backend_unavail_s": 140,
+      "dpl_unavail_s": 190,
+      "baseline_rps": 49.8
+    },
+    "pair-agent-kill-2": {
+      "kind": "PodChaos",
+      "group": "2",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 190,
+      "baseline_rps": 49.8
+    },
+    "pair-reconciler-kill-1": {
+      "kind": "PodChaos",
+      "group": "2",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 190,
+      "baseline_rps": 49.8
+    },
+    "pair-hc-kill-2": {
+      "kind": "PodChaos",
+      "group": "2",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "pair-hc-packet-loss": {
+      "kind": "NetworkChaos",
+      "group": "2",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "pair-reconciler-kill-2": {
+      "kind": "PodChaos",
+      "group": "2",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "pair-infra-latency-1": {
+      "kind": "NetworkChaos",
+      "group": "2",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "pair-servers-kill-2": {
+      "kind": "PodChaos",
+      "group": "2",
+      "outage_s": 0.0,
+      "recover_s": 39,
+      "recovered": true,
+      "backend_unavail_s": 130,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "pair-infra-latency-2": {
+      "kind": "NetworkChaos",
+      "group": "2",
+      "outage_s": 0.0,
+      "recover_s": 39,
+      "recovered": true,
+      "backend_unavail_s": 130,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "triple-agent-kill-1": {
+      "kind": "PodChaos",
+      "group": "3",
+      "outage_s": 0.0,
+      "recover_s": 33,
+      "recovered": true,
+      "backend_unavail_s": 200,
+      "dpl_unavail_s": 240,
+      "baseline_rps": 49.8
+    },
+    "triple-hc-kill-1": {
+      "kind": "PodChaos",
+      "group": "3",
+      "outage_s": 0.0,
+      "recover_s": 33,
+      "recovered": true,
+      "backend_unavail_s": 200,
+      "dpl_unavail_s": 240,
+      "baseline_rps": 49.8
+    },
+    "triple-servers-kill-1": {
+      "kind": "PodChaos",
+      "group": "3",
+      "outage_s": 0.0,
+      "recover_s": 33,
+      "recovered": true,
+      "backend_unavail_s": 200,
+      "dpl_unavail_s": 240,
+      "baseline_rps": 49.8
+    },
+    "triple-agent-kill-2": {
+      "kind": "PodChaos",
+      "group": "3",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 240,
+      "baseline_rps": 49.8
+    },
+    "triple-reconciler-kill-1": {
+      "kind": "PodChaos",
+      "group": "3",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 240,
+      "baseline_rps": 49.8
+    },
+    "triple-infra-latency-1": {
+      "kind": "NetworkChaos",
+      "group": "3",
+      "outage_s": 0.0,
+      "recover_s": 0.0,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 240,
+      "baseline_rps": 49.8
+    },
+    "triple-hc-kill-2": {
+      "kind": "PodChaos",
+      "group": "3",
+      "outage_s": 0.0,
+      "recover_s": 33,
+      "recovered": true,
+      "backend_unavail_s": 200,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "triple-servers-kill-2": {
+      "kind": "PodChaos",
+      "group": "3",
+      "outage_s": 0.0,
+      "recover_s": 33,
+      "recovered": true,
+      "backend_unavail_s": 200,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "triple-cdc-latency": {
+      "kind": "NetworkChaos",
+      "group": "3",
+      "outage_s": 0.0,
+      "recover_s": 33,
+      "recovered": true,
+      "backend_unavail_s": 200,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "triple-hc-gossip-loss": {
+      "kind": "NetworkChaos",
+      "group": "3",
+      "outage_s": 0.0,
+      "recover_s": 33,
+      "recovered": true,
+      "backend_unavail_s": 200,
+      "dpl_unavail_s": 0,
+      "baseline_rps": 49.8
+    },
+    "chaos-agent-failure": {
+      "kind": "PodChaos",
+      "group": "4",
+      "outage_s": 10.0,
+      "recover_s": 29,
+      "recovered": true,
+      "backend_unavail_s": 310,
+      "dpl_unavail_s": 360,
+      "baseline_rps": 49.8
+    },
+    "chaos-hc-kill": {
+      "kind": "PodChaos",
+      "group": "4",
+      "outage_s": 10.0,
+      "recover_s": 29,
+      "recovered": true,
+      "backend_unavail_s": 310,
+      "dpl_unavail_s": 360,
+      "baseline_rps": 49.8
+    },
+    "chaos-reconciler-kill": {
+      "kind": "PodChaos",
+      "group": "4",
+      "outage_s": 10.0,
+      "recover_s": 29,
+      "recovered": true,
+      "backend_unavail_s": 310,
+      "dpl_unavail_s": 360,
+      "baseline_rps": 49.8
+    },
+    "chaos-server-1-kill": {
+      "kind": "PodChaos",
+      "group": "4",
+      "outage_s": 10.0,
+      "recover_s": 29,
+      "recovered": true,
+      "backend_unavail_s": 310,
+      "dpl_unavail_s": 360,
+      "baseline_rps": 49.8
+    },
+    "chaos-hc-gossip-loss": {
+      "kind": "NetworkChaos",
+      "group": "4",
+      "outage_s": 10.0,
+      "recover_s": 29,
+      "recovered": true,
+      "backend_unavail_s": 310,
+      "dpl_unavail_s": 360,
+      "baseline_rps": 49.8
+    },
+    "chaos-infra-latency": {
+      "kind": "NetworkChaos",
+      "group": "4",
+      "outage_s": 10.0,
+      "recover_s": 29,
+      "recovered": true,
+      "backend_unavail_s": 310,
+      "dpl_unavail_s": 360,
+      "baseline_rps": 49.8
+    },
+    "chaos-dns-error": {
+      "kind": "DNSChaos",
+      "group": "4",
+      "outage_s": 0.0,
+      "recover_s": 29,
+      "recovered": true,
+      "backend_unavail_s": 0,
+      "dpl_unavail_s": 30,
+      "baseline_rps": 49.8
+    }
+  }
+}

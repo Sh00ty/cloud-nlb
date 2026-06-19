@@ -9,12 +9,16 @@ import (
 
 	"github.com/Sh00ty/cloud-nlb/control-plane/internal/models"
 	"github.com/avast/retry-go/v4"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func (r *Reconciler) reconcile() {
 	ctx := context.Background()
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
+
+	defer r.updateStateGauges()
+	defer r.recordLoadDistribution()
 
 	err := retry.Do(
 		func() error {
@@ -25,10 +29,12 @@ func (r *Reconciler) reconcile() {
 		retry.DelayType(retry.BackOffDelay),
 		retry.OnRetry(func(attempt uint, err error) {
 			r.log.Warn().Err(err).Msgf("failed to complete reconciliation, attempt: %d", attempt)
+			reconcileRetriesTotal.Inc()
 		}),
 	)
 	if err != nil {
 		r.log.Error().Err(err).Msg("failed to complete reconciliation event, will try later")
+		reconcileTotal.WithLabelValues("error").Inc()
 		r.delayEvent(Event{Type: RunReconcile}, 30*time.Second)
 	}
 }
@@ -39,8 +45,10 @@ type dplLoad struct {
 }
 
 func (r *Reconciler) reconcileAttempt(ctx context.Context) error {
-	r.log.Info().Msg("start reconciliation")
+	reconcileTimer := prometheus.NewTimer(reconcileDuration)
+	defer reconcileTimer.ObserveDuration()
 
+	r.log.Info().Msg("start reconciliation")
 	// TODO: not an ideal algo, it can make superfluous movements
 	// due to two step calculation:
 	// 1. randomly replace target groups from dead nodes
@@ -92,25 +100,24 @@ func (r *Reconciler) replaceMissedTargetGroups(
 	desiredPlacements map[models.DataPlaneID]models.Placement,
 	problemTgs map[models.TargetGroupID]int,
 ) map[models.DataPlaneID]models.Placement {
-targetsLoop:
 	for tg, needReplicate := range problemTgs {
-		for range needReplicate {
-			for dplID, pl := range desiredPlacements {
-				if r.dplStatuses[dplID].State != models.Alive {
-					continue
-				}
-				_, exists := pl.TargetGroups[tg]
-				if exists {
-					continue
-				}
-				oldPlVersion := r.placements[dplID].Version
-
-				pl.TargetGroups[tg] = struct{}{}
-				// we don't want bump version too much
-				pl.Version = oldPlVersion + 1
-				desiredPlacements[dplID] = pl
-				continue targetsLoop
+		remaining := needReplicate
+		for dplID, pl := range desiredPlacements {
+			if remaining == 0 {
+				break
 			}
+			if r.dplStatuses[dplID].State != models.Alive {
+				continue
+			}
+			if _, exists := pl.TargetGroups[tg]; exists {
+				continue
+			}
+			pl.TargetGroups[tg] = struct{}{}
+			pl.Version = r.placements[dplID].Version + 1
+			desiredPlacements[dplID] = pl
+			remaining--
+
+			tgReplacementsTotal.Inc()
 		}
 	}
 	return desiredPlacements
@@ -135,6 +142,7 @@ func (r *Reconciler) fixDataplanePlacements(ctx context.Context, desiredPlacemen
 	}
 	if aliveDplCount == 0 {
 		r.log.Error().Msg("can't reconciliate target groups: all data-planes dead")
+		reconcileTotal.WithLabelValues("no_alive_dpl").Inc()
 		return nil
 	}
 
@@ -230,6 +238,7 @@ func (r *Reconciler) generateTgMovement(
 		move--
 		toPl.TargetGroups[tgID] = struct{}{}
 		delete(fromPl.TargetGroups, tgID)
+		tgMovementsTotal.Inc()
 	}
 	return toPl, fromPl, true
 }
@@ -248,8 +257,12 @@ func (r *Reconciler) applyDesiredState(ctx context.Context, desiredPlacements ma
 	}
 	if len(newPlacements) == 0 {
 		r.log.Info().Msg("reconciliation: no changes")
+		reconcileTotal.WithLabelValues("no_changes").Inc()
 		return nil
 	}
+
+	updateTimer := prometheus.NewTimer(placementUpdateDuration)
+	defer updateTimer.ObserveDuration()
 
 	err := r.coordinator.UpdatePlacements(ctx, dataPlaneIDs, newPlacements)
 	if err != nil {
@@ -274,4 +287,7 @@ func (r *Reconciler) applyLocal(dplIDs []models.DataPlaneID, newPls []models.Pla
 			r.targetGroups[tgID].Assignments[dplID] = struct{}{}
 		}
 	}
+
+	placementUpdatesTotal.Add(float64(len(newPls)))
+	reconcileTotal.WithLabelValues("success").Inc()
 }

@@ -1,6 +1,9 @@
 package models
 
-import "net"
+import (
+	"net"
+	"time"
+)
 
 type TargetGroupID string
 
@@ -20,29 +23,25 @@ type TargetGroupSpec struct {
 type TargetGroup struct {
 }
 
-type TargetGroupState struct {
-	ID              TargetGroupID
-	SpecVersion     uint64
-	EndpointVersion uint64
-}
-
 type EndpointSpec struct {
 	IP     net.IP
 	Weight uint32
 	Port   uint16
 }
 
+type EndpointHdr struct {
+	TargetGroupID TargetGroupID
+	IP            net.IP
+	Port          uint16
+}
+
+type EndpointStatus struct {
+	Header    EndpointHdr
+	UpdatedAt time.Time
+	Healthy   bool
+}
+
 type EndpointEvent struct {
 	Spec    EndpointSpec
 	Removed bool
-}
-
-type TargetGroupChange struct {
-	ID          TargetGroupID
-	SpecVersion uint64
-	Spec        *TargetGroupSpec
-
-	EndpointsVersion uint64
-	Changelog        []EndpointEvent
-	// TODO: snapshot
 }

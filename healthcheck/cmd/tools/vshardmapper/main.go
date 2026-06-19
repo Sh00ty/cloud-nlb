@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/consistent"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/sharder"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/consistent"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/sharder"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/healthcheck"
 )
 
 func main() {

@@ -55,21 +55,29 @@ func (w *Watcher) WatchEventlog(
 				return nil
 			}
 			if restartRev, need := w.checkNeedRestart(); need {
+				watchRestartsTotal.WithLabelValues(w.prefix, "reset_revision").Inc()
 				logger.Warn().Msgf("restart watcher with revision %d", restartRev)
+
 				w.lastRevision = restartRev
 				watcherChan = watch(restartRev)
 				continue
 			}
 			if event.Canceled {
+				watchRestartsTotal.WithLabelValues(w.prefix, "canceled").Inc()
+				watchErrorsTotal.WithLabelValues(w.prefix, "canceled").Inc()
 				logger.Error().Err(event.Err()).Msg("watcher failure: canceled, retry")
+
 				watcherChan = watch(w.lastRevision)
 				continue
 			}
 			if event.Err() != nil {
+				watchErrorsTotal.WithLabelValues(w.prefix, "error").Inc()
 				logger.Error().Err(event.Err()).Msg("got unexpected watch error")
 				continue
 			}
 			w.lastRevision = event.Header.Revision
+			watchLastRevision.WithLabelValues(w.prefix).Set(float64(w.lastRevision))
+
 			if event.IsProgressNotify() {
 				logger.Debug().Msgf(
 					"got progress notify message with revision %d",
@@ -77,9 +85,11 @@ func (w *Watcher) WatchEventlog(
 				)
 				continue
 			}
+			watchEventsTotal.WithLabelValues(w.prefix).Add(float64(len(event.Events)))
 			for i, event := range event.Events {
 				err := w.handler(ctx, event)
 				if err != nil {
+					watchErrorsTotal.WithLabelValues(w.prefix, "handler_error").Inc()
 					logger.Error().Err(err).Msgf("watcher handler error, skip [%d] event in batch", i)
 				}
 			}

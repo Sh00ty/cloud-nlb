@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/healthcheck"
 )
 
 type HcEvent struct {
@@ -19,4 +19,5 @@ type TargetStatus struct {
 	Target      healthcheck.TargetAddr
 	Error       string
 	Status      bool
+	UpdatedAt   time.Time
 }

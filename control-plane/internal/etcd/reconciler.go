@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/rs/zerolog/log"
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -40,6 +41,7 @@ func NewReconcilerClient(
 }
 
 func (c *ReconcilerClient) GracefulClose(ctx context.Context) error {
+	isLeader.Set(0)
 	err := c.election.Resign(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to gracefully resign leader")
@@ -99,6 +101,7 @@ func (c *ReconcilerClient) BecomeLeader(ctx context.Context) (bool, <-chan struc
 		if err != nil {
 			return false, nil, err
 		}
+		isLeader.Set(1)
 		log.Warn().Msgf("instance won leader election for %s", ReconcilerLeadershipKey)
 		return true, c.session.Done(), nil
 	}
@@ -254,7 +257,14 @@ func GetDataPlanesPlacements(
 	return states, NewWatcher(DataPlanePlacements, handler, clnt.Watcher, lastRev), nil
 }
 
-func (c *ReconcilerClient) UpdatePlacements(ctx context.Context, ids []models.DataPlaneID, pls []models.Placement) error {
+func (c *ReconcilerClient) UpdatePlacements(ctx context.Context, ids []models.DataPlaneID, pls []models.Placement) (err error) {
+	start := time.Now()
+	defer func() {
+		kvOperationDuration.
+			WithLabelValues("update_placements", errToBool(err)).
+			Observe(time.Since(start).Seconds())
+	}()
+
 	txOps := make([]clientv3.Op, 0, 128)
 
 	for i, dplID := range ids {
@@ -274,9 +284,12 @@ func (c *ReconcilerClient) UpdatePlacements(ctx context.Context, ids []models.Da
 	).Then(
 		txOps...,
 	)
-	_, err := tx.Commit()
+	resp, err := tx.Commit()
 	if err != nil {
 		return fmt.Errorf("committing dpl placement update tx: %w", err)
+	}
+	if !resp.Succeeded {
+		return fmt.Errorf("committing dpl placement update tx: seems like we lost leadership")
 	}
 	return nil
 }

@@ -21,6 +21,7 @@ func (r *Reconciler) delayEvent(event Event, delayDuration time.Duration) {
 	}
 
 	r.log.Info().Msgf("delayed event: %v", ev)
+	defer delayedEventsQueueSize.Set(float64(r.delayedEvents.Len()))
 
 	front := r.delayedEvents.Front()
 	if front == nil {
@@ -52,6 +53,7 @@ func (r *Reconciler) handleDelayedEvent() {
 	r.delayedEvents.Remove(front)
 
 	r.log.Info().Msgf("got delayed event: %v", ev.ev)
+	delayedEventsQueueSize.Set(float64(r.delayedEvents.Len()))
 
 	r.processIncomingEvent(ev.ev, false)
 	if r.delayedEvents.Len() == 0 {

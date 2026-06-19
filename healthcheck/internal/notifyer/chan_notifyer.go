@@ -3,24 +3,24 @@ package notifyer
 import (
 	"sync/atomic"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/models"
 )
 
-type ChanNotifyer struct {
+type ChanNotifier struct {
 	eventChan chan models.HcEvent
 	closed    atomic.Bool
 	close     chan struct{}
 }
 
-func NewNotifier(buf int) *ChanNotifyer {
-	return &ChanNotifyer{
+func NewNotifier(buf int) *ChanNotifier {
+	return &ChanNotifier{
 		eventChan: make(chan models.HcEvent, buf),
 		closed:    atomic.Bool{},
 		close:     make(chan struct{}),
 	}
 }
 
-func (n *ChanNotifyer) NotifyHcStatusChanged(event models.HcEvent) {
+func (n *ChanNotifier) NotifyHcStatusChanged(event models.HcEvent) {
 	if n.closed.Load() {
 		return
 	}
@@ -41,11 +41,11 @@ func (n *ChanNotifyer) NotifyHcStatusChanged(event models.HcEvent) {
 	}
 }
 
-func (n *ChanNotifyer) GetEventChan() chan models.HcEvent {
+func (n *ChanNotifier) GetEventChan() chan models.HcEvent {
 	return n.eventChan
 }
 
-func (n *ChanNotifyer) Close() {
+func (n *ChanNotifier) Close() {
 	n.closed.Store(true)
 	close(n.close)
 	close(n.eventChan)

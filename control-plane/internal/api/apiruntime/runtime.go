@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Sh00ty/cloud-nlb/control-plane/internal/models"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/semaphore"
 )
@@ -34,6 +35,12 @@ type targetGroupCacheEntry struct {
 func (e *targetGroupCacheEntry) appendIntoChangelog(ctx context.Context, ev models.EndpointEvent) {
 	e.tg.EndpointsChangelog = append(e.tg.EndpointsChangelog, ev)
 	e.tg.EndpointVersion = ev.DesiredVersion
+	notificationsTotal.WithLabelValues("endpoint_change").Add(float64(len(e.subscriptions)))
+	e.notifyAll(ctx)
+}
+
+func (e *targetGroupCacheEntry) targetGroupUpdated(ctx context.Context) {
+	notificationsTotal.WithLabelValues("spec_change").Add(float64(len(e.subscriptions)))
 	e.notifyAll(ctx)
 }
 
@@ -62,7 +69,12 @@ func (e *targetGroupCacheEntry) updateTargetGroup(ctx context.Context, newTg mod
 		e.tg.EndpointsChangelog = newTg.EndpointsChangelog
 	}
 	if updated || updateChangelog {
+		subsCount := len(e.subscriptions)
 		e.notifyAll(ctx)
+		notificationsTotal.WithLabelValues("tg_update").Add(float64(subsCount))
+	}
+	if !updated && !updateChangelog {
+		incomingEventsSkippedTotal.WithLabelValues("tg_update", "no_changes").Inc()
 	}
 	e.mu.Unlock()
 }
@@ -112,6 +124,7 @@ func (ar *ApiRuntime) Init(placements map[models.DataPlaneID]models.Placement) {
 			},
 		}
 	}
+	dataplaneCacheSize.Set(float64(len(ar.dataPlaneCache)))
 }
 
 func (ar *ApiRuntime) Close() error {
@@ -132,17 +145,20 @@ func (ar *ApiRuntime) RunGarbageCollection(ctx context.Context) {
 			if !ok {
 				return
 			}
+			gcTimer := prometheus.NewTimer(gcDuration)
+
 			deleted := ar.collectGarbage()
+
+			gcTimer.ObserveDuration()
 			log.Info().Msgf("end notifiers garbage collection cycle, deleted %d subs", deleted)
 		}
 	}
 }
 
 func (ar *ApiRuntime) collectGarbage() int {
-	ar.tgGuard.RLock()
-	defer ar.tgGuard.RUnlock()
-
 	deleted := 0
+
+	ar.tgGuard.RLock()
 	for _, tgCacheEntry := range ar.targetGroupCache {
 		tgCacheEntry.mu.Lock()
 		for _, sub := range tgCacheEntry.subscriptions {
@@ -152,6 +168,18 @@ func (ar *ApiRuntime) collectGarbage() int {
 			}
 		}
 		tgCacheEntry.mu.Unlock()
+	}
+	ar.tgGuard.RUnlock()
+
+	for _, dplCacheEntry := range ar.dataPlaneCache {
+		dplCacheEntry.mu.Lock()
+		for _, sub := range dplCacheEntry.subscriptions {
+			if sub.IsExpired() {
+				deleted++
+				delete(dplCacheEntry.subscriptions, sub.ID())
+			}
+		}
+		dplCacheEntry.mu.Unlock()
 	}
 	return deleted
 }
@@ -190,12 +218,15 @@ func (ar *ApiRuntime) HandleEndpointChange(
 	ev models.EndpointEvent,
 	rev uint64,
 ) {
+	incomingEventsTotal.WithLabelValues("endpoint_change").Inc()
+
 	ar.tgGuard.RLock()
 	defer ar.tgGuard.RUnlock()
 
 	tgCacheEntry, exists := ar.targetGroupCache[ev.TargetGroupID]
 	if !exists {
 		log.Error().Msgf("try to add endpoint to unknown target group: %s", ev.TargetGroupID)
+		incomingEventsSkippedTotal.WithLabelValues("endpoint_change", "unknown_tg").Inc()
 		return
 	}
 	tgCacheEntry.mu.Lock()
@@ -203,6 +234,7 @@ func (ar *ApiRuntime) HandleEndpointChange(
 
 	if tgCacheEntry.tg.SnapshotLastVersion >= ev.DesiredVersion {
 		log.Info().Msgf("endpoint event with timestamp %d already in snapshot", ev.DesiredVersion)
+		incomingEventsSkippedTotal.WithLabelValues("endpoint_change", "already_in_snapshot").Inc()
 		return
 	}
 
@@ -217,7 +249,7 @@ func (ar *ApiRuntime) HandleEndpointChange(
 	}
 	if last.DesiredVersion+1 != ev.DesiredVersion {
 		log.Warn().Msgf("income version is too big; must drop all tg %s cache", ev.TargetGroupID)
-		// TODO:
+		incomingEventsSkippedTotal.WithLabelValues("endpoint_change", "version_gap").Inc()
 		return
 	}
 	tgCacheEntry.appendIntoChangelog(ctx, ev)
@@ -229,6 +261,7 @@ func (ar *ApiRuntime) HandleTgSpecChange(
 	desiredVersion uint64,
 	rev uint64,
 ) {
+	incomingEventsTotal.WithLabelValues("spec_change").Inc()
 
 	ar.tgGuard.Lock()
 	defer ar.tgGuard.Unlock()
@@ -242,6 +275,7 @@ func (ar *ApiRuntime) HandleTgSpecChange(
 			},
 			subscriptions: make(map[uint64]Notifier, 128),
 		}
+		targetGroupCacheSize.Set(float64(len(ar.targetGroupCache)))
 		log.Info().Msgf(
 			"added new target group into cache with desired version: %d",
 			desiredVersion,
@@ -252,12 +286,13 @@ func (ar *ApiRuntime) HandleTgSpecChange(
 	defer tgCacheEntry.mu.Unlock()
 
 	if tgCacheEntry.tg.SpecVersion >= desiredVersion {
+		incomingEventsSkippedTotal.WithLabelValues("spec_change", "stale_version").Inc()
 		log.Info().Msgf("not updated tg %s spec: has local version more then %d", spec.ID, desiredVersion)
 		return
 	}
 	tgCacheEntry.tg.Spec = spec
 	tgCacheEntry.tg.SpecVersion = desiredVersion
-	tgCacheEntry.notifyAll(ctx)
+	tgCacheEntry.targetGroupUpdated(ctx)
 
 	log.Info().Msgf("updated tg %s spec, set desired version %d", spec.ID, desiredVersion)
 }
@@ -268,6 +303,8 @@ func (ar *ApiRuntime) HandlePlacementChange(
 	pl models.Placement,
 	rev uint64,
 ) {
+	incomingEventsTotal.WithLabelValues("placement_change").Inc()
+
 	ar.dplGuard.Lock()
 	defer ar.dplGuard.Unlock()
 
@@ -280,6 +317,7 @@ func (ar *ApiRuntime) HandlePlacementChange(
 			},
 			subscriptions: make(map[uint64]Notifier),
 		}
+		dataplaneCacheSize.Set(float64(len(ar.dataPlaneCache)))
 		log.Info().Msgf("added placement for node %s: %+v", dplID, pl)
 		return
 	}
@@ -287,13 +325,18 @@ func (ar *ApiRuntime) HandlePlacementChange(
 	defer dplEntry.mu.Unlock()
 
 	if dplEntry.dplInfo.Desired != nil && dplEntry.dplInfo.Desired.Version >= pl.Version {
+		incomingEventsSkippedTotal.WithLabelValues("placement_change", "stale_version").Inc()
 		log.Warn().Msgf(
 			"not updated node %s placement: cache version is more then incoming (%d) >= (%d)",
 			dplID, dplEntry.dplInfo.Desired.Version, pl.Version,
 		)
+		return
 	}
+	subsCount := len(dplEntry.subscriptions)
+
 	dplEntry.dplInfo.Desired = &pl
 	dplEntry.notifyAll(ctx)
 
+	notificationsTotal.WithLabelValues("placement_change").Add(float64(subsCount))
 	log.Info().Msgf("updated placement for node %s: %+v", dplID, pl)
 }

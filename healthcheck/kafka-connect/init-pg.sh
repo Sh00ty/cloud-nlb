@@ -19,7 +19,7 @@ curl -i -X POST \
       "topic.prefix": "dbserver1",
       "database.dbname": "postgres",
       "database.server.name": "dbserver1",
-      "table.include.list": "public.targets",
+      "table.include.list": "public.targets,public.target_statuses",
       "plugin.name": "pgoutput",
       "slot.name": "debezium_postgres",
       "publication.name": "dbz_publication",

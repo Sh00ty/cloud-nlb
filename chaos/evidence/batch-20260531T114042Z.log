@@ -1,0 +1,721 @@
+[batch] start N=7 ns=cloud-nlb log=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/batch-20260531T114042Z.log ts=2026-05-31T11:40:42Z
+[batch] ===== run 1/7 : testsrvsyncer sync (2026-05-31T11:40:42Z) =====
+time=2026-05-31T14:40:43.129+03:00 level=INFO msg="starting sync" target_group=test-server namespace=cloud-nlb selector="app=test-server" tg_port=10000 hc_port=8090 dry_run=false
+time=2026-05-31T14:40:43.143+03:00 level=INFO msg="k8s client ready"
+time=2026-05-31T14:40:43.143+03:00 level=INFO msg="cpl connected" addr=control-plane-apiserver.local:30080
+time=2026-05-31T14:40:43.143+03:00 level=INFO msg="hc connected" addr=hc-server.local:30080
+time=2026-05-31T14:40:48.351+03:00 level=INFO msg="cpl: target group ensured" id="" version=0 created=false
+time=2026-05-31T14:40:53.505+03:00 level=WARN msg="hc: create settings (may already exist)" err="rpc error: code = Internal desc = failed to create hc settings: can't create two same settings for one pool"
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: fetched ready pods" count=16
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.112
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.138
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.118
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.132
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.135
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.130
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.113
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.102
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.128
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.133
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.129
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.105
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.139
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.122
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.123
+time=2026-05-31T14:40:53.518+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.136
+time=2026-05-31T14:40:53.521+03:00 level=INFO msg="hc: state" desired=16 current=16
+time=2026-05-31T14:40:53.521+03:00 level=INFO msg="hc: already in sync"
+time=2026-05-31T14:40:53.524+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.132 port=10000 dry_run=false
+time=2026-05-31T14:40:53.530+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.135 port=10000 dry_run=false
+time=2026-05-31T14:40:53.534+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.130 port=10000 dry_run=false
+time=2026-05-31T14:40:53.539+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.113 port=10000 dry_run=false
+time=2026-05-31T14:40:53.542+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.102 port=10000 dry_run=false
+time=2026-05-31T14:40:53.545+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.128 port=10000 dry_run=false
+time=2026-05-31T14:40:53.548+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.133 port=10000 dry_run=false
+time=2026-05-31T14:40:53.550+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.129 port=10000 dry_run=false
+time=2026-05-31T14:40:53.551+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.105 port=10000 dry_run=false
+time=2026-05-31T14:40:53.553+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.139 port=10000 dry_run=false
+time=2026-05-31T14:40:53.555+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.122 port=10000 dry_run=false
+time=2026-05-31T14:40:53.557+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.123 port=10000 dry_run=false
+time=2026-05-31T14:40:53.558+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.136 port=10000 dry_run=false
+time=2026-05-31T14:40:53.560+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.112 port=10000 dry_run=false
+time=2026-05-31T14:40:53.561+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.138 port=10000 dry_run=false
+time=2026-05-31T14:40:53.563+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.118 port=10000 dry_run=false
+time=2026-05-31T14:40:53.564+03:00 level=INFO msg="sync complete" target_group=test-server desired_pods=16 stale_removed=0
+[batch] ===== run 1/7 : run_experiment.sh =====
+[run] 20260531T114053Z  workflow=nlb-resilience-suite-colima-safe  dir=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T114053Z
+[run] workflow created, waiting for controller to own the run
+[run] run owned: entry=main-b5nc7 start=2026-05-31T11:40:53Z
+[run] waiting for completion (deadline 7800s)
+[run] workflow finished (start=2026-05-31T11:40:53Z end=2026-05-31T12:48:54Z)
+[run] workflow done; capturing 300s recovery tail before freezing
+/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/run_experiment.sh: line 96: 45306 Terminated: 15          WF_NAME="$WF_NAME" CHAOS_NS="$NS" bash "$HERE/poll_timeline.sh" "$RUN_DIR/timeline.jsonl"
+[evidence] phases=39 step=2s -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T114053Z
+  single-hc-kill                 outage=0.0s recover=0.0s backend_un=142s dpl_un=0s
+  single-hc-failure-long         outage=0.0s recover=12s backend_un=248s dpl_un=0s
+  single-test-server-kill        outage=0.0s recover=77s backend_un=0s dpl_un=0s
+  single-agent-failure           outage=0.0s recover=126s backend_un=0s dpl_un=240s
+  single-reconciler-kill         outage=0.0s recover=0.0s backend_un=0s dpl_un=0s
+  single-agent-cpu-stress        outage=0.0s recover=12s backend_un=0s dpl_un=0s
+  single-hc-mem-stress           outage=0.0s recover=17s backend_un=0s dpl_un=0s
+  single-infra-latency           outage=0.0s recover=41s backend_un=0s dpl_un=0s
+  single-infra-partition         outage=24.0s recover=44s backend_un=6s dpl_un=2s
+  server-container-kill-1        outage=0.0s recover=0.0s backend_un=0s dpl_un=0s
+  pair-hc-kill-1                 outage=0.0s recover=13s backend_un=162s dpl_un=4s
+  pair-servers-kill-1            outage=0.0s recover=13s backend_un=162s dpl_un=4s
+  pair-agent-kill-1              outage=0.0s recover=≥199s backend_un=174s dpl_un=194s
+  pair-both-servers-kill         outage=0.0s recover=≥199s backend_un=174s dpl_un=194s
+  pair-agent-kill-2              outage=0.0s recover=0.0s backend_un=0s dpl_un=178s
+  pair-reconciler-kill-1         outage=0.0s recover=0.0s backend_un=0s dpl_un=178s
+  pair-hc-kill-2                 outage=0.0s recover=0.0s backend_un=0s dpl_un=0s
+  pair-hc-packet-loss            outage=0.0s recover=0.0s backend_un=0s dpl_un=0s
+  pair-reconciler-kill-2         outage=0.0s recover=120s backend_un=0s dpl_un=0s
+  pair-infra-latency-1           outage=0.0s recover=120s backend_un=0s dpl_un=0s
+  pair-servers-kill-2            outage=0.0s recover=17s backend_un=162s dpl_un=0s
+  pair-infra-latency-2           outage=0.0s recover=17s backend_un=162s dpl_un=0s
+  triple-agent-kill-1            outage=0.0s recover=0.0s backend_un=220s dpl_un=240s
+  triple-hc-kill-1               outage=0.0s recover=0.0s backend_un=220s dpl_un=240s
+  triple-servers-kill-1          outage=0.0s recover=0.0s backend_un=220s dpl_un=240s
+  triple-agent-kill-2            outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  triple-reconciler-kill-1       outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  triple-infra-latency-1         outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  triple-hc-kill-2               outage=0.0s recover=15s backend_un=218s dpl_un=0s
+  triple-servers-kill-2          outage=0.0s recover=15s backend_un=218s dpl_un=0s
+  triple-cdc-latency             outage=0.0s recover=15s backend_un=218s dpl_un=0s
+  triple-hc-gossip-loss          outage=0.0s recover=15s backend_un=218s dpl_un=0s
+  chaos-agent-failure            outage=0.0s recover=0.0s backend_un=338s dpl_un=358s
+  chaos-hc-kill                  outage=0.0s recover=0.0s backend_un=338s dpl_un=358s
+  chaos-reconciler-kill          outage=0.0s recover=0.0s backend_un=338s dpl_un=358s
+  chaos-server-1-kill            outage=0.0s recover=0.0s backend_un=338s dpl_un=358s
+  chaos-hc-gossip-loss           outage=0.0s recover=449s backend_un=338s dpl_un=358s
+  chaos-infra-latency            outage=0.0s recover=449s backend_un=338s dpl_un=358s
+  chaos-dns-error                outage=0.0s recover=0.0s backend_un=6s dpl_un=30s
+[run] DONE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T114053Z
+availability_vs_traffic.png
+backends.png
+errors_by_kind.png
+hc_health.png
+latency.png
+recovery.png
+throughput.png
+zoom
+[batch] tail-check run-20260531T114053Z: +311s past endTime OK
+[batch] ===== run 1/7 COMPLETE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T114053Z =====
+[batch] ===== run 2/7 : testsrvsyncer sync (2026-05-31T12:54:03Z) =====
+time=2026-05-31T15:54:04.093+03:00 level=INFO msg="starting sync" target_group=test-server namespace=cloud-nlb selector="app=test-server" tg_port=10000 hc_port=8090 dry_run=false
+time=2026-05-31T15:54:04.108+03:00 level=INFO msg="k8s client ready"
+time=2026-05-31T15:54:04.108+03:00 level=INFO msg="cpl connected" addr=control-plane-apiserver.local:30080
+time=2026-05-31T15:54:04.108+03:00 level=INFO msg="hc connected" addr=hc-server.local:30080
+time=2026-05-31T15:54:09.333+03:00 level=INFO msg="cpl: target group ensured" id="" version=0 created=false
+time=2026-05-31T15:54:14.433+03:00 level=WARN msg="hc: create settings (may already exist)" err="rpc error: code = Internal desc = failed to create hc settings: can't create two same settings for one pool"
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: fetched ready pods" count=16
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.132
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.139
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.122
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.133
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.123
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.138
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.102
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.118
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.128
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.135
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.130
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.129
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.112
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.136
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.113
+time=2026-05-31T15:54:14.443+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.105
+time=2026-05-31T15:54:14.447+03:00 level=INFO msg="hc: state" desired=16 current=16
+time=2026-05-31T15:54:14.447+03:00 level=INFO msg="hc: already in sync"
+time=2026-05-31T15:54:14.450+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.102 port=10000 dry_run=false
+time=2026-05-31T15:54:14.453+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.118 port=10000 dry_run=false
+time=2026-05-31T15:54:14.456+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.128 port=10000 dry_run=false
+time=2026-05-31T15:54:14.459+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.135 port=10000 dry_run=false
+time=2026-05-31T15:54:14.462+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.130 port=10000 dry_run=false
+time=2026-05-31T15:54:14.465+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.129 port=10000 dry_run=false
+time=2026-05-31T15:54:14.468+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.112 port=10000 dry_run=false
+time=2026-05-31T15:54:14.470+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.136 port=10000 dry_run=false
+time=2026-05-31T15:54:14.473+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.113 port=10000 dry_run=false
+time=2026-05-31T15:54:14.476+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.105 port=10000 dry_run=false
+time=2026-05-31T15:54:14.478+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.132 port=10000 dry_run=false
+time=2026-05-31T15:54:14.480+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.139 port=10000 dry_run=false
+time=2026-05-31T15:54:14.482+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.122 port=10000 dry_run=false
+time=2026-05-31T15:54:14.484+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.133 port=10000 dry_run=false
+time=2026-05-31T15:54:14.490+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.123 port=10000 dry_run=false
+time=2026-05-31T15:54:14.492+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.138 port=10000 dry_run=false
+time=2026-05-31T15:54:14.494+03:00 level=INFO msg="sync complete" target_group=test-server desired_pods=16 stale_removed=0
+[batch] ===== run 2/7 : run_experiment.sh =====
+[run] 20260531T125414Z  workflow=nlb-resilience-suite-colima-safe  dir=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T125414Z
+[run] workflow created, waiting for controller to own the run
+[run] run owned: entry=main-drbjq start=2026-05-31T12:54:14Z
+[run] waiting for completion (deadline 7800s)
+[run] workflow finished (start=2026-05-31T12:54:14Z end=2026-05-31T14:02:15Z)
+[run] workflow done; capturing 300s recovery tail before freezing
+/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/run_experiment.sh: line 96: 46822 Terminated: 15          WF_NAME="$WF_NAME" CHAOS_NS="$NS" bash "$HERE/poll_timeline.sh" "$RUN_DIR/timeline.jsonl"
+[evidence] phases=39 step=2s -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T125414Z
+  single-hc-kill                 outage=0.0s recover=0.0s backend_un=140s dpl_un=0s
+  single-hc-failure-long         outage=0.0s recover=28s backend_un=8s dpl_un=0s
+  single-test-server-kill        outage=0.0s recover=132s backend_un=0s dpl_un=2s
+  single-agent-failure           outage=0.0s recover=260s backend_un=0s dpl_un=242s
+  single-reconciler-kill         outage=0.0s recover=0.0s backend_un=0s dpl_un=0s
+  single-agent-cpu-stress        outage=0.0s recover=8s backend_un=0s dpl_un=0s
+  single-hc-mem-stress           outage=0.0s recover=13s backend_un=0s dpl_un=0s
+  single-infra-latency           outage=0.0s recover=147s backend_un=0s dpl_un=0s
+  single-infra-partition         outage=26.0s recover=44s backend_un=10s dpl_un=2s
+  server-container-kill-1        outage=0.0s recover=0.0s backend_un=0s dpl_un=0s
+  pair-hc-kill-1                 outage=0.0s recover=13s backend_un=158s dpl_un=4s
+  pair-servers-kill-1            outage=0.0s recover=13s backend_un=158s dpl_un=4s
+  pair-agent-kill-1              outage=0.0s recover=192s backend_un=160s dpl_un=180s
+  pair-both-servers-kill         outage=0.0s recover=192s backend_un=160s dpl_un=180s
+  pair-agent-kill-2              outage=0.0s recover=0.0s backend_un=0s dpl_un=200s
+  pair-reconciler-kill-1         outage=0.0s recover=0.0s backend_un=0s dpl_un=200s
+  pair-hc-kill-2                 outage=0.0s recover=22s backend_un=0s dpl_un=6s
+  pair-hc-packet-loss            outage=0.0s recover=22s backend_un=0s dpl_un=6s
+  pair-reconciler-kill-2         outage=0.0s recover=86s backend_un=0s dpl_un=0s
+  pair-infra-latency-1           outage=0.0s recover=86s backend_un=0s dpl_un=0s
+  pair-servers-kill-2            outage=0.0s recover=≥5s backend_un=0s dpl_un=0s
+  pair-infra-latency-2           outage=0.0s recover=14s backend_un=160s dpl_un=0s
+  triple-hc-kill-1               outage=0.0s recover=≥5s backend_un=0s dpl_un=4s
+  triple-servers-kill-1          outage=0.0s recover=≥5s backend_un=0s dpl_un=4s
+  triple-agent-kill-1            outage=0.0s recover=97s backend_un=224s dpl_un=236s
+  triple-agent-kill-2            outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  triple-reconciler-kill-1       outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  triple-infra-latency-1         outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  triple-hc-kill-2               outage=0.0s recover=17s backend_un=218s dpl_un=0s
+  triple-servers-kill-2          outage=0.0s recover=17s backend_un=218s dpl_un=0s
+  triple-cdc-latency             outage=0.0s recover=17s backend_un=218s dpl_un=0s
+  triple-hc-gossip-loss          outage=0.0s recover=17s backend_un=218s dpl_un=0s
+  chaos-agent-failure            outage=0.0s recover=20s backend_un=342s dpl_un=358s
+  chaos-hc-kill                  outage=0.0s recover=20s backend_un=342s dpl_un=358s
+  chaos-reconciler-kill          outage=0.0s recover=20s backend_un=342s dpl_un=358s
+  chaos-server-1-kill            outage=0.0s recover=20s backend_un=342s dpl_un=358s
+  chaos-hc-gossip-loss           outage=0.0s recover=20s backend_un=342s dpl_un=358s
+  chaos-infra-latency            outage=0.0s recover=20s backend_un=342s dpl_un=358s
+  chaos-dns-error                outage=0.0s recover=20s backend_un=6s dpl_un=32s
+[run] DONE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T125414Z
+availability_vs_traffic.png
+backends.png
+errors_by_kind.png
+hc_health.png
+latency.png
+recovery.png
+throughput.png
+zoom
+[batch] tail-check run-20260531T125414Z: +311s past endTime OK
+[batch] ===== run 2/7 COMPLETE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T125414Z =====
+[batch] ===== run 3/7 : testsrvsyncer sync (2026-05-31T14:07:24Z) =====
+time=2026-05-31T17:07:24.887+03:00 level=INFO msg="starting sync" target_group=test-server namespace=cloud-nlb selector="app=test-server" tg_port=10000 hc_port=8090 dry_run=false
+time=2026-05-31T17:07:24.901+03:00 level=INFO msg="k8s client ready"
+time=2026-05-31T17:07:24.901+03:00 level=INFO msg="cpl connected" addr=control-plane-apiserver.local:30080
+time=2026-05-31T17:07:24.901+03:00 level=INFO msg="hc connected" addr=hc-server.local:30080
+time=2026-05-31T17:07:30.057+03:00 level=INFO msg="cpl: target group ensured" id="" version=0 created=false
+time=2026-05-31T17:07:35.138+03:00 level=WARN msg="hc: create settings (may already exist)" err="rpc error: code = Internal desc = failed to create hc settings: can't create two same settings for one pool"
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: fetched ready pods" count=16
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.133
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.123
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.102
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.135
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.129
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.138
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.105
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.112
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.122
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.136
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.130
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.132
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.139
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.128
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.113
+time=2026-05-31T17:07:35.152+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.118
+time=2026-05-31T17:07:35.155+03:00 level=INFO msg="hc: state" desired=16 current=16
+time=2026-05-31T17:07:35.155+03:00 level=INFO msg="hc: already in sync"
+time=2026-05-31T17:07:35.157+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.139 port=10000 dry_run=false
+time=2026-05-31T17:07:35.161+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.128 port=10000 dry_run=false
+time=2026-05-31T17:07:35.164+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.113 port=10000 dry_run=false
+time=2026-05-31T17:07:35.167+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.118 port=10000 dry_run=false
+time=2026-05-31T17:07:35.170+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.133 port=10000 dry_run=false
+time=2026-05-31T17:07:35.173+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.123 port=10000 dry_run=false
+time=2026-05-31T17:07:35.175+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.102 port=10000 dry_run=false
+time=2026-05-31T17:07:35.177+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.135 port=10000 dry_run=false
+time=2026-05-31T17:07:35.179+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.129 port=10000 dry_run=false
+time=2026-05-31T17:07:35.181+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.138 port=10000 dry_run=false
+time=2026-05-31T17:07:35.182+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.105 port=10000 dry_run=false
+time=2026-05-31T17:07:35.184+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.112 port=10000 dry_run=false
+time=2026-05-31T17:07:35.186+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.122 port=10000 dry_run=false
+time=2026-05-31T17:07:35.188+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.136 port=10000 dry_run=false
+time=2026-05-31T17:07:35.189+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.130 port=10000 dry_run=false
+time=2026-05-31T17:07:35.191+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.132 port=10000 dry_run=false
+time=2026-05-31T17:07:35.192+03:00 level=INFO msg="sync complete" target_group=test-server desired_pods=16 stale_removed=0
+[batch] ===== run 3/7 : run_experiment.sh =====
+[run] 20260531T140735Z  workflow=nlb-resilience-suite-colima-safe  dir=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T140735Z
+[run] workflow created, waiting for controller to own the run
+[run] run owned: entry=main-792fk start=2026-05-31T14:07:35Z
+[run] waiting for completion (deadline 7800s)
+[run] workflow finished (start=2026-05-31T14:07:35Z end=2026-05-31T15:15:35Z)
+[run] workflow done; capturing 300s recovery tail before freezing
+/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/run_experiment.sh: line 96: 45150 Terminated: 15          WF_NAME="$WF_NAME" CHAOS_NS="$NS" bash "$HERE/poll_timeline.sh" "$RUN_DIR/timeline.jsonl"
+[evidence] phases=39 step=2s -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T140735Z
+  single-hc-kill                 outage=0.0s recover=0.0s backend_un=140s dpl_un=0s
+  single-hc-failure-long         outage=0.0s recover=55s backend_un=6s dpl_un=0s
+  single-test-server-kill        outage=0.0s recover=22s backend_un=0s dpl_un=2s
+  single-agent-failure           outage=0.0s recover=210s backend_un=0s dpl_un=240s
+  single-reconciler-kill         outage=0.0s recover=82s backend_un=0s dpl_un=0s
+  single-agent-cpu-stress        outage=0.0s recover=114s backend_un=0s dpl_un=0s
+  single-hc-mem-stress           outage=0.0s recover=12s backend_un=0s dpl_un=0s
+  single-infra-latency           outage=0.0s recover=40s backend_un=0s dpl_un=0s
+  single-infra-partition         outage=30.0s recover=48s backend_un=12s dpl_un=0s
+  server-container-kill-1        outage=0.0s recover=0.0s backend_un=0s dpl_un=0s
+  pair-hc-kill-1                 outage=0.0s recover=14s backend_un=162s dpl_un=2s
+  pair-servers-kill-1            outage=0.0s recover=14s backend_un=162s dpl_un=2s
+  pair-agent-kill-1              outage=0.0s recover=5s backend_un=162s dpl_un=180s
+  pair-both-servers-kill         outage=0.0s recover=5s backend_un=162s dpl_un=180s
+  pair-agent-kill-2              outage=0.0s recover=0.0s backend_un=0s dpl_un=200s
+  pair-reconciler-kill-1         outage=0.0s recover=0.0s backend_un=0s dpl_un=200s
+  pair-hc-kill-2                 outage=0.0s recover=124s backend_un=0s dpl_un=18s
+  pair-hc-packet-loss            outage=0.0s recover=124s backend_un=0s dpl_un=18s
+  pair-reconciler-kill-2         outage=0.0s recover=0.0s backend_un=0s dpl_un=0s
+  pair-infra-latency-1           outage=0.0s recover=0.0s backend_un=0s dpl_un=0s
+  pair-servers-kill-2            outage=0.0s recover=12s backend_un=158s dpl_un=0s
+  pair-infra-latency-2           outage=0.0s recover=12s backend_un=158s dpl_un=0s
+  triple-agent-kill-1            outage=0.0s recover=19s backend_un=220s dpl_un=242s
+  triple-hc-kill-1               outage=0.0s recover=19s backend_un=220s dpl_un=242s
+  triple-servers-kill-1          outage=0.0s recover=19s backend_un=220s dpl_un=242s
+  triple-agent-kill-2            outage=0.0s recover=0.0s backend_un=0s dpl_un=242s
+  triple-reconciler-kill-1       outage=0.0s recover=0.0s backend_un=0s dpl_un=242s
+  triple-infra-latency-1         outage=0.0s recover=0.0s backend_un=0s dpl_un=242s
+  triple-hc-kill-2               outage=0.0s recover=0.0s backend_un=218s dpl_un=0s
+  triple-servers-kill-2          outage=0.0s recover=0.0s backend_un=218s dpl_un=0s
+  triple-cdc-latency             outage=0.0s recover=0.0s backend_un=218s dpl_un=0s
+  triple-hc-gossip-loss          outage=0.0s recover=0.0s backend_un=218s dpl_un=0s
+  chaos-agent-failure            outage=0.0s recover=152s backend_un=344s dpl_un=358s
+  chaos-hc-kill                  outage=0.0s recover=152s backend_un=344s dpl_un=358s
+  chaos-reconciler-kill          outage=0.0s recover=152s backend_un=344s dpl_un=358s
+  chaos-server-1-kill            outage=0.0s recover=152s backend_un=344s dpl_un=358s
+  chaos-hc-gossip-loss           outage=0.0s recover=152s backend_un=344s dpl_un=358s
+  chaos-infra-latency            outage=0.0s recover=152s backend_un=344s dpl_un=358s
+  chaos-dns-error                outage=0.0s recover=≥30s backend_un=8s dpl_un=32s
+[run] DONE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T140735Z
+availability_vs_traffic.png
+backends.png
+errors_by_kind.png
+hc_health.png
+latency.png
+recovery.png
+throughput.png
+zoom
+[batch] tail-check run-20260531T140735Z: +310s past endTime OK
+[batch] ===== run 3/7 COMPLETE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T140735Z =====
+[batch] ===== run 4/7 : testsrvsyncer sync (2026-05-31T15:20:45Z) =====
+time=2026-05-31T18:20:45.684+03:00 level=INFO msg="starting sync" target_group=test-server namespace=cloud-nlb selector="app=test-server" tg_port=10000 hc_port=8090 dry_run=false
+time=2026-05-31T18:20:45.697+03:00 level=INFO msg="k8s client ready"
+time=2026-05-31T18:20:45.698+03:00 level=INFO msg="cpl connected" addr=control-plane-apiserver.local:30080
+time=2026-05-31T18:20:45.698+03:00 level=INFO msg="hc connected" addr=hc-server.local:30080
+time=2026-05-31T18:20:50.925+03:00 level=INFO msg="cpl: target group ensured" id="" version=0 created=false
+time=2026-05-31T18:20:55.981+03:00 level=WARN msg="hc: create settings (may already exist)" err="rpc error: code = Internal desc = failed to create hc settings: can't create two same settings for one pool"
+time=2026-05-31T18:20:55.991+03:00 level=INFO msg="k8s: fetched ready pods" count=16
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.102
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.112
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.128
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.135
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.133
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.123
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.130
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.138
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.139
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.105
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.118
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.132
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.136
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.113
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.129
+time=2026-05-31T18:20:55.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.122
+time=2026-05-31T18:20:55.994+03:00 level=INFO msg="hc: state" desired=16 current=16
+time=2026-05-31T18:20:55.994+03:00 level=INFO msg="hc: already in sync"
+time=2026-05-31T18:20:55.996+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.139 port=10000 dry_run=false
+time=2026-05-31T18:20:55.999+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.105 port=10000 dry_run=false
+time=2026-05-31T18:20:56.005+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.118 port=10000 dry_run=false
+time=2026-05-31T18:20:56.008+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.132 port=10000 dry_run=false
+time=2026-05-31T18:20:56.010+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.136 port=10000 dry_run=false
+time=2026-05-31T18:20:56.013+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.113 port=10000 dry_run=false
+time=2026-05-31T18:20:56.016+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.129 port=10000 dry_run=false
+time=2026-05-31T18:20:56.020+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.122 port=10000 dry_run=false
+time=2026-05-31T18:20:56.022+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.102 port=10000 dry_run=false
+time=2026-05-31T18:20:56.025+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.112 port=10000 dry_run=false
+time=2026-05-31T18:20:56.028+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.128 port=10000 dry_run=false
+time=2026-05-31T18:20:56.030+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.135 port=10000 dry_run=false
+time=2026-05-31T18:20:56.033+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.133 port=10000 dry_run=false
+time=2026-05-31T18:20:56.035+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.123 port=10000 dry_run=false
+time=2026-05-31T18:20:56.039+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.130 port=10000 dry_run=false
+time=2026-05-31T18:20:56.041+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.138 port=10000 dry_run=false
+time=2026-05-31T18:20:56.043+03:00 level=INFO msg="sync complete" target_group=test-server desired_pods=16 stale_removed=0
+[batch] ===== run 4/7 : run_experiment.sh =====
+[run] 20260531T152056Z  workflow=nlb-resilience-suite-colima-safe  dir=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T152056Z
+[run] workflow created, waiting for controller to own the run
+[run] run owned: entry=main-69mk2 start=2026-05-31T15:20:56Z
+[run] waiting for completion (deadline 7800s)
+[run] workflow finished (start=2026-05-31T15:20:56Z end=2026-05-31T16:28:57Z)
+[run] workflow done; capturing 300s recovery tail before freezing
+/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/run_experiment.sh: line 96: 48775 Terminated: 15          WF_NAME="$WF_NAME" CHAOS_NS="$NS" bash "$HERE/poll_timeline.sh" "$RUN_DIR/timeline.jsonl"
+[evidence] phases=39 step=2s -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T152056Z
+  single-hc-kill                 outage=0.0s recover=0.0s backend_un=8s dpl_un=0s
+  single-hc-failure-long         outage=0.0s recover=27s backend_un=0s dpl_un=0s
+  single-test-server-kill        outage=0.0s recover=122s backend_un=0s dpl_un=0s
+  single-agent-failure           outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  single-reconciler-kill         outage=0.0s recover=110s backend_un=0s dpl_un=0s
+  single-agent-cpu-stress        outage=0.0s recover=13s backend_un=0s dpl_un=0s
+  single-hc-mem-stress           outage=0.0s recover=14s backend_un=0s dpl_un=0s
+  single-infra-latency           outage=0.0s recover=10s backend_un=0s dpl_un=2s
+  single-infra-partition         outage=24.0s recover=44s backend_un=6s dpl_un=2s
+  server-container-kill-1        outage=0.0s recover=0.0s backend_un=0s dpl_un=0s
+  pair-hc-kill-1                 outage=0.0s recover=14s backend_un=176s dpl_un=4s
+  pair-servers-kill-1            outage=0.0s recover=14s backend_un=176s dpl_un=4s
+  pair-agent-kill-1              outage=0.0s recover=4s backend_un=186s dpl_un=192s
+  pair-both-servers-kill         outage=0.0s recover=4s backend_un=186s dpl_un=192s
+  pair-agent-kill-2              outage=0.0s recover=0.0s backend_un=0s dpl_un=194s
+  pair-reconciler-kill-1         outage=0.0s recover=0.0s backend_un=0s dpl_un=194s
+  pair-hc-kill-2                 outage=0.0s recover=16s backend_un=0s dpl_un=0s
+  pair-hc-packet-loss            outage=0.0s recover=16s backend_un=0s dpl_un=0s
+  pair-reconciler-kill-2         outage=0.0s recover=9s backend_un=168s dpl_un=0s
+  pair-infra-latency-1           outage=0.0s recover=9s backend_un=168s dpl_un=0s
+  pair-servers-kill-2            outage=0.0s recover=14s backend_un=206s dpl_un=0s
+  pair-infra-latency-2           outage=0.0s recover=14s backend_un=206s dpl_un=0s
+  triple-hc-kill-1               outage=0.0s recover=≥5s backend_un=6s dpl_un=4s
+  triple-agent-kill-1            outage=0.0s recover=9s backend_un=224s dpl_un=236s
+  triple-servers-kill-1          outage=0.0s recover=9s backend_un=224s dpl_un=236s
+  triple-agent-kill-2            outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  triple-reconciler-kill-1       outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  triple-infra-latency-1         outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  triple-hc-kill-2               outage=0.0s recover=0.0s backend_un=272s dpl_un=0s
+  triple-servers-kill-2          outage=0.0s recover=0.0s backend_un=216s dpl_un=0s
+  triple-cdc-latency             outage=0.0s recover=0.0s backend_un=216s dpl_un=0s
+  triple-hc-gossip-loss          outage=0.0s recover=0.0s backend_un=216s dpl_un=0s
+  chaos-agent-failure            outage=0.0s recover=36s backend_un=366s dpl_un=358s
+  chaos-hc-kill                  outage=0.0s recover=36s backend_un=366s dpl_un=358s
+  chaos-reconciler-kill          outage=0.0s recover=36s backend_un=366s dpl_un=358s
+  chaos-server-1-kill            outage=0.0s recover=36s backend_un=366s dpl_un=358s
+  chaos-hc-gossip-loss           outage=0.0s recover=36s backend_un=366s dpl_un=358s
+  chaos-infra-latency            outage=0.0s recover=36s backend_un=366s dpl_un=358s
+  chaos-dns-error                outage=0.0s recover=≥30s backend_un=32s dpl_un=32s
+[run] DONE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T152056Z
+availability_vs_traffic.png
+backends.png
+errors_by_kind.png
+hc_health.png
+latency.png
+recovery.png
+throughput.png
+zoom
+[batch] tail-check run-20260531T152056Z: +311s past endTime OK
+[batch] ===== run 4/7 COMPLETE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T152056Z =====
+[batch] ===== run 5/7 : testsrvsyncer sync (2026-05-31T16:34:06Z) =====
+time=2026-05-31T19:34:06.624+03:00 level=INFO msg="starting sync" target_group=test-server namespace=cloud-nlb selector="app=test-server" tg_port=10000 hc_port=8090 dry_run=false
+time=2026-05-31T19:34:06.638+03:00 level=INFO msg="k8s client ready"
+time=2026-05-31T19:34:06.638+03:00 level=INFO msg="cpl connected" addr=control-plane-apiserver.local:30080
+time=2026-05-31T19:34:06.638+03:00 level=INFO msg="hc connected" addr=hc-server.local:30080
+time=2026-05-31T19:34:11.759+03:00 level=INFO msg="cpl: target group ensured" id="" version=0 created=false
+time=2026-05-31T19:34:16.873+03:00 level=WARN msg="hc: create settings (may already exist)" err="rpc error: code = Internal desc = failed to create hc settings: can't create two same settings for one pool"
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: fetched ready pods" count=16
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.128
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.136
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.130
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.118
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.122
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.105
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.139
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.135
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.133
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.123
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.129
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.138
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.132
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.102
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.113
+time=2026-05-31T19:34:16.881+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.112
+time=2026-05-31T19:34:16.883+03:00 level=INFO msg="hc: state" desired=16 current=16
+time=2026-05-31T19:34:16.883+03:00 level=INFO msg="hc: already in sync"
+time=2026-05-31T19:34:16.884+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.139 port=10000 dry_run=false
+time=2026-05-31T19:34:16.887+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.135 port=10000 dry_run=false
+time=2026-05-31T19:34:16.889+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.133 port=10000 dry_run=false
+time=2026-05-31T19:34:16.891+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.123 port=10000 dry_run=false
+time=2026-05-31T19:34:16.893+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.129 port=10000 dry_run=false
+time=2026-05-31T19:34:16.896+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.138 port=10000 dry_run=false
+time=2026-05-31T19:34:16.898+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.132 port=10000 dry_run=false
+time=2026-05-31T19:34:16.899+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.102 port=10000 dry_run=false
+time=2026-05-31T19:34:16.901+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.113 port=10000 dry_run=false
+time=2026-05-31T19:34:16.903+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.112 port=10000 dry_run=false
+time=2026-05-31T19:34:16.904+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.128 port=10000 dry_run=false
+time=2026-05-31T19:34:16.905+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.136 port=10000 dry_run=false
+time=2026-05-31T19:34:16.907+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.130 port=10000 dry_run=false
+time=2026-05-31T19:34:16.908+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.118 port=10000 dry_run=false
+time=2026-05-31T19:34:16.909+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.122 port=10000 dry_run=false
+time=2026-05-31T19:34:16.910+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.105 port=10000 dry_run=false
+time=2026-05-31T19:34:16.912+03:00 level=INFO msg="sync complete" target_group=test-server desired_pods=16 stale_removed=0
+[batch] ===== run 5/7 : run_experiment.sh =====
+[run] 20260531T163416Z  workflow=nlb-resilience-suite-colima-safe  dir=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T163416Z
+[run] workflow created, waiting for controller to own the run
+[run] run owned: entry=main-42pgl start=2026-05-31T16:34:17Z
+[run] waiting for completion (deadline 7800s)
+[run] workflow finished (start=2026-05-31T16:34:17Z end=2026-05-31T17:42:17Z)
+[run] workflow done; capturing 300s recovery tail before freezing
+/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/run_experiment.sh: line 96: 45598 Terminated: 15          WF_NAME="$WF_NAME" CHAOS_NS="$NS" bash "$HERE/poll_timeline.sh" "$RUN_DIR/timeline.jsonl"
+[evidence] phases=39 step=2s -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T163416Z
+  single-hc-kill                 outage=0.0s recover=0.0s backend_un=8s dpl_un=0s
+  single-hc-failure-long         outage=0.0s recover=72s backend_un=0s dpl_un=0s
+  single-test-server-kill        outage=0.0s recover=124s backend_un=0s dpl_un=2s
+  single-agent-failure           outage=0.0s recover=256s backend_un=0s dpl_un=242s
+  single-reconciler-kill         outage=0.0s recover=0.0s backend_un=0s dpl_un=0s
+  single-agent-cpu-stress        outage=0.0s recover=8s backend_un=0s dpl_un=0s
+  single-hc-mem-stress           outage=0.0s recover=13s backend_un=0s dpl_un=0s
+  single-infra-latency           outage=0.0s recover=49s backend_un=0s dpl_un=0s
+  single-infra-partition         outage=26.0s recover=44s backend_un=10s dpl_un=0s
+  server-container-kill-1        outage=0.0s recover=0.0s backend_un=0s dpl_un=0s
+  pair-hc-kill-1                 outage=0.0s recover=13s backend_un=162s dpl_un=4s
+  pair-servers-kill-1            outage=0.0s recover=13s backend_un=162s dpl_un=4s
+  pair-agent-kill-1              outage=0.0s recover=96s backend_un=174s dpl_un=180s
+  pair-both-servers-kill         outage=0.0s recover=96s backend_un=174s dpl_un=180s
+  pair-agent-kill-2              outage=0.0s recover=0.0s backend_un=0s dpl_un=190s
+  pair-reconciler-kill-1         outage=0.0s recover=0.0s backend_un=0s dpl_un=190s
+  pair-hc-kill-2                 outage=0.0s recover=0.0s backend_un=32s dpl_un=0s
+  pair-hc-packet-loss            outage=0.0s recover=0.0s backend_un=32s dpl_un=0s
+  pair-reconciler-kill-2         outage=0.0s recover=69s backend_un=0s dpl_un=0s
+  pair-infra-latency-1           outage=0.0s recover=69s backend_un=0s dpl_un=0s
+  pair-servers-kill-2            outage=0.0s recover=16s backend_un=160s dpl_un=0s
+  pair-infra-latency-2           outage=0.0s recover=16s backend_un=160s dpl_un=0s
+  triple-agent-kill-1            outage=0.0s recover=176s backend_un=222s dpl_un=238s
+  triple-hc-kill-1               outage=0.0s recover=176s backend_un=222s dpl_un=238s
+  triple-servers-kill-1          outage=0.0s recover=176s backend_un=222s dpl_un=238s
+  triple-agent-kill-2            outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  triple-reconciler-kill-1       outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  triple-infra-latency-1         outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  triple-hc-kill-2               outage=0.0s recover=0.0s backend_un=216s dpl_un=0s
+  triple-servers-kill-2          outage=0.0s recover=0.0s backend_un=216s dpl_un=0s
+  triple-cdc-latency             outage=0.0s recover=0.0s backend_un=216s dpl_un=0s
+  triple-hc-gossip-loss          outage=0.0s recover=0.0s backend_un=216s dpl_un=0s
+  chaos-agent-failure            outage=0.0s recover=4s backend_un=342s dpl_un=360s
+  chaos-hc-kill                  outage=0.0s recover=4s backend_un=342s dpl_un=360s
+  chaos-reconciler-kill          outage=0.0s recover=4s backend_un=342s dpl_un=360s
+  chaos-server-1-kill            outage=0.0s recover=4s backend_un=342s dpl_un=360s
+  chaos-hc-gossip-loss           outage=0.0s recover=4s backend_un=342s dpl_un=360s
+  chaos-infra-latency            outage=0.0s recover=4s backend_un=342s dpl_un=360s
+  chaos-dns-error                outage=0.0s recover=4s backend_un=8s dpl_un=32s
+[run] DONE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T163416Z
+availability_vs_traffic.png
+backends.png
+errors_by_kind.png
+hc_health.png
+latency.png
+recovery.png
+throughput.png
+zoom
+[batch] tail-check run-20260531T163416Z: +313s past endTime OK
+[batch] ===== run 5/7 COMPLETE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T163416Z =====
+[batch] ===== run 6/7 : testsrvsyncer sync (2026-05-31T17:47:27Z) =====
+time=2026-05-31T20:47:28.386+03:00 level=INFO msg="starting sync" target_group=test-server namespace=cloud-nlb selector="app=test-server" tg_port=10000 hc_port=8090 dry_run=false
+time=2026-05-31T20:47:28.401+03:00 level=INFO msg="k8s client ready"
+time=2026-05-31T20:47:28.401+03:00 level=INFO msg="cpl connected" addr=control-plane-apiserver.local:30080
+time=2026-05-31T20:47:28.401+03:00 level=INFO msg="hc connected" addr=hc-server.local:30080
+time=2026-05-31T20:47:33.597+03:00 level=INFO msg="cpl: target group ensured" id="" version=0 created=false
+time=2026-05-31T20:47:38.748+03:00 level=WARN msg="hc: create settings (may already exist)" err="rpc error: code = Internal desc = failed to create hc settings: can't create two same settings for one pool"
+time=2026-05-31T20:47:38.762+03:00 level=INFO msg="k8s: fetched ready pods" count=16
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.133
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.136
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.130
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.113
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.135
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.123
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.138
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.105
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.132
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.122
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.129
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.118
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.139
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.102
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.128
+time=2026-05-31T20:47:38.763+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.112
+time=2026-05-31T20:47:38.767+03:00 level=INFO msg="hc: state" desired=16 current=16
+time=2026-05-31T20:47:38.767+03:00 level=INFO msg="hc: already in sync"
+time=2026-05-31T20:47:38.770+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.139 port=10000 dry_run=false
+time=2026-05-31T20:47:38.774+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.102 port=10000 dry_run=false
+time=2026-05-31T20:47:38.778+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.128 port=10000 dry_run=false
+time=2026-05-31T20:47:38.781+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.112 port=10000 dry_run=false
+time=2026-05-31T20:47:38.786+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.133 port=10000 dry_run=false
+time=2026-05-31T20:47:38.788+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.136 port=10000 dry_run=false
+time=2026-05-31T20:47:38.791+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.130 port=10000 dry_run=false
+time=2026-05-31T20:47:38.793+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.113 port=10000 dry_run=false
+time=2026-05-31T20:47:38.795+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.135 port=10000 dry_run=false
+time=2026-05-31T20:47:38.796+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.123 port=10000 dry_run=false
+time=2026-05-31T20:47:38.798+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.138 port=10000 dry_run=false
+time=2026-05-31T20:47:38.800+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.105 port=10000 dry_run=false
+time=2026-05-31T20:47:38.802+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.132 port=10000 dry_run=false
+time=2026-05-31T20:47:38.804+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.122 port=10000 dry_run=false
+time=2026-05-31T20:47:38.805+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.129 port=10000 dry_run=false
+time=2026-05-31T20:47:38.809+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.118 port=10000 dry_run=false
+time=2026-05-31T20:47:38.810+03:00 level=INFO msg="sync complete" target_group=test-server desired_pods=16 stale_removed=0
+[batch] ===== run 6/7 : run_experiment.sh =====
+[run] 20260531T174738Z  workflow=nlb-resilience-suite-colima-safe  dir=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T174738Z
+[run] workflow created, waiting for controller to own the run
+[run] run owned: entry=main-l2gkv start=2026-05-31T17:47:39Z
+[run] waiting for completion (deadline 7800s)
+[run] workflow finished (start=2026-05-31T17:47:39Z end=2026-05-31T18:55:40Z)
+[run] workflow done; capturing 300s recovery tail before freezing
+/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/run_experiment.sh: line 96: 45839 Terminated: 15          WF_NAME="$WF_NAME" CHAOS_NS="$NS" bash "$HERE/poll_timeline.sh" "$RUN_DIR/timeline.jsonl"
+[evidence] phases=39 step=2s -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T174738Z
+  single-hc-kill                 outage=0.0s recover=0.0s backend_un=16s dpl_un=0s
+  single-hc-failure-long         outage=0.0s recover=17s backend_un=0s dpl_un=0s
+  single-test-server-kill        outage=0.0s recover=123s backend_un=0s dpl_un=0s
+  single-agent-failure           outage=0.0s recover=253s backend_un=0s dpl_un=240s
+  single-reconciler-kill         outage=0.0s recover=0.0s backend_un=130s dpl_un=0s
+  single-agent-cpu-stress        outage=0.0s recover=0.0s backend_un=144s dpl_un=0s
+  single-hc-mem-stress           outage=0.0s recover=13s backend_un=4s dpl_un=0s
+  single-infra-latency           outage=0.0s recover=49s backend_un=0s dpl_un=0s
+  single-infra-partition         outage=24.0s recover=46s backend_un=8s dpl_un=0s
+  server-container-kill-1        outage=0.0s recover=0.0s backend_un=0s dpl_un=0s
+  pair-hc-kill-1                 outage=0.0s recover=11s backend_un=162s dpl_un=2s
+  pair-servers-kill-1            outage=0.0s recover=11s backend_un=162s dpl_un=2s
+  pair-agent-kill-1              outage=0.0s recover=53s backend_un=172s dpl_un=182s
+  pair-both-servers-kill         outage=0.0s recover=53s backend_un=172s dpl_un=182s
+  pair-agent-kill-2              outage=0.0s recover=0.0s backend_un=0s dpl_un=188s
+  pair-reconciler-kill-1         outage=0.0s recover=0.0s backend_un=0s dpl_un=188s
+  pair-hc-kill-2                 outage=0.0s recover=2s backend_un=2s dpl_un=0s
+  pair-hc-packet-loss            outage=0.0s recover=2s backend_un=2s dpl_un=0s
+  pair-reconciler-kill-2         outage=0.0s recover=27s backend_un=180s dpl_un=0s
+  pair-infra-latency-1           outage=0.0s recover=27s backend_un=180s dpl_un=0s
+  pair-servers-kill-2            outage=0.0s recover=15s backend_un=206s dpl_un=0s
+  pair-infra-latency-2           outage=0.0s recover=15s backend_un=206s dpl_un=0s
+  triple-agent-kill-1            outage=0.0s recover=254s backend_un=250s dpl_un=242s
+  triple-hc-kill-1               outage=0.0s recover=254s backend_un=250s dpl_un=242s
+  triple-servers-kill-1          outage=0.0s recover=254s backend_un=250s dpl_un=242s
+  triple-infra-latency-1         outage=0.0s recover=0.0s backend_un=0s dpl_un=6s
+  triple-agent-kill-2            outage=0.0s recover=0.0s backend_un=0s dpl_un=238s
+  triple-reconciler-kill-1       outage=0.0s recover=0.0s backend_un=0s dpl_un=238s
+  triple-hc-kill-2               outage=0.0s recover=0.0s backend_un=220s dpl_un=0s
+  triple-servers-kill-2          outage=0.0s recover=0.0s backend_un=220s dpl_un=0s
+  triple-cdc-latency             outage=0.0s recover=0.0s backend_un=220s dpl_un=0s
+  triple-hc-gossip-loss          outage=0.0s recover=0.0s backend_un=220s dpl_un=0s
+  chaos-agent-failure            outage=0.0s recover=24s backend_un=338s dpl_un=358s
+  chaos-hc-kill                  outage=0.0s recover=24s backend_un=338s dpl_un=358s
+  chaos-reconciler-kill          outage=0.0s recover=24s backend_un=338s dpl_un=358s
+  chaos-server-1-kill            outage=0.0s recover=24s backend_un=338s dpl_un=358s
+  chaos-hc-gossip-loss           outage=0.0s recover=24s backend_un=338s dpl_un=358s
+  chaos-infra-latency            outage=0.0s recover=24s backend_un=338s dpl_un=358s
+  chaos-dns-error                outage=0.0s recover=24s backend_un=6s dpl_un=32s
+[run] DONE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T174738Z
+availability_vs_traffic.png
+backends.png
+errors_by_kind.png
+hc_health.png
+latency.png
+recovery.png
+throughput.png
+zoom
+[batch] tail-check run-20260531T174738Z: +320s past endTime OK
+[batch] ===== run 6/7 COMPLETE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T174738Z =====
+[batch] ===== run 7/7 : testsrvsyncer sync (2026-05-31T19:01:01Z) =====
+time=2026-05-31T22:01:01.696+03:00 level=INFO msg="starting sync" target_group=test-server namespace=cloud-nlb selector="app=test-server" tg_port=10000 hc_port=8090 dry_run=false
+time=2026-05-31T22:01:01.710+03:00 level=INFO msg="k8s client ready"
+time=2026-05-31T22:01:01.710+03:00 level=INFO msg="cpl connected" addr=control-plane-apiserver.local:30080
+time=2026-05-31T22:01:01.710+03:00 level=INFO msg="hc connected" addr=hc-server.local:30080
+time=2026-05-31T22:01:06.912+03:00 level=INFO msg="cpl: target group ensured" id="" version=0 created=false
+time=2026-05-31T22:01:11.978+03:00 level=WARN msg="hc: create settings (may already exist)" err="rpc error: code = Internal desc = failed to create hc settings: can't create two same settings for one pool"
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: fetched ready pods" count=16
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.112
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.136
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.139
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.128
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.130
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.113
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.129
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.138
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.118
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.132
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.102
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.135
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.133
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.123
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.122
+time=2026-05-31T22:01:11.992+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.105
+time=2026-05-31T22:01:11.995+03:00 level=INFO msg="hc: state" desired=16 current=16
+time=2026-05-31T22:01:11.995+03:00 level=INFO msg="hc: already in sync"
+time=2026-05-31T22:01:11.998+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.118 port=10000 dry_run=false
+time=2026-05-31T22:01:12.003+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.132 port=10000 dry_run=false
+time=2026-05-31T22:01:12.007+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.102 port=10000 dry_run=false
+time=2026-05-31T22:01:12.011+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.135 port=10000 dry_run=false
+time=2026-05-31T22:01:12.014+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.133 port=10000 dry_run=false
+time=2026-05-31T22:01:12.017+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.123 port=10000 dry_run=false
+time=2026-05-31T22:01:12.021+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.122 port=10000 dry_run=false
+time=2026-05-31T22:01:12.025+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.105 port=10000 dry_run=false
+time=2026-05-31T22:01:12.028+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.112 port=10000 dry_run=false
+time=2026-05-31T22:01:12.030+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.136 port=10000 dry_run=false
+time=2026-05-31T22:01:12.032+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.139 port=10000 dry_run=false
+time=2026-05-31T22:01:12.033+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.128 port=10000 dry_run=false
+time=2026-05-31T22:01:12.035+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.130 port=10000 dry_run=false
+time=2026-05-31T22:01:12.037+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.113 port=10000 dry_run=false
+time=2026-05-31T22:01:12.039+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.129 port=10000 dry_run=false
+time=2026-05-31T22:01:12.041+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.138 port=10000 dry_run=false
+time=2026-05-31T22:01:12.043+03:00 level=INFO msg="sync complete" target_group=test-server desired_pods=16 stale_removed=0
+[batch] ===== run 7/7 : run_experiment.sh =====
+[run] 20260531T190112Z  workflow=nlb-resilience-suite-colima-safe  dir=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T190112Z
+[run] workflow created, waiting for controller to own the run
+[run] run owned: entry=main-nqhzt start=2026-05-31T19:01:12Z
+[run] waiting for completion (deadline 7800s)
+[run] workflow finished (start=2026-05-31T19:01:12Z end=2026-05-31T20:09:12Z)
+[run] workflow done; capturing 300s recovery tail before freezing
+/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/run_experiment.sh: line 96:  4014 Terminated: 15          WF_NAME="$WF_NAME" CHAOS_NS="$NS" bash "$HERE/poll_timeline.sh" "$RUN_DIR/timeline.jsonl"
+[evidence] phases=39 step=2s -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T190112Z
+  single-hc-kill                 outage=0.0s recover=0.0s backend_un=140s dpl_un=0s
+  single-hc-failure-long         outage=0.0s recover=17s backend_un=10s dpl_un=0s
+  single-test-server-kill        outage=0.0s recover=6s backend_un=0s dpl_un=2s
+  single-agent-failure           outage=0.0s recover=43s backend_un=0s dpl_un=238s
+  single-reconciler-kill         outage=0.0s recover=18s backend_un=188s dpl_un=0s
+  single-agent-cpu-stress        outage=0.0s recover=4s backend_un=142s dpl_un=0s
+  single-hc-mem-stress           outage=0.0s recover=16s backend_un=8s dpl_un=0s
+  single-infra-latency           outage=0.0s recover=4s backend_un=0s dpl_un=0s
+  single-infra-partition         outage=30.0s recover=47s backend_un=12s dpl_un=4s
+  server-container-kill-1        outage=0.0s recover=0.0s backend_un=0s dpl_un=0s
+  pair-hc-kill-1                 outage=0.0s recover=16s backend_un=162s dpl_un=4s
+  pair-servers-kill-1            outage=0.0s recover=16s backend_un=162s dpl_un=4s
+  pair-agent-kill-1              outage=0.0s recover=0.0s backend_un=158s dpl_un=178s
+  pair-both-servers-kill         outage=0.0s recover=0.0s backend_un=158s dpl_un=178s
+  pair-agent-kill-2              outage=0.0s recover=0.0s backend_un=0s dpl_un=194s
+  pair-reconciler-kill-1         outage=0.0s recover=0.0s backend_un=0s dpl_un=194s
+  pair-hc-kill-2                 outage=0.0s recover=16s backend_un=16s dpl_un=0s
+  pair-hc-packet-loss            outage=0.0s recover=16s backend_un=16s dpl_un=0s
+  pair-reconciler-kill-2         outage=0.0s recover=56s backend_un=0s dpl_un=0s
+  pair-infra-latency-1           outage=0.0s recover=56s backend_un=0s dpl_un=0s
+  pair-servers-kill-2            outage=0.0s recover=21s backend_un=164s dpl_un=0s
+  pair-infra-latency-2           outage=0.0s recover=21s backend_un=164s dpl_un=0s
+  triple-agent-kill-1            outage=0.0s recover=4s backend_un=220s dpl_un=242s
+  triple-hc-kill-1               outage=0.0s recover=4s backend_un=220s dpl_un=242s
+  triple-servers-kill-1          outage=0.0s recover=4s backend_un=220s dpl_un=242s
+  triple-agent-kill-2            outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  triple-reconciler-kill-1       outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  triple-infra-latency-1         outage=0.0s recover=0.0s backend_un=0s dpl_un=240s
+  triple-hc-kill-2               outage=0.0s recover=18s backend_un=278s dpl_un=0s
+  triple-servers-kill-2          outage=0.0s recover=18s backend_un=220s dpl_un=0s
+  triple-cdc-latency             outage=0.0s recover=18s backend_un=220s dpl_un=0s
+  triple-hc-gossip-loss          outage=0.0s recover=18s backend_un=220s dpl_un=0s
+  chaos-agent-failure            outage=0.0s recover=60s backend_un=366s dpl_un=360s
+  chaos-hc-kill                  outage=0.0s recover=60s backend_un=366s dpl_un=360s
+  chaos-reconciler-kill          outage=0.0s recover=60s backend_un=366s dpl_un=360s
+  chaos-server-1-kill            outage=0.0s recover=60s backend_un=366s dpl_un=360s
+  chaos-hc-gossip-loss           outage=0.0s recover=60s backend_un=366s dpl_un=360s
+  chaos-infra-latency            outage=0.0s recover=60s backend_un=366s dpl_un=360s
+  chaos-dns-error                outage=0.0s recover=≥30s backend_un=32s dpl_un=32s
+[run] DONE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T190112Z
+availability_vs_traffic.png
+backends.png
+errors_by_kind.png
+hc_health.png
+latency.png
+recovery.png
+throughput.png
+zoom
+[batch] tail-check run-20260531T190112Z: +322s past endTime OK
+[batch] ===== run 7/7 COMPLETE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260531T190112Z =====
+[batch] runs finished (7/7 ok); building cross-run aggregate
+[aggregate] N=7 scenarios=39 excluded_samples=62 -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/aggregate
+  outage_boxplot.png  summary.md  (recovery NOT plotted — see note)
+  run aggregate_timeseries.py for the headline time-series figures
+[batch] aggregate OK -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/aggregate
+[batch] BATCH COMPLETE ts=2026-05-31T20:14:35Z log=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/batch-20260531T114042Z.log

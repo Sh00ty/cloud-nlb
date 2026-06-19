@@ -7,8 +7,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/strategies"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/strategies"
 )
 
 func NewHealthCheck(targetAddr healthcheck.TargetAddr, settings *healthcheck.Settings) (HealthCheck, error) {
@@ -77,7 +77,8 @@ func (t *Executable) DoHealthCheckIteration() bool {
 			t.status = t.successBeforePassing < t.curSuccess+1
 		}
 		t.lastError = nil
-		return prevStatus != t.status || t.firstRun
+
+		return (prevStatus != t.status) || t.firstRun
 	}
 
 	log.Debug().Err(err).Msg("got error from check %+v")
@@ -88,7 +89,8 @@ func (t *Executable) DoHealthCheckIteration() bool {
 	}
 	t.lastError = err
 	t.curSuccess = 0
-	return prevStatus != t.status || t.firstRun
+
+	return (prevStatus != t.status) || t.firstRun
 }
 
 func (t *Executable) Info() (status bool, lastError error) {

@@ -9,11 +9,13 @@ import (
 	"os/signal"
 	"strings"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/consistent"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/coordinator/repository/postgres"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/hcserver"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/sharder"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/protobuf/api/proto/hcpbv1"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/consistent"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/coordinator/repository/postgres"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/hcserver"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/sharder"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/protobuf/api/proto/hcpbv1"
+	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/vrischmann/envconfig"
@@ -47,11 +49,14 @@ type Config struct {
 	ServerPort       uint16 `envconfig:"GRPC_SERVER_PORT"`
 	GrpcDebug        bool   `envconfig:"GRPC_DEBUG"`
 	VShardCount      int    `envconfig:"HC_VIRTUAL_SHARDS"`
+	NeedProbes       bool   `envconfig:"NEED_PROBES"`
 }
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
+
+	godotenv.Load()
 
 	appCfg := Config{}
 	err := envconfig.Init(&appCfg)
@@ -59,6 +64,8 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to read app config")
 	}
 	log.Logger = log.Level(loggerLevelFromString(appCfg.LoggerLevel))
+
+	go startMetrics()
 
 	checksRepo, err := postgres.NewRepo(
 		ctx,
@@ -116,9 +123,10 @@ func main() {
 			log.Fatal().Err(err).Msg("failed to start serving grpc requests")
 		}
 	}()
-
-	serverClose := startProbeServer()
-	defer serverClose()
+	if appCfg.NeedProbes {
+		serverClose := startProbeServer()
+		defer serverClose()
+	}
 
 	<-ctx.Done()
 }
@@ -146,4 +154,16 @@ func startProbeServer() func() {
 	return func() {
 		_ = srv.Close()
 	}
+}
+
+func startMetrics() {
+	var (
+		addr = os.Getenv("METRICS_ADDR")
+		mux  = http.NewServeMux()
+	)
+	if addr == "" {
+		return
+	}
+	mux.Handle("/metrics", promhttp.Handler())
+	http.ListenAndServe(addr, mux)
 }

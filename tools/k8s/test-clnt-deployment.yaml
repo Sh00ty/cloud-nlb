@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testclient
+  namespace: cloud-nlb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testclient
+  template:
+    metadata:
+      labels:
+        app: testclient
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8081"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: testclient
+          image: testclient:dev
+          args:
+            - --url=http://nlb-vip-test-server.cloud-nlb:10000/ping
+            - -c=20
+            - --qps=50
+            - --timeout=200ms
+            - --keepalive=false
+            - --metrics-addr=0.0.0.0:8081
+          ports:
+            - containerPort: 8081
+              name: metrics

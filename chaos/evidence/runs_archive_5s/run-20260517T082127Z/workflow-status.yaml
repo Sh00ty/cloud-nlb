@@ -1,0 +1,815 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Workflow
+metadata:
+  creationTimestamp: "2026-05-17T08:21:27Z"
+  generation: 1
+  name: nlb-resilience-suite-colima-safe
+  namespace: cloud-nlb
+  resourceVersion: "2221784"
+  uid: 7206ee01-153c-414b-9709-72b9e85927c9
+spec:
+  entry: main
+  templates:
+  - children:
+    - phase-1-singles
+    - cooldown-long
+    - phase-2-pairs
+    - cooldown-long
+    - phase-3-triples
+    - cooldown-long
+    - phase-4-total-chaos
+    deadline: 95m
+    name: main
+    templateType: Serial
+  - children:
+    - single-hc-kill
+    - cooldown-short
+    - single-hc-failure-long
+    - cooldown-short
+    - single-test-server-kill
+    - cooldown-short
+    - single-agent-failure
+    - cooldown-short
+    - single-reconciler-kill
+    - cooldown-short
+    - single-agent-cpu-stress
+    - cooldown-short
+    - single-hc-mem-stress
+    - cooldown-short
+    - single-infra-latency
+    - cooldown-short
+    - single-infra-partition
+    - cooldown-short
+    - server-flap-test
+    deadline: 35m
+    name: phase-1-singles
+    templateType: Serial
+  - deadline: 2m
+    name: single-hc-kill
+    podChaos:
+      action: pod-kill
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: hc-worker
+        namespaces:
+        - cloud-nlb
+      value: "75"
+    templateType: PodChaos
+  - deadline: 4m
+    name: single-hc-failure-long
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: hc-worker
+        namespaces:
+        - cloud-nlb
+      value: "75"
+    templateType: PodChaos
+  - deadline: 2m
+    name: single-test-server-kill
+    podChaos:
+      action: container-kill
+      containerNames:
+      - test-server
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: test-server
+        namespaces:
+        - cloud-nlb
+      value: "75"
+    templateType: PodChaos
+  - deadline: 4m
+    name: single-agent-failure
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: nlb-agent
+        namespaces:
+        - cloud-nlb
+      value: "50"
+    templateType: PodChaos
+  - deadline: 3m
+    name: single-reconciler-kill
+    podChaos:
+      action: pod-kill
+      mode: fixed
+      selector:
+        labelSelectors:
+          app: control-plane-reconciler
+        namespaces:
+        - cloud-nlb
+      value: "1"
+    templateType: PodChaos
+  - deadline: 2m
+    name: single-agent-cpu-stress
+    stressChaos:
+      mode: all
+      selector:
+        labelSelectors:
+          app: nlb-agent
+        namespaces:
+        - cloud-nlb
+      stressors:
+        cpu:
+          load: 60
+          workers: 2
+    templateType: StressChaos
+  - deadline: 2m
+    name: single-hc-mem-stress
+    stressChaos:
+      mode: all
+      selector:
+        labelSelectors:
+          app: hc-worker
+        namespaces:
+        - cloud-nlb
+      stressors:
+        memory:
+          oomScoreAdj: 0
+          size: 256MB
+          workers: 1
+    templateType: StressChaos
+  - deadline: 3m
+    name: single-infra-latency
+    networkChaos:
+      action: delay
+      delay:
+        correlation: "50"
+        jitter: 50ms
+        latency: 200ms
+      direction: to
+      externalTargets:
+      - 192.168.5.2/32
+      mode: all
+      selector:
+        namespaces:
+        - cloud-nlb
+    templateType: NetworkChaos
+  - deadline: 30s
+    name: single-infra-partition
+    networkChaos:
+      action: partition
+      direction: to
+      externalTargets:
+      - 192.168.5.2/32
+      mode: all
+      selector:
+        namespaces:
+        - cloud-nlb
+    templateType: NetworkChaos
+  - children:
+    - server-container-kill-1
+    - server-flap-pause-1
+    deadline: 3m
+    name: server-flap-test
+    templateType: Serial
+  - deadline: 15s
+    name: server-container-kill-1
+    podChaos:
+      action: container-kill
+      containerNames:
+      - test-server
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: test-server
+        namespaces:
+        - cloud-nlb
+      value: "30"
+    templateType: PodChaos
+  - deadline: 20s
+    name: server-flap-pause-1
+    templateType: Suspend
+  - deadline: 20s
+    name: server-flap-pause-2
+    templateType: Suspend
+  - children:
+    - pair-hc-plus-servers
+    - cooldown-short
+    - pair-agent-plus-servers
+    - cooldown-short
+    - pair-agent-plus-reconciler
+    - cooldown-short
+    - pair-hc-gossip-degraded
+    - cooldown-short
+    - pair-reconciler-plus-infra
+    - cooldown-short
+    - pair-cdc-lag-plus-servers
+    deadline: 23m
+    name: phase-2-pairs
+    templateType: Serial
+  - children:
+    - pair-hc-kill-1
+    - pair-servers-kill-1
+    deadline: 3m
+    name: pair-hc-plus-servers
+    templateType: Parallel
+  - deadline: 3m
+    name: pair-hc-kill-1
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: hc-worker
+        namespaces:
+        - cloud-nlb
+      value: "75"
+    templateType: PodChaos
+  - deadline: 3m
+    name: pair-servers-kill-1
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: test-server
+        namespaces:
+        - cloud-nlb
+      value: "50"
+    templateType: PodChaos
+  - children:
+    - pair-agent-kill-1
+    - pair-both-servers-kill
+    deadline: 3m
+    name: pair-agent-plus-servers
+    templateType: Parallel
+  - deadline: 3m
+    name: pair-agent-kill-1
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: nlb-agent
+        namespaces:
+        - cloud-nlb
+      value: "50"
+    templateType: PodChaos
+  - deadline: 3m
+    name: pair-both-servers-kill
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: test-server
+        namespaces:
+        - cloud-nlb
+      value: "50"
+    templateType: PodChaos
+  - children:
+    - pair-agent-kill-2
+    - pair-reconciler-kill-1
+    deadline: 3m
+    name: pair-agent-plus-reconciler
+    templateType: Parallel
+  - deadline: 3m
+    name: pair-agent-kill-2
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: nlb-agent
+        namespaces:
+        - cloud-nlb
+      value: "50"
+    templateType: PodChaos
+  - deadline: 3m
+    name: pair-reconciler-kill-1
+    podChaos:
+      action: pod-failure
+      mode: fixed
+      selector:
+        labelSelectors:
+          app: control-plane-reconciler
+        namespaces:
+        - cloud-nlb
+      value: "1"
+    templateType: PodChaos
+  - children:
+    - pair-hc-kill-2
+    - pair-hc-packet-loss
+    deadline: 3m
+    name: pair-hc-gossip-degraded
+    templateType: Parallel
+  - deadline: 3m
+    name: pair-hc-kill-2
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: hc-worker
+        namespaces:
+        - cloud-nlb
+      value: "50"
+    templateType: PodChaos
+  - deadline: 3m
+    name: pair-hc-packet-loss
+    networkChaos:
+      action: loss
+      direction: to
+      loss:
+        correlation: "50"
+        loss: "30"
+      mode: all
+      selector:
+        labelSelectors:
+          app: hc-worker
+        namespaces:
+        - cloud-nlb
+    templateType: NetworkChaos
+  - children:
+    - pair-reconciler-kill-2
+    - pair-infra-latency-1
+    deadline: 3m
+    name: pair-reconciler-plus-infra
+    templateType: Parallel
+  - deadline: 3m
+    name: pair-reconciler-kill-2
+    podChaos:
+      action: pod-failure
+      mode: fixed
+      selector:
+        labelSelectors:
+          app: control-plane-reconciler
+        namespaces:
+        - cloud-nlb
+      value: "1"
+    templateType: PodChaos
+  - deadline: 3m
+    name: pair-infra-latency-1
+    networkChaos:
+      action: delay
+      delay:
+        correlation: "60"
+        jitter: 80ms
+        latency: 300ms
+      direction: to
+      externalTargets:
+      - 192.168.5.2/32
+      mode: all
+      selector:
+        namespaces:
+        - cloud-nlb
+    templateType: NetworkChaos
+  - children:
+    - pair-infra-latency-2
+    - pair-servers-kill-2
+    deadline: 3m
+    name: pair-cdc-lag-plus-servers
+    templateType: Parallel
+  - deadline: 3m
+    name: pair-infra-latency-2
+    networkChaos:
+      action: delay
+      delay:
+        correlation: "70"
+        jitter: 200ms
+        latency: 500ms
+      direction: to
+      externalTargets:
+      - 192.168.5.2/32
+      mode: all
+      selector:
+        labelSelectors:
+          app: nlb-agent
+        namespaces:
+        - cloud-nlb
+    templateType: NetworkChaos
+  - deadline: 3m
+    name: pair-servers-kill-2
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: test-server
+        namespaces:
+        - cloud-nlb
+      value: "75"
+    templateType: PodChaos
+  - children:
+    - triple-hc-servers-agents
+    - cooldown-short
+    - triple-agent-reconciler-infra
+    - cooldown-short
+    - triple-hc-gossip-servers-cdc
+    deadline: 20m
+    name: phase-3-triples
+    templateType: Serial
+  - children:
+    - triple-hc-kill-1
+    - triple-servers-kill-1
+    - triple-agent-kill-1
+    deadline: 4m
+    name: triple-hc-servers-agents
+    templateType: Parallel
+  - children:
+    - triple-hc-kill-2
+    - triple-hc-gossip-loss
+    - triple-servers-kill-2
+    - triple-cdc-latency
+    deadline: 6m
+    name: triple-hc-gossip-servers-cdc
+    templateType: Parallel
+  - deadline: 5m
+    name: triple-hc-kill-2
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: hc-processor
+        namespaces:
+        - cloud-nlb
+      value: "75"
+    templateType: PodChaos
+  - deadline: 4m
+    name: triple-infra-latency-1
+    networkChaos:
+      action: delay
+      delay:
+        correlation: "60"
+        jitter: 100ms
+        latency: 400ms
+      direction: to
+      externalTargets:
+      - 192.168.5.2/32
+      mode: all
+      selector:
+        namespaces:
+        - cloud-nlb
+    templateType: NetworkChaos
+  - deadline: 4m
+    name: triple-hc-kill-1
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: hc-worker
+        namespaces:
+        - cloud-nlb
+      value: "75"
+    templateType: PodChaos
+  - deadline: 4m
+    name: triple-servers-kill-1
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: test-server
+        namespaces:
+        - cloud-nlb
+      value: "75"
+    templateType: PodChaos
+  - deadline: 4m
+    name: triple-agent-kill-1
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: nlb-agent
+        namespaces:
+        - cloud-nlb
+      value: "50"
+    templateType: PodChaos
+  - children:
+    - triple-agent-kill-2
+    - triple-reconciler-kill-1
+    - triple-infra-latency-1
+    deadline: 4m
+    name: triple-agent-reconciler-infra
+    templateType: Parallel
+  - deadline: 4m
+    name: triple-agent-kill-2
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: nlb-agent
+        namespaces:
+        - cloud-nlb
+      value: "50"
+    templateType: PodChaos
+  - deadline: 4m
+    name: triple-reconciler-kill-1
+    podChaos:
+      action: pod-failure
+      mode: fixed
+      selector:
+        labelSelectors:
+          app: control-plane-reconciler
+        namespaces:
+        - cloud-nlb
+      value: "1"
+    templateType: PodChaos
+  - deadline: 4m
+    name: triple-hc-gossip-loss
+    networkChaos:
+      action: loss
+      direction: to
+      loss:
+        correlation: "50"
+        loss: "35"
+      mode: all
+      selector:
+        labelSelectors:
+          app: hc-worker
+        namespaces:
+        - cloud-nlb
+    templateType: NetworkChaos
+  - deadline: 4m
+    name: triple-servers-kill-2
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: test-server
+        namespaces:
+        - cloud-nlb
+      value: "50"
+    templateType: PodChaos
+  - deadline: 4m
+    name: triple-cdc-latency
+    networkChaos:
+      action: delay
+      delay:
+        correlation: "70"
+        jitter: 200ms
+        latency: 500ms
+      direction: to
+      externalTargets:
+      - 192.168.5.2/32
+      mode: all
+      selector:
+        labelSelectors:
+          app: nlb-agent
+        namespaces:
+        - cloud-nlb
+    templateType: NetworkChaos
+  - children:
+    - chaos-hc-kill
+    - chaos-hc-gossip-loss
+    - chaos-server-1-kill
+    - chaos-agent-failure
+    - chaos-reconciler-kill
+    - chaos-infra-latency
+    - chaos-dns-error
+    deadline: 6m
+    name: phase-4-total-chaos
+    templateType: Parallel
+  - deadline: 6m
+    name: chaos-hc-kill
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: hc-worker
+        namespaces:
+        - cloud-nlb
+      value: "75"
+    templateType: PodChaos
+  - deadline: 6m
+    name: chaos-hc-gossip-loss
+    networkChaos:
+      action: loss
+      direction: to
+      loss:
+        correlation: "60"
+        loss: "40"
+      mode: all
+      selector:
+        labelSelectors:
+          app: hc-worker
+        namespaces:
+        - cloud-nlb
+    templateType: NetworkChaos
+  - deadline: 6m
+    name: chaos-server-1-kill
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: test-server
+        namespaces:
+        - cloud-nlb
+      value: "50"
+    templateType: PodChaos
+  - deadline: 6m
+    name: chaos-agent-failure
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: nlb-agent
+        namespaces:
+        - cloud-nlb
+      value: "40"
+    templateType: PodChaos
+  - deadline: 6m
+    name: chaos-reconciler-kill
+    podChaos:
+      action: pod-failure
+      mode: fixed
+      selector:
+        labelSelectors:
+          app: control-plane-reconciler
+        namespaces:
+        - cloud-nlb
+      value: "1"
+    templateType: PodChaos
+  - deadline: 6m
+    name: chaos-infra-latency
+    networkChaos:
+      action: delay
+      delay:
+        correlation: "70"
+        jitter: 150ms
+        latency: 400ms
+      direction: to
+      externalTargets:
+      - 192.168.5.2/32
+      mode: all
+      selector:
+        namespaces:
+        - cloud-nlb
+    templateType: NetworkChaos
+  - deadline: 6m
+    name: chaos-agent-cdc-partition
+    networkChaos:
+      action: partition
+      direction: to
+      externalTargets:
+      - 192.168.5.2/32
+      mode: all
+      selector:
+        labelSelectors:
+          app: nlb-agent
+        namespaces:
+        - cloud-nlb
+    templateType: NetworkChaos
+  - deadline: 6m
+    dnsChaos:
+      action: error
+      mode: all
+      patterns:
+      - '*.cloud-nlb.svc.cluster.local'
+      selector:
+        labelSelectors:
+          app: nlb-agent
+        namespaces:
+        - cloud-nlb
+    name: chaos-dns-error
+    templateType: DNSChaos
+  - children:
+    - pair-hc-kill-3
+    - pair-infra-partition-1
+    deadline: 2m
+    name: pair-hc-plus-infra-partition
+    templateType: Parallel
+  - deadline: 2m
+    name: pair-hc-kill-3
+    podChaos:
+      action: pod-kill
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: hc-worker
+        namespaces:
+        - cloud-nlb
+      value: "75"
+    templateType: PodChaos
+  - deadline: 2m
+    name: pair-infra-partition-1
+    networkChaos:
+      action: partition
+      direction: to
+      externalTargets:
+      - 192.168.5.2/32
+      mode: all
+      selector:
+        namespaces:
+        - cloud-nlb
+    templateType: NetworkChaos
+  - children:
+    - triple-hc-kill-3
+    - triple-servers-kill-3
+    - triple-agent-infra-partition
+    deadline: 3m
+    name: triple-full-data-path-break
+    templateType: Parallel
+  - deadline: 3m
+    name: triple-hc-kill-3
+    podChaos:
+      action: pod-kill
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: hc-worker
+        namespaces:
+        - cloud-nlb
+      value: "50"
+    templateType: PodChaos
+  - deadline: 3m
+    name: triple-servers-kill-3
+    podChaos:
+      action: pod-failure
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: test-server
+        namespaces:
+        - cloud-nlb
+      value: "75"
+    templateType: PodChaos
+  - deadline: 3m
+    name: triple-agent-infra-partition
+    networkChaos:
+      action: partition
+      direction: to
+      externalTargets:
+      - 192.168.5.2/32
+      mode: all
+      selector:
+        labelSelectors:
+          app: nlb-agent
+        namespaces:
+        - cloud-nlb
+    templateType: NetworkChaos
+  - children:
+    - triple-reconciler-kill-2
+    - triple-hc-kill-4
+    - triple-infra-partition
+    deadline: 3m
+    name: triple-control-plane-meltdown
+    templateType: Parallel
+  - deadline: 3m
+    name: triple-reconciler-kill-2
+    podChaos:
+      action: pod-kill
+      mode: fixed
+      selector:
+        labelSelectors:
+          app: control-plane-reconciler
+        namespaces:
+        - cloud-nlb
+      value: "1"
+    templateType: PodChaos
+  - deadline: 3m
+    name: triple-hc-kill-4
+    podChaos:
+      action: pod-kill
+      mode: random-max-percent
+      selector:
+        labelSelectors:
+          app: hc-worker
+        namespaces:
+        - cloud-nlb
+      value: "75"
+    templateType: PodChaos
+  - deadline: 3m
+    name: triple-infra-partition
+    networkChaos:
+      action: partition
+      direction: to
+      externalTargets:
+      - 192.168.5.2/32
+      mode: all
+      selector:
+        namespaces:
+        - cloud-nlb
+    templateType: NetworkChaos
+  - deadline: 20s
+    name: cooldown-short
+    templateType: Suspend
+  - deadline: 45s
+    name: cooldown-long
+    templateType: Suspend
+status:
+  conditions:
+  - reason: ""
+    status: "True"
+    type: Scheduled
+  - reason: ""
+    status: "True"
+    type: Accomplished
+  endTime: "2026-05-17T09:29:08Z"
+  entryNode: main-ppt64
+  startTime: "2026-05-17T08:21:27Z"

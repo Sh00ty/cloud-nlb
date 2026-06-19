@@ -1,0 +1,11 @@
+.venv/
+runs/*/metrics/
+runs/*/timeline.jsonl
+runs/*/workflow-status.yaml
+runs/*/workflownodes.yaml
+# Keep frozen, citable artifacts:
+!runs/*/graphs/
+!runs/*/summary.md
+!runs/*/phases.json
+!runs/*/recovery.json
+!runs/*/run.json

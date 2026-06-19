@@ -5,7 +5,7 @@ import (
 	"math/rand/v2"
 	"sync"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/sharder"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/sharder"
 )
 
 type NodeState int8

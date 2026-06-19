@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: control-plane-apiserver
+  namespace: cloud-nlb
+  labels:
+    app: control-plane-apiserver
+spec:
+  type: ClusterIP
+  ports:
+  - name: grpc
+    port: 9090
+    targetPort: grpc
+    protocol: TCP
+  selector:
+    app: control-plane-apiserver

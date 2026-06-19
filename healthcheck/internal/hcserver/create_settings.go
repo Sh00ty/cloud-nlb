@@ -4,9 +4,9 @@ import (
 	"context"
 	"net"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/protobuf/api/proto/hcpbv1"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/strategies"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/protobuf/api/proto/hcpbv1"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/strategies"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

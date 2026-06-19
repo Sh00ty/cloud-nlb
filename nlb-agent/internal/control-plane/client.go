@@ -141,6 +141,6 @@ func endpointSpecToModel(spec *cplpbv1.Endpoint) models.EndpointSpec {
 	return models.EndpointSpec{
 		IP:     net.ParseIP(spec.Ip),
 		Port:   uint16(spec.Port),
-		Weight: spec.Port,
+		Weight: spec.Weight,
 	}
 }

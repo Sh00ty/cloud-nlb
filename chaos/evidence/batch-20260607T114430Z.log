@@ -1,0 +1,257 @@
+[batch] start N=5 ns=cloud-nlb log=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/batch-20260607T114430Z.log ts=2026-06-07T11:44:30Z
+[batch] ===== run 1/5 : testsrvsyncer sync (2026-06-07T11:44:30Z) =====
+time=2026-06-07T14:44:31.013+03:00 level=INFO msg="starting sync" target_group=test-server namespace=cloud-nlb selector="app=test-server" tg_port=10000 hc_port=8090 dry_run=false
+time=2026-06-07T14:44:31.027+03:00 level=INFO msg="k8s client ready"
+time=2026-06-07T14:44:31.027+03:00 level=INFO msg="cpl connected" addr=control-plane-apiserver.local:30080
+time=2026-06-07T14:44:31.027+03:00 level=INFO msg="hc connected" addr=hc-server.local:30080
+time=2026-06-07T14:44:36.120+03:00 level=INFO msg="cpl: target group ensured" id="" version=0 created=false
+time=2026-06-07T14:44:41.198+03:00 level=WARN msg="hc: create settings (may already exist)" err="rpc error: code = Internal desc = failed to create hc settings: can't create two same settings for one pool"
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: fetched ready pods" count=16
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.36
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.23
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.29
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.34
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.25
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.33
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.27
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.26
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.30
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.31
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.24
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.37
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.32
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.38
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.35
+time=2026-06-07T14:44:41.224+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.28
+time=2026-06-07T14:44:41.228+03:00 level=INFO msg="hc: state" desired=16 current=16
+time=2026-06-07T14:44:41.229+03:00 level=INFO msg="hc: already in sync"
+time=2026-06-07T14:44:41.232+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.36 port=10000 dry_run=false
+time=2026-06-07T14:44:41.238+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.23 port=10000 dry_run=false
+time=2026-06-07T14:44:41.243+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.29 port=10000 dry_run=false
+time=2026-06-07T14:44:41.252+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.34 port=10000 dry_run=false
+time=2026-06-07T14:44:41.256+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.25 port=10000 dry_run=false
+time=2026-06-07T14:44:41.261+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.33 port=10000 dry_run=false
+time=2026-06-07T14:44:41.265+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.27 port=10000 dry_run=false
+time=2026-06-07T14:44:41.268+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.26 port=10000 dry_run=false
+time=2026-06-07T14:44:41.271+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.30 port=10000 dry_run=false
+time=2026-06-07T14:44:41.274+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.31 port=10000 dry_run=false
+time=2026-06-07T14:44:41.279+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.24 port=10000 dry_run=false
+time=2026-06-07T14:44:41.282+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.37 port=10000 dry_run=false
+time=2026-06-07T14:44:41.285+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.32 port=10000 dry_run=false
+time=2026-06-07T14:44:41.288+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.38 port=10000 dry_run=false
+time=2026-06-07T14:44:41.292+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.35 port=10000 dry_run=false
+time=2026-06-07T14:44:41.294+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.28 port=10000 dry_run=false
+time=2026-06-07T14:44:41.298+03:00 level=INFO msg="sync complete" target_group=test-server desired_pods=16 stale_removed=0
+[batch] ===== run 1/5 : run_experiment.sh =====
+[run] 20260607T114441Z  workflow=nlb-resilience-suite-colima-safe  dir=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260607T114441Z
+error: resource mapping not found for name: "nlb-resilience-suite-colima-safe" namespace: "cloud-nlb" from "/Users/psshlykov/prog/mipt/cloud-nlb/chaos/chaos-mesh-workflow.yaml": no matches for kind "Workflow" in version "chaos-mesh.org/v1alpha1"
+ensure CRDs are installed first
+[batch] run 1: run_experiment.sh exit non-zero (continuing)
+[batch] tail-check error: FileNotFoundError(2, 'No such file or directory')
+[batch] ===== run 1/5 COMPLETE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260607T114441Z =====
+[batch] ===== run 2/5 : testsrvsyncer sync (2026-06-07T11:44:42Z) =====
+time=2026-06-07T14:44:42.687+03:00 level=INFO msg="starting sync" target_group=test-server namespace=cloud-nlb selector="app=test-server" tg_port=10000 hc_port=8090 dry_run=false
+time=2026-06-07T14:44:42.693+03:00 level=INFO msg="k8s client ready"
+time=2026-06-07T14:44:42.693+03:00 level=INFO msg="cpl connected" addr=control-plane-apiserver.local:30080
+time=2026-06-07T14:44:42.693+03:00 level=INFO msg="hc connected" addr=hc-server.local:30080
+time=2026-06-07T14:44:47.724+03:00 level=INFO msg="cpl: target group ensured" id="" version=0 created=false
+time=2026-06-07T14:44:52.764+03:00 level=WARN msg="hc: create settings (may already exist)" err="rpc error: code = Internal desc = failed to create hc settings: can't create two same settings for one pool"
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: fetched ready pods" count=16
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.36
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.35
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.34
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.25
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.32
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.23
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.29
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.28
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.26
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.30
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.31
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.38
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.24
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.33
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.27
+time=2026-06-07T14:44:52.773+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.37
+time=2026-06-07T14:44:52.778+03:00 level=INFO msg="hc: state" desired=16 current=16
+time=2026-06-07T14:44:52.778+03:00 level=INFO msg="hc: already in sync"
+time=2026-06-07T14:44:52.782+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.34 port=10000 dry_run=false
+time=2026-06-07T14:44:52.786+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.25 port=10000 dry_run=false
+time=2026-06-07T14:44:52.789+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.32 port=10000 dry_run=false
+time=2026-06-07T14:44:52.793+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.23 port=10000 dry_run=false
+time=2026-06-07T14:44:52.796+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.29 port=10000 dry_run=false
+time=2026-06-07T14:44:52.799+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.28 port=10000 dry_run=false
+time=2026-06-07T14:44:52.808+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.26 port=10000 dry_run=false
+time=2026-06-07T14:44:52.823+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.30 port=10000 dry_run=false
+time=2026-06-07T14:44:52.828+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.31 port=10000 dry_run=false
+time=2026-06-07T14:44:52.840+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.38 port=10000 dry_run=false
+time=2026-06-07T14:44:52.846+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.24 port=10000 dry_run=false
+time=2026-06-07T14:44:52.849+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.33 port=10000 dry_run=false
+time=2026-06-07T14:44:52.852+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.27 port=10000 dry_run=false
+time=2026-06-07T14:44:52.856+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.37 port=10000 dry_run=false
+time=2026-06-07T14:44:52.859+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.36 port=10000 dry_run=false
+time=2026-06-07T14:44:52.863+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.35 port=10000 dry_run=false
+time=2026-06-07T14:44:52.866+03:00 level=INFO msg="sync complete" target_group=test-server desired_pods=16 stale_removed=0
+[batch] ===== run 2/5 : run_experiment.sh =====
+[run] 20260607T114452Z  workflow=nlb-resilience-suite-colima-safe  dir=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260607T114452Z
+error: resource mapping not found for name: "nlb-resilience-suite-colima-safe" namespace: "cloud-nlb" from "/Users/psshlykov/prog/mipt/cloud-nlb/chaos/chaos-mesh-workflow.yaml": no matches for kind "Workflow" in version "chaos-mesh.org/v1alpha1"
+ensure CRDs are installed first
+[batch] run 2: run_experiment.sh exit non-zero (continuing)
+[batch] tail-check error: FileNotFoundError(2, 'No such file or directory')
+[batch] ===== run 2/5 COMPLETE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260607T114452Z =====
+[batch] ===== run 3/5 : testsrvsyncer sync (2026-06-07T11:44:53Z) =====
+time=2026-06-07T14:44:54.047+03:00 level=INFO msg="starting sync" target_group=test-server namespace=cloud-nlb selector="app=test-server" tg_port=10000 hc_port=8090 dry_run=false
+time=2026-06-07T14:44:54.054+03:00 level=INFO msg="k8s client ready"
+time=2026-06-07T14:44:54.054+03:00 level=INFO msg="cpl connected" addr=control-plane-apiserver.local:30080
+time=2026-06-07T14:44:54.054+03:00 level=INFO msg="hc connected" addr=hc-server.local:30080
+time=2026-06-07T14:44:59.080+03:00 level=INFO msg="cpl: target group ensured" id="" version=0 created=false
+time=2026-06-07T14:45:04.103+03:00 level=WARN msg="hc: create settings (may already exist)" err="rpc error: code = Internal desc = failed to create hc settings: can't create two same settings for one pool"
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: fetched ready pods" count=16
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.36
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.26
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.30
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.28
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.27
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.24
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.33
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.23
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.38
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.37
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.35
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.29
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.34
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.31
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.25
+time=2026-06-07T14:45:04.115+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.32
+time=2026-06-07T14:45:04.119+03:00 level=INFO msg="hc: state" desired=16 current=16
+time=2026-06-07T14:45:04.119+03:00 level=INFO msg="hc: already in sync"
+time=2026-06-07T14:45:04.122+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.23 port=10000 dry_run=false
+time=2026-06-07T14:45:04.129+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.38 port=10000 dry_run=false
+time=2026-06-07T14:45:04.136+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.37 port=10000 dry_run=false
+time=2026-06-07T14:45:04.140+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.35 port=10000 dry_run=false
+time=2026-06-07T14:45:04.143+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.29 port=10000 dry_run=false
+time=2026-06-07T14:45:04.147+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.34 port=10000 dry_run=false
+time=2026-06-07T14:45:04.151+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.31 port=10000 dry_run=false
+time=2026-06-07T14:45:04.154+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.25 port=10000 dry_run=false
+time=2026-06-07T14:45:04.157+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.32 port=10000 dry_run=false
+time=2026-06-07T14:45:04.162+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.36 port=10000 dry_run=false
+time=2026-06-07T14:45:04.166+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.26 port=10000 dry_run=false
+time=2026-06-07T14:45:04.172+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.30 port=10000 dry_run=false
+time=2026-06-07T14:45:04.175+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.28 port=10000 dry_run=false
+time=2026-06-07T14:45:04.179+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.27 port=10000 dry_run=false
+time=2026-06-07T14:45:04.182+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.24 port=10000 dry_run=false
+time=2026-06-07T14:45:04.185+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.33 port=10000 dry_run=false
+time=2026-06-07T14:45:04.189+03:00 level=INFO msg="sync complete" target_group=test-server desired_pods=16 stale_removed=0
+[batch] ===== run 3/5 : run_experiment.sh =====
+[run] 20260607T114504Z  workflow=nlb-resilience-suite-colima-safe  dir=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260607T114504Z
+error: resource mapping not found for name: "nlb-resilience-suite-colima-safe" namespace: "cloud-nlb" from "/Users/psshlykov/prog/mipt/cloud-nlb/chaos/chaos-mesh-workflow.yaml": no matches for kind "Workflow" in version "chaos-mesh.org/v1alpha1"
+ensure CRDs are installed first
+[batch] run 3: run_experiment.sh exit non-zero (continuing)
+[batch] tail-check error: FileNotFoundError(2, 'No such file or directory')
+[batch] ===== run 3/5 COMPLETE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260607T114504Z =====
+[batch] ===== run 4/5 : testsrvsyncer sync (2026-06-07T11:45:04Z) =====
+time=2026-06-07T14:45:05.239+03:00 level=INFO msg="starting sync" target_group=test-server namespace=cloud-nlb selector="app=test-server" tg_port=10000 hc_port=8090 dry_run=false
+time=2026-06-07T14:45:05.245+03:00 level=INFO msg="k8s client ready"
+time=2026-06-07T14:45:05.245+03:00 level=INFO msg="cpl connected" addr=control-plane-apiserver.local:30080
+time=2026-06-07T14:45:05.245+03:00 level=INFO msg="hc connected" addr=hc-server.local:30080
+time=2026-06-07T14:45:10.286+03:00 level=INFO msg="cpl: target group ensured" id="" version=0 created=false
+time=2026-06-07T14:45:15.339+03:00 level=WARN msg="hc: create settings (may already exist)" err="rpc error: code = Internal desc = failed to create hc settings: can't create two same settings for one pool"
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: fetched ready pods" count=16
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.33
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.30
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.37
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.32
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.35
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.24
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.25
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.23
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.31
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.38
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.29
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.28
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.36
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.27
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.26
+time=2026-06-07T14:45:15.352+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.34
+time=2026-06-07T14:45:15.356+03:00 level=INFO msg="hc: state" desired=16 current=16
+time=2026-06-07T14:45:15.356+03:00 level=INFO msg="hc: already in sync"
+time=2026-06-07T14:45:15.360+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.28 port=10000 dry_run=false
+time=2026-06-07T14:45:15.366+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.36 port=10000 dry_run=false
+time=2026-06-07T14:45:15.371+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.27 port=10000 dry_run=false
+time=2026-06-07T14:45:15.375+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.26 port=10000 dry_run=false
+time=2026-06-07T14:45:15.378+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.34 port=10000 dry_run=false
+time=2026-06-07T14:45:15.383+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.33 port=10000 dry_run=false
+time=2026-06-07T14:45:15.387+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.30 port=10000 dry_run=false
+time=2026-06-07T14:45:15.390+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.37 port=10000 dry_run=false
+time=2026-06-07T14:45:15.395+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.32 port=10000 dry_run=false
+time=2026-06-07T14:45:15.398+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.35 port=10000 dry_run=false
+time=2026-06-07T14:45:15.401+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.24 port=10000 dry_run=false
+time=2026-06-07T14:45:15.403+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.25 port=10000 dry_run=false
+time=2026-06-07T14:45:15.407+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.23 port=10000 dry_run=false
+time=2026-06-07T14:45:15.409+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.31 port=10000 dry_run=false
+time=2026-06-07T14:45:15.413+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.38 port=10000 dry_run=false
+time=2026-06-07T14:45:15.416+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.29 port=10000 dry_run=false
+time=2026-06-07T14:45:15.418+03:00 level=INFO msg="sync complete" target_group=test-server desired_pods=16 stale_removed=0
+[batch] ===== run 4/5 : run_experiment.sh =====
+[run] 20260607T114515Z  workflow=nlb-resilience-suite-colima-safe  dir=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260607T114515Z
+error: resource mapping not found for name: "nlb-resilience-suite-colima-safe" namespace: "cloud-nlb" from "/Users/psshlykov/prog/mipt/cloud-nlb/chaos/chaos-mesh-workflow.yaml": no matches for kind "Workflow" in version "chaos-mesh.org/v1alpha1"
+ensure CRDs are installed first
+[batch] run 4: run_experiment.sh exit non-zero (continuing)
+[batch] tail-check error: FileNotFoundError(2, 'No such file or directory')
+[batch] ===== run 4/5 COMPLETE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260607T114515Z =====
+[batch] ===== run 5/5 : testsrvsyncer sync (2026-06-07T11:45:15Z) =====
+time=2026-06-07T14:45:16.483+03:00 level=INFO msg="starting sync" target_group=test-server namespace=cloud-nlb selector="app=test-server" tg_port=10000 hc_port=8090 dry_run=false
+time=2026-06-07T14:45:16.488+03:00 level=INFO msg="k8s client ready"
+time=2026-06-07T14:45:16.488+03:00 level=INFO msg="cpl connected" addr=control-plane-apiserver.local:30080
+time=2026-06-07T14:45:16.488+03:00 level=INFO msg="hc connected" addr=hc-server.local:30080
+time=2026-06-07T14:45:21.516+03:00 level=INFO msg="cpl: target group ensured" id="" version=0 created=false
+time=2026-06-07T14:45:26.536+03:00 level=WARN msg="hc: create settings (may already exist)" err="rpc error: code = Internal desc = failed to create hc settings: can't create two same settings for one pool"
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: fetched ready pods" count=16
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.31
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.33
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.38
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.25
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.28
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.23
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.26
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.37
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.35
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.34
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.27
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.29
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.24
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.32
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.36
+time=2026-06-07T14:45:26.539+03:00 level=INFO msg="k8s: ready pod" ip=10.42.0.30
+time=2026-06-07T14:45:26.542+03:00 level=INFO msg="hc: state" desired=16 current=16
+time=2026-06-07T14:45:26.542+03:00 level=INFO msg="hc: already in sync"
+time=2026-06-07T14:45:26.543+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.33 port=10000 dry_run=false
+time=2026-06-07T14:45:26.547+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.38 port=10000 dry_run=false
+time=2026-06-07T14:45:26.550+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.25 port=10000 dry_run=false
+time=2026-06-07T14:45:26.556+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.28 port=10000 dry_run=false
+time=2026-06-07T14:45:26.562+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.23 port=10000 dry_run=false
+time=2026-06-07T14:45:26.566+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.26 port=10000 dry_run=false
+time=2026-06-07T14:45:26.569+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.37 port=10000 dry_run=false
+time=2026-06-07T14:45:26.571+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.35 port=10000 dry_run=false
+time=2026-06-07T14:45:26.574+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.34 port=10000 dry_run=false
+time=2026-06-07T14:45:26.578+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.27 port=10000 dry_run=false
+time=2026-06-07T14:45:26.584+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.29 port=10000 dry_run=false
+time=2026-06-07T14:45:26.587+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.24 port=10000 dry_run=false
+time=2026-06-07T14:45:26.589+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.32 port=10000 dry_run=false
+time=2026-06-07T14:45:26.592+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.36 port=10000 dry_run=false
+time=2026-06-07T14:45:26.594+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.30 port=10000 dry_run=false
+time=2026-06-07T14:45:26.596+03:00 level=INFO msg="cpl: ensure endpoint" ip=10.42.0.31 port=10000 dry_run=false
+time=2026-06-07T14:45:26.598+03:00 level=INFO msg="sync complete" target_group=test-server desired_pods=16 stale_removed=0
+[batch] ===== run 5/5 : run_experiment.sh =====
+[run] 20260607T114526Z  workflow=nlb-resilience-suite-colima-safe  dir=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260607T114526Z
+error: resource mapping not found for name: "nlb-resilience-suite-colima-safe" namespace: "cloud-nlb" from "/Users/psshlykov/prog/mipt/cloud-nlb/chaos/chaos-mesh-workflow.yaml": no matches for kind "Workflow" in version "chaos-mesh.org/v1alpha1"
+ensure CRDs are installed first
+[batch] run 5: run_experiment.sh exit non-zero (continuing)
+[batch] tail-check error: FileNotFoundError(2, 'No such file or directory')
+[batch] ===== run 5/5 COMPLETE -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/runs/run-20260607T114526Z =====
+[batch] runs finished (5/5 ok); building cross-run aggregate
+[aggregate] N=5 scenarios=38 excluded_samples=10 -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/aggregate
+  outage_boxplot.png  summary.md  (recovery NOT plotted — see note)
+  run aggregate_timeseries.py for the headline time-series figures
+[batch] aggregate OK -> /Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/aggregate
+[batch] BATCH COMPLETE ts=2026-06-07T11:45:27Z log=/Users/psshlykov/prog/mipt/cloud-nlb/chaos/evidence/batch-20260607T114430Z.log

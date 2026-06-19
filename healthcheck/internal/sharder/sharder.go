@@ -7,10 +7,11 @@ import (
 	"strconv"
 
 	"github.com/cespare/xxhash"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog/log"
 
-	"github.com/Sh00ty/cloud-nlb/health-check-node/internal/models"
-	"github.com/Sh00ty/cloud-nlb/health-check-node/pkg/healthcheck"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/internal/models"
+	"github.com/Sh00ty/cloud-nlb/healthcheck/pkg/healthcheck"
 )
 
 type ShardingNodeID int
@@ -72,6 +73,8 @@ func NewConsistentSharder(
 		vshardCh.MarkHealthy(ShardingNodeID(vshard))
 	}
 	nodesCh.MarkHealthy(NodeIDToChID(myNode))
+
+	myVshardsCount.Set(float64(len(myVShards)))
 	return &ConsistentSharder{
 		MyNodeID:           myNode,
 		myVShards:          myVShards,
@@ -133,6 +136,9 @@ func (s *ConsistentSharder) RemoveTargetLink(target healthcheck.TargetAddr) bool
 // Добавилась новая нода => она забирает шарды =>
 // с нашей ноды шарды могли только уйти
 func (s *ConsistentSharder) AddNewMember(ctx context.Context, nodeID models.NodeID) ([]healthcheck.TargetAddr, error) {
+	durTimer := prometheus.NewTimer(addMemberDuration)
+	defer durTimer.ObserveDuration()
+
 	if nodeID == models.NodeID(s.MyNodeID) {
 		return nil, nil
 	}
@@ -161,10 +167,15 @@ func (s *ConsistentSharder) AddNewMember(ctx context.Context, nodeID models.Node
 		}
 		s.checksByVShard[vshard] = make(map[string]struct{})
 	}
+	droppedTargetsOnRebalance.Add(float64(len(dropTargets)))
+	myVshardsCount.Set(float64(len(s.myVShards)))
 	return dropTargets, nil
 }
 
 func (s *ConsistentSharder) RemoveMember(ctx context.Context, nodeID models.NodeID) ([]uint, error) {
+	durTimer := prometheus.NewTimer(removeMemberDuration)
+	defer durTimer.ObserveDuration()
+
 	s.nodeVShardsSharder.MarkUnhealthy(NodeIDToChID(nodeID))
 
 	shardsToFetch := make([]uint, 0, s.vShardCount)
@@ -180,10 +191,15 @@ func (s *ConsistentSharder) RemoveMember(ctx context.Context, nodeID models.Node
 		shardsToFetch = append(shardsToFetch, uint(vshard))
 		s.myVShards[vshard] = struct{}{}
 	}
+	acquiredVshardsOnRebalance.Add(float64(len(shardsToFetch)))
+	myVshardsCount.Set(float64(len(s.myVShards)))
 	return shardsToFetch, nil
 }
 
 func (s *ConsistentSharder) NeedHandle(target healthcheck.TargetAddr) bool {
+	durTimer := prometheus.NewTimer(needHandleDuration)
+	defer durTimer.ObserveDuration()
+
 	vshard := s.GetTargetVshard(target.String())
 	nodeIDs := s.getNodeIDsByVshard(vshard)
 

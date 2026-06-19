@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"errors"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/vrischmann/envconfig"
@@ -24,6 +26,7 @@ type Config struct {
 	TargetGroupReplicationFactor uint8         `envconfig:"TARGET_GROUP_REPLICATION_FACTOR"`
 	DataPlaneDeathEventDelay     time.Duration `envconfig:"DATA_PLANE_NODE_DEATH_EVENT_DELAY"`
 	ForceReconcileInterval       time.Duration `envconfig:"FORCE_RECONCILE_INTERVAL"`
+	NeedProbes                   bool          `envconfig:"NEED_PROBES"`
 }
 
 func loggerLevelFromString(level string) zerolog.Level {
@@ -52,13 +55,15 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to read app config from envs")
 	}
-
 	log.Logger = log.Level(loggerLevelFromString(appCfg.LoggerLevel))
+	go startMetrics()
 
 	reconcileRepo, err := etcd.NewReconcilerClient(ctx, []string{appCfg.EtcdEndpoint}, appCfg.PodID)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create reconciliation etcd repository")
 	}
+
+	go startProbeServer()
 
 	leaderCtx, cancelLeader := context.WithCancel(ctx)
 	defer cancelLeader()
@@ -121,4 +126,41 @@ func main() {
 			leaderCtx, cancelLeader = context.WithCancel(ctx)
 		}
 	}
+}
+
+func startProbeServer() func() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		w.WriteHeader(http.StatusOK)
+	})
+	mux.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		w.WriteHeader(http.StatusOK)
+	})
+	srv := http.Server{
+		Handler: mux,
+		Addr:    "0.0.0.0:8080",
+	}
+	go func() {
+		err := srv.ListenAndServe()
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to start http server")
+		}
+	}()
+	return func() {
+		_ = srv.Close()
+	}
+}
+
+func startMetrics() {
+	var (
+		addr = os.Getenv("RECONCILER_METRICS_ADDR")
+		mux  = http.NewServeMux()
+	)
+	if addr == "" {
+		return
+	}
+	mux.Handle("/metrics", promhttp.Handler())
+	http.ListenAndServe(addr, mux)
 }
